@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
+import { Search, User, ShoppingCart, Menu, X, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -69,6 +69,11 @@ export default function Header() {
             <Link to="/login">
               <Button variant="ghost" size="icon" className="hover:text-gold transition-colors">
                 <User className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/admin">
+              <Button variant="ghost" size="icon" className="hover:text-gold transition-colors" title="פאנל ניהול">
+                <Settings className="h-5 w-5" />
               </Button>
             </Link>
           </div>
