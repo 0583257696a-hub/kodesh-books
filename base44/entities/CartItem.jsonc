@@ -1,0 +1,19 @@
+{
+  "name": "CartItem",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05d5\u05e6\u05e8"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "\u05db\u05de\u05d5\u05ea"
+    }
+  },
+  "required": [
+    "product_id",
+    "quantity"
+  ]
+}
