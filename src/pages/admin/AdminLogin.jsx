@@ -1,0 +1,87 @@
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Lock, Mail, Loader2, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+export default function AdminLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await base44.auth.loginViaEmailPassword(email, password);
+      window.location.href = '/secret-admin';
+    } catch (err) {
+      setError('אימייל או סיסמה שגויים');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4" dir="rtl">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 mb-5">
+            <Shield className="w-8 h-8 text-gold" />
+          </div>
+          <h1 className="text-3xl font-heading font-bold text-white">כניסת מנהל</h1>
+          <p className="text-zinc-500 mt-2 font-body text-sm">אזור מוגן — גישה למורשים בלבד</p>
+        </div>
+
+        <div className="bg-[#13131a] border border-white/5 rounded-2xl p-8 shadow-2xl">
+          {error && (
+            <div className="mb-5 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-body">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label className="text-zinc-300 font-body text-sm">אימייל</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="bg-[#1c1c28] border-white/10 text-white pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
+                  placeholder="admin@example.com"
+                  required
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-zinc-300 font-body text-sm">סיסמה</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="bg-[#1c1c28] border-white/10 text-white pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+            </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 bg-gold text-[#0a0a0f] hover:bg-gold/90 font-body font-semibold text-base mt-2"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'כניסה לפאנל'}
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
