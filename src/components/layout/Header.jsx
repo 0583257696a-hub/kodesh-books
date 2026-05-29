@@ -76,10 +76,11 @@ export default function Header() {
 
           {/* Logo center */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
-            <div className="text-center">
-              <h1 className="font-heading text-2xl md:text-3xl font-bold text-foreground leading-tight">אוצר הקדושה</h1>
-              <p className="text-xs text-gold font-body tracking-wider">הכל לבית היהודי</p>
-            </div>
+            <img 
+              src="https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/2fdbeca5e_WhatsAppImage2026-05-29at170557.jpeg" 
+              alt="אוצר הקדושה" 
+              className="h-16 md:h-20 object-contain drop-shadow-lg"
+            />
           </Link>
 
           {/* Cart */}

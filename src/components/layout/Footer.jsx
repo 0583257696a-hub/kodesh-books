@@ -10,7 +10,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Logo & About */}
           <div className="space-y-4">
-            <h3 className="font-heading text-2xl font-bold text-gold">אוצר הקדושה</h3>
+            <img 
+              src="https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/2fdbeca5e_WhatsAppImage2026-05-29at170557.jpeg" 
+              alt="אוצר הקדושה" 
+              className="h-12 object-contain"
+            />
             <p className="text-cream/70 text-sm font-body leading-relaxed">
               החנות המובילה לספרי קודש, תשמישי קדושה ומתנות יהודיות. מגוון רחב של ספרים מכל סוגי הקטגוריות במחירים משתלמים.
             </p>

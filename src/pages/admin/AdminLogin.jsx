@@ -29,9 +29,11 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 mb-5">
-            <Shield className="w-8 h-8 text-gold" />
-          </div>
+          <img 
+            src="https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/2fdbeca5e_WhatsAppImage2026-05-29at170557.jpeg" 
+            alt="אוצר הקדושה" 
+            className="h-20 object-contain mx-auto mb-5 drop-shadow-lg"
+          />
           <h1 className="text-3xl font-heading font-bold text-white">כניסת מנהל</h1>
           <p className="text-zinc-500 mt-2 font-body text-sm">אזור מוגן — גישה למורשים בלבד</p>
         </div>
