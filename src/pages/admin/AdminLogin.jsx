@@ -26,7 +26,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-cream flex items-center justify-center p-4" dir="rtl">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <img 
@@ -34,26 +34,26 @@ export default function AdminLogin() {
             alt="אוצר הקדושה" 
             className="h-20 object-contain mx-auto mb-5 drop-shadow-lg"
           />
-          <h1 className="text-3xl font-heading font-bold text-white">כניסת מנהל</h1>
-          <p className="text-zinc-500 mt-2 font-body text-sm">אזור מוגן — גישה למורשים בלבד</p>
+          <h1 className="text-3xl font-heading font-bold text-walnut">כניסת מנהל</h1>
+          <p className="text-muted-foreground mt-2 font-body text-sm">אזור מוגן — גישה למורשים בלבד</p>
         </div>
 
-        <div className="bg-[#13131a] border border-white/5 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-white border border-gold/20 rounded-2xl p-8 shadow-md">
           {error && (
-            <div className="mb-5 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-body">
+            <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-body">
               {error}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-zinc-300 font-body text-sm">אימייל</Label>
+              <Label className="text-walnut font-body text-sm">אימייל</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="bg-[#1c1c28] border-white/10 text-white pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
+                  className="bg-secondary border-border text-foreground pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
                   placeholder="admin@example.com"
                   required
                   autoFocus
@@ -61,14 +61,14 @@ export default function AdminLogin() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-300 font-body text-sm">סיסמה</Label>
+              <Label className="text-walnut font-body text-sm">סיסמה</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="bg-[#1c1c28] border-white/10 text-white pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
+                  className="bg-secondary border-border text-foreground pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
                   placeholder="••••••••"
                   required
                 />
@@ -77,7 +77,7 @@ export default function AdminLogin() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-gold text-[#0a0a0f] hover:bg-gold/90 font-body font-semibold text-base mt-2"
+              className="w-full h-12 bg-gold text-white hover:bg-gold/90 font-body font-semibold text-base mt-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'כניסה לפאנל'}
             </Button>

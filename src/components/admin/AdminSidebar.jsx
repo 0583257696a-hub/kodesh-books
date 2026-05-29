@@ -24,20 +24,20 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
 
   return (
     <aside className={cn(
-      'fixed top-0 right-0 h-full bg-[#0f0f17] border-l border-white/5 flex flex-col z-40 transition-all duration-300',
+      'fixed top-0 right-0 h-full bg-secondary border-l border-border flex flex-col z-40 transition-all duration-300',
       collapsed ? 'w-16' : 'w-60'
     )}>
       {/* Logo */}
-      <div className={cn('flex items-center gap-3 px-4 h-16 border-b border-white/5', collapsed && 'justify-center px-2')}>
+      <div className={cn('flex items-center gap-3 px-4 h-16 border-b border-border', collapsed && 'justify-center px-2')}>
         {!collapsed && (
           <div>
             <p className="text-gold font-heading font-bold text-base leading-tight">אוצר הקדושה</p>
-            <p className="text-zinc-600 text-xs font-body">Admin Panel</p>
+            <p className="text-muted-foreground text-xs font-body">Admin Panel</p>
           </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="mr-auto p-1.5 rounded-lg hover:bg-white/5 text-zinc-500 hover:text-white transition-colors"
+          className="mr-auto p-1.5 rounded-lg hover:bg-accent/20 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
         </button>
@@ -54,8 +54,8 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
               className={cn(
                 'flex items-center gap-3 px-4 py-3 mx-2 rounded-xl mb-0.5 transition-all font-body text-sm',
                 active
-                  ? 'bg-gold/15 text-gold'
-                  : 'text-zinc-400 hover:bg-white/5 hover:text-white',
+                  ? 'bg-gold/20 text-gold'
+                  : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground',
                 collapsed && 'justify-center px-2'
               )}
               title={collapsed ? item.label : undefined}
@@ -69,11 +69,11 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-white/5">
+      <div className="p-3 border-t border-border">
         <button
           onClick={() => logout()}
           className={cn(
-            'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all font-body text-sm',
+            'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all font-body text-sm',
             collapsed && 'justify-center'
           )}
           title={collapsed ? 'התנתקות' : undefined}
