@@ -31,7 +31,7 @@ export function safeDate(value, fallbackOffset = 0) {
 }
 
 export function currency(value) {
-  return `ILS ${Math.round(money(value)).toLocaleString()}`;
+  return `₪${Math.round(money(value)).toLocaleString()}`;
 }
 
 export function buildLeads({ users = [], orders = [], products = [], leads = [], events = [] }) {
@@ -152,10 +152,10 @@ export function buildExpenseRows(storedExpenses = []) {
   if (storedExpenses.length) return storedExpenses;
 
   return [
-    { id: 'exp-1', date: subDays(new Date(), 3).toISOString(), category: 'Advertising', supplier: 'Meta Ads', amount: 1850, notes: 'Monthly acquisition campaigns' },
-    { id: 'exp-2', date: subDays(new Date(), 7).toISOString(), category: 'Software', supplier: 'Base44', amount: 420, notes: 'Platform subscription' },
-    { id: 'exp-3', date: subDays(new Date(), 11).toISOString(), category: 'Hosting', supplier: 'Vercel', amount: 260, notes: 'Frontend hosting' },
-    { id: 'exp-4', date: subDays(new Date(), 18).toISOString(), category: 'Office', supplier: 'Packing supplies', amount: 690, notes: 'Shipping material' },
+    { id: 'exp-1', date: subDays(new Date(), 3).toISOString(), category: 'פרסום', supplier: 'קמפיינים', amount: 1850, notes: 'קידום מכירות חודשי' },
+    { id: 'exp-2', date: subDays(new Date(), 7).toISOString(), category: 'תוכנה', supplier: 'Base44', amount: 420, notes: 'מערכת האתר' },
+    { id: 'exp-3', date: subDays(new Date(), 11).toISOString(), category: 'אחסון', supplier: 'Vercel', amount: 260, notes: 'אחסון האתר' },
+    { id: 'exp-4', date: subDays(new Date(), 18).toISOString(), category: 'משרד', supplier: 'אריזות למשלוחים', amount: 690, notes: 'ציוד אריזה' },
   ];
 }
 
@@ -209,17 +209,17 @@ export function buildAnalytics({ products = [], orders = [], users = [], events 
   return {
     productStats,
     funnel: [
-      { name: 'Visits', value: visits },
-      { name: 'Product View', value: productViews },
-      { name: 'Add To Cart', value: addToCart },
-      { name: 'Checkout', value: checkout },
-      { name: 'Purchase', value: purchases },
+      { name: 'ביקורים', value: visits },
+      { name: 'צפייה בספר', value: productViews },
+      { name: 'הוספה לעגלה', value: addToCart },
+      { name: 'מעבר לתשלום', value: checkout },
+      { name: 'רכישה', value: purchases },
     ],
     searchTerms: [
-      { term: 'gemara', searches: 42, noResults: 3 },
-      { term: 'siddur', searches: 31, noResults: 1 },
-      { term: 'chassidut', searches: 24, noResults: 5 },
-      { term: 'kids books', searches: 18, noResults: 2 },
+      { term: 'גמרא', searches: 42, noResults: 3 },
+      { term: 'סידור', searches: 31, noResults: 1 },
+      { term: 'חסידות', searches: 24, noResults: 5 },
+      { term: 'ספרי ילדים', searches: 18, noResults: 2 },
     ],
     customers: {
       new: users.filter((user) => isAfter(safeDate(user.created_date), subMonths(new Date(), 1))).length,

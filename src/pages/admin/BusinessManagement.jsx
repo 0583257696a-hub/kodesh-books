@@ -19,8 +19,8 @@ const q = async (entity, fallback = []) => {
   }
 };
 
-const incomeCategories = ['Subscription', 'Product Sale', 'Service', 'Other'];
-const expenseCategories = ['Advertising', 'Software', 'Domain', 'Hosting', 'Payroll', 'Office', 'Other'];
+const incomeCategories = ['מכירת מוצר', 'שירות', 'מנוי', 'אחר'];
+const expenseCategories = ['פרסום', 'תוכנה', 'דומיין', 'אחסון', 'שכר', 'משרד', 'אחר'];
 
 function Metric({ icon: Icon, label, value, tone = 'blue' }) {
   const tones = {
@@ -44,11 +44,11 @@ function Metric({ icon: Icon, label, value, tone = 'blue' }) {
 function EntryForm({ type, onAdd }) {
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
-    category: type === 'income' ? 'Product Sale' : 'Advertising',
+    category: type === 'income' ? 'מכירת מוצר' : 'פרסום',
     customer: '',
     supplier: '',
     amount: '',
-    payment_method: 'Card',
+    payment_method: 'אשראי',
     notes: '',
   });
 
@@ -68,14 +68,14 @@ function EntryForm({ type, onAdd }) {
         <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
         <SelectContent>{categories.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent>
       </Select>
-      <Input placeholder={type === 'income' ? 'Customer' : 'Supplier'} value={type === 'income' ? form.customer : form.supplier} onChange={(event) => setForm({ ...form, [type === 'income' ? 'customer' : 'supplier']: event.target.value })} className="bg-white" />
-      <Input type="number" placeholder="Amount" value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} className="bg-white" />
+      <Input placeholder={type === 'income' ? 'לקוח' : 'ספק'} value={type === 'income' ? form.customer : form.supplier} onChange={(event) => setForm({ ...form, [type === 'income' ? 'customer' : 'supplier']: event.target.value })} className="bg-white" />
+      <Input type="number" placeholder="סכום" value={form.amount} onChange={(event) => setForm({ ...form, amount: event.target.value })} className="bg-white" />
       {type === 'income' ? (
-        <Input placeholder="Payment method" value={form.payment_method} onChange={(event) => setForm({ ...form, payment_method: event.target.value })} className="bg-white" />
+        <Input placeholder="אמצעי תשלום" value={form.payment_method} onChange={(event) => setForm({ ...form, payment_method: event.target.value })} className="bg-white" />
       ) : (
-        <Textarea placeholder="Notes" value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} className="min-h-10 resize-none bg-white" />
+        <Textarea placeholder="הערות" value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} className="min-h-10 resize-none bg-white" />
       )}
-      <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700"><Plus className="mr-2 h-4 w-4" />Add</Button>
+      <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700"><Plus className="mr-2 h-4 w-4" />הוסף</Button>
     </form>
   );
 }
@@ -86,11 +86,11 @@ function LedgerTable({ rows, type }) {
       <table className="w-full text-sm">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            <th className="px-4 py-3 text-left">Date</th>
-            <th className="px-4 py-3 text-left">Category</th>
-            <th className="px-4 py-3 text-left">{type === 'income' ? 'Customer' : 'Supplier'}</th>
-            <th className="px-4 py-3 text-left">Amount</th>
-            <th className="px-4 py-3 text-left">Notes</th>
+            <th className="px-4 py-3 text-left">תאריך</th>
+            <th className="px-4 py-3 text-left">קטגוריה</th>
+            <th className="px-4 py-3 text-left">{type === 'income' ? 'לקוח' : 'ספק'}</th>
+            <th className="px-4 py-3 text-left">סכום</th>
+            <th className="px-4 py-3 text-left">הערות</th>
           </tr>
         </thead>
         <tbody>
@@ -141,27 +141,27 @@ export default function BusinessManagement() {
     <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Business Management</h1>
-          <p className="mt-1 text-sm text-slate-500">Finance, profitability, subscribers, abandoned carts, and operating ledger.</p>
+          <h1 className="text-3xl font-bold tracking-tight">ניהול החנות</h1>
+          <p className="mt-1 text-sm text-slate-500">ניהול הפעילות של אוצר הקדושה: הכנסות ממכירות, הוצאות, לקוחות, רווחיות ועגלות נטושות.</p>
         </div>
         <div className="rounded-lg bg-blue-600 px-4 py-3 text-white">
-          <p className="text-xs text-blue-100">Monthly Profit</p>
+          <p className="text-xs text-blue-100">רווח חודשי</p>
           <p className="text-2xl font-bold">{currency(kpis.monthlyProfit)}</p>
         </div>
       </div>
 
       <div className="mb-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Metric icon={TrendingUp} label="Monthly Revenue" value={currency(kpis.monthlyRevenue)} tone="green" />
-        <Metric icon={TrendingDown} label="Monthly Expenses" value={currency(kpis.monthlyExpenses)} tone="red" />
-        <Metric icon={Building2} label="Active Subscribers" value={kpis.activeSubscribers} />
-        <Metric icon={ReceiptText} label="Abandoned Carts" value={kpis.abandonedCarts} tone="slate" />
-        <Metric icon={CreditCard} label="Trial Users" value={kpis.trialUsers} />
-        <Metric icon={LineChart} label="Conversion Rate" value={`${kpis.conversionRate}%`} tone="green" />
+        <Metric icon={TrendingUp} label="הכנסות החודש" value={currency(kpis.monthlyRevenue)} tone="green" />
+        <Metric icon={TrendingDown} label="הוצאות החודש" value={currency(kpis.monthlyExpenses)} tone="red" />
+        <Metric icon={Building2} label="לקוחות פעילים" value={kpis.activeSubscribers} />
+        <Metric icon={ReceiptText} label="עגלות נטושות" value={kpis.abandonedCarts} tone="slate" />
+        <Metric icon={CreditCard} label="לקוחות בהרשמה" value={kpis.trialUsers} />
+        <Metric icon={LineChart} label="יחס המרה" value={`${kpis.conversionRate}%`} tone="green" />
       </div>
 
       <div className="mb-7 grid gap-5 lg:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">Revenue Chart</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">גרף הכנסות</h2>
           <ResponsiveContainer width="100%" height={240}>
             <AreaChart data={incomeChart}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -173,7 +173,7 @@ export default function BusinessManagement() {
           </ResponsiveContainer>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">Expense Chart</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">גרף הוצאות</h2>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={expenseChart}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -188,8 +188,8 @@ export default function BusinessManagement() {
 
       <Tabs defaultValue="income">
         <TabsList className="mb-5 bg-slate-100">
-          <TabsTrigger value="income">Income Tracking</TabsTrigger>
-          <TabsTrigger value="expenses">Expense Tracking</TabsTrigger>
+          <TabsTrigger value="income">מעקב הכנסות</TabsTrigger>
+          <TabsTrigger value="expenses">מעקב הוצאות</TabsTrigger>
         </TabsList>
         <TabsContent value="income">
           <EntryForm type="income" onAdd={(row) => setManualIncome((current) => [row, ...current])} />
@@ -203,4 +203,3 @@ export default function BusinessManagement() {
     </div>
   );
 }
-

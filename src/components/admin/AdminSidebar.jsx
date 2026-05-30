@@ -19,17 +19,17 @@ import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
 
 const NAV = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/secret-admin' },
-  { label: 'Products', icon: Package, path: '/secret-admin/products' },
-  { label: 'Categories', icon: FolderOpen, path: '/secret-admin/categories' },
-  { label: 'Orders', icon: ShoppingBag, path: '/secret-admin/orders' },
-  { label: 'Customers', icon: Users, path: '/secret-admin/customers' },
-  { label: 'Sales & Leads', icon: KanbanSquare, path: '/secret-admin/sales-leads' },
-  { label: 'Business', icon: BriefcaseBusiness, path: '/secret-admin/business' },
-  { label: 'Analytics', icon: BarChart3, path: '/secret-admin/analytics' },
-  { label: 'Coupons', icon: Ticket, path: '/secret-admin/coupons' },
-  { label: 'Content', icon: Megaphone, path: '/secret-admin/content' },
-  { label: 'Settings', icon: Settings, path: '/secret-admin/settings' },
+  { label: 'דשבורד', icon: LayoutDashboard, path: '/secret-admin' },
+  { label: 'מוצרים', icon: Package, path: '/secret-admin/products' },
+  { label: 'קטגוריות', icon: FolderOpen, path: '/secret-admin/categories' },
+  { label: 'הזמנות', icon: ShoppingBag, path: '/secret-admin/orders' },
+  { label: 'לקוחות', icon: Users, path: '/secret-admin/customers' },
+  { label: 'לקוחות ומכירות', icon: KanbanSquare, path: '/secret-admin/sales-leads' },
+  { label: 'ניהול החנות', icon: BriefcaseBusiness, path: '/secret-admin/business' },
+  { label: 'אנליטיקת ספרים', icon: BarChart3, path: '/secret-admin/analytics' },
+  { label: 'קופונים', icon: Ticket, path: '/secret-admin/coupons' },
+  { label: 'ניהול תוכן', icon: Megaphone, path: '/secret-admin/content' },
+  { label: 'הגדרות', icon: Settings, path: '/secret-admin/settings' },
 ];
 
 export default function AdminSidebar({ collapsed, setCollapsed }) {
@@ -45,7 +45,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
         {!collapsed && (
           <div>
             <p className="font-heading text-base font-bold leading-tight text-blue-700">אוצר הקדושה</p>
-            <p className="font-body text-xs text-slate-500">ABD Finance Center</p>
+            <p className="font-body text-xs text-slate-500">מרכז ניהול החנות</p>
           </div>
         )}
         <button
@@ -88,13 +88,12 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
             'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-rose-500 transition-all hover:bg-rose-50 hover:text-rose-700',
             collapsed && 'justify-center'
           )}
-          title={collapsed ? 'Logout' : undefined}
+          title={collapsed ? 'התנתקות' : undefined}
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />
-          {!collapsed && 'Logout'}
+          {!collapsed && 'התנתקות'}
         </button>
       </div>
     </aside>
   );
 }
-

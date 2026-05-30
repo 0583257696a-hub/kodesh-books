@@ -44,17 +44,39 @@ const badgeColor = {
   'Closed Sale': 'bg-green-50 text-green-700',
 };
 
+const statusLabel = {
+  'New Visitor': 'מבקר חדש',
+  Registered: 'נרשם',
+  'Added Product To Cart': 'הוסיף לעגלה',
+  'Checkout Started': 'התחיל תשלום',
+  'Payment Pending': 'ממתין לתשלום',
+  'Payment Completed': 'תשלום הושלם',
+  'Abandoned Cart': 'עגלה נטושה',
+  Contacted: 'נוצר קשר',
+  'Closed Sale': 'מכירה נסגרה',
+};
+
+const pipelineLabel = {
+  'New Lead': 'ליד חדש',
+  Registered: 'נרשם',
+  'Cart Created': 'נוצרה עגלה',
+  'Checkout Started': 'התחיל תשלום',
+  'Waiting For Payment': 'ממתין לתשלום',
+  Completed: 'הושלם',
+  Lost: 'אבד',
+};
+
 function LeadActions({ lead }) {
   return (
     <div className="flex items-center gap-2">
       <Button asChild size="icon" variant="outline" className="h-8 w-8 border-slate-200 text-slate-600">
-        <a href={`tel:${lead.phone}`} aria-label="Call customer"><Phone className="h-4 w-4" /></a>
+        <a href={`tel:${lead.phone}`} aria-label="התקשר ללקוח"><Phone className="h-4 w-4" /></a>
       </Button>
       <Button asChild size="icon" variant="outline" className="h-8 w-8 border-slate-200 text-emerald-600">
-        <a href={`https://wa.me/${lead.phone?.replace(/\D/g, '') || ''}`} target="_blank" rel="noreferrer" aria-label="Send WhatsApp"><MessageCircle className="h-4 w-4" /></a>
+        <a href={`https://wa.me/${lead.phone?.replace(/\D/g, '') || ''}`} target="_blank" rel="noreferrer" aria-label="שלח וואטסאפ"><MessageCircle className="h-4 w-4" /></a>
       </Button>
       <Button asChild size="icon" variant="outline" className="h-8 w-8 border-slate-200 text-blue-600">
-        <a href={`mailto:${lead.email}`} aria-label="Send email"><Mail className="h-4 w-4" /></a>
+        <a href={`mailto:${lead.email}`} aria-label="שלח אימייל"><Mail className="h-4 w-4" /></a>
       </Button>
     </div>
   );
@@ -66,7 +88,7 @@ function LeadTable({ leads, onStatusChange, onNoteChange }) {
       <table className="w-full min-w-[1050px] text-sm">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            {['Customer', 'Contact', 'Registration', 'Last Activity', 'Cart Value', 'Products', 'Status', 'Notes', 'Actions'].map((head) => (
+            {['לקוח', 'פרטי קשר', 'תאריך הרשמה', 'פעילות אחרונה', 'שווי עגלה', 'ספרים בעגלה', 'סטטוס', 'הערות', 'פעולות'].map((head) => (
               <th key={head} className="px-4 py-3 text-right font-semibold">{head}</th>
             ))}
           </tr>
@@ -76,11 +98,11 @@ function LeadTable({ leads, onStatusChange, onNoteChange }) {
             <tr key={lead.id} className="border-t border-slate-100 align-top hover:bg-slate-50/70">
               <td className="px-4 py-4">
                 <p className="font-semibold text-slate-950">{lead.full_name}</p>
-                <p className="text-xs text-slate-500">{lead.source}</p>
+                <p className="text-xs text-slate-500">{lead.source === 'user' ? 'לקוח רשום' : lead.source === 'order' ? 'מתוך הזמנה' : 'ליד'}</p>
               </td>
               <td className="px-4 py-4">
                 <p className="text-slate-700">{lead.email}</p>
-                <p className="text-xs text-slate-500">{lead.phone || 'No phone'}</p>
+                <p className="text-xs text-slate-500">{lead.phone || 'אין טלפון'}</p>
               </td>
               <td className="px-4 py-4 text-slate-600">{format(safeDate(lead.registration_date), 'dd/MM/yyyy')}</td>
               <td className="px-4 py-4 text-slate-600">{format(safeDate(lead.last_activity), 'dd/MM/yyyy HH:mm')}</td>
@@ -89,10 +111,10 @@ function LeadTable({ leads, onStatusChange, onNoteChange }) {
               <td className="px-4 py-4">
                 <Select value={lead.status} onValueChange={(value) => onStatusChange(lead.id, value)}>
                   <SelectTrigger className={`h-9 min-w-44 border-0 text-xs font-semibold ${badgeColor[lead.status] || badgeColor.Registered}`}>
-                    <SelectValue />
+                    <SelectValue>{statusLabel[lead.status]}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {LEAD_STATUSES.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
+                    {LEAD_STATUSES.map((status) => <SelectItem key={status} value={status}>{statusLabel[status]}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </td>
@@ -100,7 +122,7 @@ function LeadTable({ leads, onStatusChange, onNoteChange }) {
                 <Textarea
                   value={lead.notes || ''}
                   onChange={(event) => onNoteChange(lead.id, event.target.value)}
-                  placeholder="Add notes"
+                  placeholder="הוסף הערה"
                   className="min-h-9 w-48 resize-none border-slate-200 text-xs"
                 />
               </td>
@@ -131,7 +153,7 @@ function Pipeline({ leads, onMove }) {
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-800">{column}</h3>
+                  <h3 className="text-sm font-semibold text-slate-800">{pipelineLabel[column]}</h3>
                   <span className="rounded-full bg-white px-2 py-0.5 text-xs text-slate-500">{grouped[column].length}</span>
                 </div>
                 <div className="space-y-2">
@@ -204,35 +226,35 @@ export default function SalesLeads() {
     <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sales & Leads</h1>
-          <p className="mt-1 text-sm text-slate-500">Complete customer journey, abandoned cart tracking, pipeline, notes, and outreach actions.</p>
+          <h1 className="text-3xl font-bold tracking-tight">לקוחות ומכירות</h1>
+          <p className="mt-1 text-sm text-slate-500">מעקב מלא אחרי מסע הלקוח: הרשמה, עגלה, תשלום, עגלות נטושות ויצירת קשר.</p>
         </div>
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg bg-blue-50 px-4 py-3 text-blue-800"><p className="text-xs">Open Leads</p><p className="text-2xl font-bold">{filteredLeads.length}</p></div>
-          <div className="rounded-lg bg-rose-50 px-4 py-3 text-rose-800"><p className="text-xs">Abandoned</p><p className="text-2xl font-bold">{abandoned.length}</p></div>
-          <div className="rounded-lg bg-emerald-50 px-4 py-3 text-emerald-800"><p className="text-xs">Closed</p><p className="text-2xl font-bold">{filteredLeads.filter((lead) => lead.status === 'Closed Sale').length}</p></div>
+          <div className="rounded-lg bg-blue-50 px-4 py-3 text-blue-800"><p className="text-xs">לידים פתוחים</p><p className="text-2xl font-bold">{filteredLeads.length}</p></div>
+          <div className="rounded-lg bg-rose-50 px-4 py-3 text-rose-800"><p className="text-xs">עגלות נטושות</p><p className="text-2xl font-bold">{abandoned.length}</p></div>
+          <div className="rounded-lg bg-emerald-50 px-4 py-3 text-emerald-800"><p className="text-xs">מכירות שנסגרו</p><p className="text-2xl font-bold">{filteredLeads.filter((lead) => lead.status === 'Closed Sale').length}</p></div>
         </div>
       </div>
 
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search leads" className="border-slate-200 pl-9" />
+          <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="חיפוש לקוחות" className="border-slate-200 pl-9" />
         </div>
       </div>
 
       <Tabs defaultValue="leads">
         <TabsList className="mb-5 bg-slate-100">
-          <TabsTrigger value="leads">Lead Management</TabsTrigger>
-          <TabsTrigger value="abandoned">Abandoned Carts</TabsTrigger>
-          <TabsTrigger value="pipeline">Sales Pipeline</TabsTrigger>
+          <TabsTrigger value="leads">ניהול לידים</TabsTrigger>
+          <TabsTrigger value="abandoned">עגלות נטושות</TabsTrigger>
+          <TabsTrigger value="pipeline">משפך מכירות</TabsTrigger>
         </TabsList>
         <TabsContent value="leads">
           <LeadTable leads={filteredLeads} onStatusChange={updateStatus} onNoteChange={updateNote} />
         </TabsContent>
         <TabsContent value="abandoned">
           <div className="mb-4 flex gap-2">
-            {[['today', 'Today'], ['week', 'This Week'], ['month', 'This Month']].map(([value, label]) => (
+            {[['today', 'היום'], ['week', 'השבוע'], ['month', 'החודש']].map(([value, label]) => (
               <Button key={value} variant={range === value ? 'default' : 'outline'} onClick={() => setRange(value)} className={range === value ? 'bg-blue-600 text-white hover:bg-blue-700' : 'border-slate-200'}>
                 {label}
               </Button>
@@ -246,11 +268,10 @@ export default function SalesLeads() {
           </div>
           <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
             <UserRoundCheck className="mb-2 h-5 w-5" />
-            Future-ready connectors: WhatsApp, email campaigns, SMS, payment gateways, and accounting systems can subscribe to lead status changes from this module.
+            מוכן להרחבות עתידיות: וואטסאפ, קמפיינים במייל, SMS, שערי תשלום ומערכות הנהלת חשבונות יוכלו להתחבר לשינויי סטטוס של לקוחות.
           </div>
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-

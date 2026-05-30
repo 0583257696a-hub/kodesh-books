@@ -80,29 +80,29 @@ export default function Dashboard() {
     <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">ABD-finance style command center for sales, operations, and ecommerce performance.</p>
+          <h1 className="text-3xl font-bold tracking-tight">דשבורד אוצר הקדושה</h1>
+          <p className="mt-1 text-sm text-slate-500">מרכז ניהול לחנות הספרים: הזמנות, לקוחות, עגלות נטושות וביצועי מכירה.</p>
         </div>
         <div className="flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
           <Bell className="h-4 w-4" />
-          <span className="text-sm font-semibold">{pendingPayments.length + kpis.abandonedCarts} active alerts</span>
+          <span className="text-sm font-semibold">{pendingPayments.length + kpis.abandonedCarts} התראות פעילות</span>
         </div>
       </div>
 
       <div className="mb-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard icon={TrendingUp} label="Revenue" value={currency(kpis.monthlyRevenue)} sub={`${monthlyOrders.length} orders this month`} tone="green" />
-        <StatCard icon={ShoppingBag} label="Orders" value={orders.length} sub={`${pendingPayments.length} pending payments`} tone="blue" />
-        <StatCard icon={Users} label="New Customers" value={analytics.customers.new} sub={`${users.length} total customers`} tone="slate" />
-        <StatCard icon={AlertCircle} label="Abandoned Carts" value={kpis.abandonedCarts} sub={`${kpis.conversionRate}% lead conversion`} tone="rose" />
-        <StatCard icon={CheckCircle2} label="Conversion Rate" value={`${Math.round((analytics.funnel.at(-1).value / Math.max(analytics.funnel[0].value, 1)) * 100)}%`} tone="green" />
-        <StatCard icon={Package} label="Best Selling Book" value={bestSeller?.name || 'No data'} sub={`${bestSeller?.purchases || 0} purchases`} tone="amber" />
-        <StatCard icon={Users} label="New Leads" value={leads.filter((lead) => ['New Visitor', 'Registered'].includes(lead.status)).length} tone="blue" />
-        <StatCard icon={ShoppingBag} label="New Registrations" value={users.filter((user) => safeDate(user.created_date) >= monthStart).length} tone="slate" />
+        <StatCard icon={TrendingUp} label="הכנסות החודש" value={currency(kpis.monthlyRevenue)} sub={`${monthlyOrders.length} הזמנות החודש`} tone="green" />
+        <StatCard icon={ShoppingBag} label="הזמנות" value={orders.length} sub={`${pendingPayments.length} ממתינות לתשלום`} tone="blue" />
+        <StatCard icon={Users} label="לקוחות חדשים" value={analytics.customers.new} sub={`${users.length} לקוחות סה״כ`} tone="slate" />
+        <StatCard icon={AlertCircle} label="עגלות נטושות" value={kpis.abandonedCarts} sub={`${kpis.conversionRate}% המרת לידים`} tone="rose" />
+        <StatCard icon={CheckCircle2} label="יחס המרה" value={`${Math.round((analytics.funnel.at(-1).value / Math.max(analytics.funnel[0].value, 1)) * 100)}%`} tone="green" />
+        <StatCard icon={Package} label="הספר הנמכר ביותר" value={bestSeller?.name || 'אין נתונים'} sub={`${bestSeller?.purchases || 0} רכישות`} tone="amber" />
+        <StatCard icon={Users} label="לידים חדשים" value={leads.filter((lead) => ['New Visitor', 'Registered'].includes(lead.status)).length} tone="blue" />
+        <StatCard icon={ShoppingBag} label="הרשמות חדשות" value={users.filter((user) => safeDate(user.created_date) >= monthStart).length} tone="slate" />
       </div>
 
       <div className="mb-7 grid gap-5 xl:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">Revenue Chart</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">גרף הכנסות</h2>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={revenueChart}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -115,7 +115,7 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">Expense Chart</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">גרף הוצאות החנות</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={expenseChart}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -130,13 +130,13 @@ export default function Dashboard() {
 
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">Top Selling Products</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">ספרים נמכרים ביותר</h2>
           <div className="space-y-3">
             {topProducts.map((product) => (
               <div key={product.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-3">
                 <div>
                   <p className="font-semibold text-slate-900">{product.name}</p>
-                  <p className="text-xs text-slate-500">{product.purchases} purchases</p>
+                  <p className="text-xs text-slate-500">{product.purchases} רכישות</p>
                 </div>
                 <p className="font-bold text-blue-700">{currency(product.revenue)}</p>
               </div>
@@ -145,38 +145,37 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">Pending Payments</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">תשלומים ממתינים</h2>
           <div className="space-y-3">
             {pendingPayments.slice(0, 6).map((order) => (
               <div key={order.id} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-3">
                 <div>
-                  <p className="font-semibold text-slate-900">{order.customer_name || 'Customer'}</p>
+                  <p className="font-semibold text-slate-900">{order.customer_name || 'לקוח'}</p>
                   <p className="text-xs text-amber-700">{order.customer_phone || order.customer_email}</p>
                 </div>
                 <p className="font-bold text-amber-700">{currency(order.total)}</p>
               </div>
             ))}
-            {!pendingPayments.length && <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No pending payments.</p>}
+            {!pendingPayments.length && <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">אין תשלומים ממתינים.</p>}
           </div>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">Recent Orders</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">הזמנות אחרונות</h2>
           <div className="space-y-3">
             {recentOrders.map((order) => (
               <div key={order.id} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-0">
                 <div>
-                  <p className="font-semibold text-slate-900">{order.customer_name || 'Customer'}</p>
+                  <p className="font-semibold text-slate-900">{order.customer_name || 'לקוח'}</p>
                   <p className="text-xs text-slate-500">{format(safeDate(order.created_date), 'dd/MM/yyyy')}</p>
                 </div>
                 <p className="font-bold text-slate-950">{currency(order.total)}</p>
               </div>
             ))}
-            {!recentOrders.length && <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No orders yet.</p>}
+            {!recentOrders.length && <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">אין הזמנות עדיין.</p>}
           </div>
         </div>
       </div>
     </div>
   );
 }
-

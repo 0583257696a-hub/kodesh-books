@@ -33,7 +33,7 @@ function BookTable({ rows }) {
       <table className="w-full text-sm">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            {['Book', 'Views', 'Cart Adds', 'Purchases', 'Revenue', 'Conversion'].map((head) => (
+            {['ספר', 'צפיות', 'הוספות לעגלה', 'רכישות', 'הכנסה', 'המרה'].map((head) => (
               <th key={head} className="px-4 py-3 text-left font-semibold">{head}</th>
             ))}
           </tr>
@@ -81,22 +81,22 @@ export default function EcommerceAnalytics() {
   return (
     <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
       <div className="mb-7">
-        <h1 className="text-3xl font-bold tracking-tight">Advanced Ecommerce Analytics</h1>
-        <p className="mt-1 text-sm text-slate-500">Book views, cart adds, purchases, search intelligence, recommendations, customer behavior, and funnel conversion.</p>
+        <h1 className="text-3xl font-bold tracking-tight">אנליטיקת ספרים ומכירות</h1>
+        <p className="mt-1 text-sm text-slate-500">צפיות בספרים, הוספות לעגלה, רכישות, חיפושים, המלצות, התנהגות לקוחות ומשפך מכירה.</p>
       </div>
 
       <div className="mb-7 grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        <Kpi icon={TrendingUp} label="Revenue" value={currency(revenue)} />
-        <Kpi icon={ShoppingCart} label="Orders" value={purchasedOrders.length} />
-        <Kpi icon={Users} label="New Customers" value={analytics.customers.new} />
-        <Kpi icon={Target} label="Conversion Rate" value={`${conversion}%`} />
-        <Kpi icon={Activity} label="Abandoned Carts" value={Math.max(0, analytics.funnel[2].value - analytics.funnel[4].value)} />
-        <Kpi icon={ShoppingCart} label="Best Selling Book" value={bestSeller?.name || 'No data'} sub={`${bestSeller?.purchases || 0} purchases`} />
+        <Kpi icon={TrendingUp} label="הכנסות" value={currency(revenue)} />
+        <Kpi icon={ShoppingCart} label="הזמנות" value={purchasedOrders.length} />
+        <Kpi icon={Users} label="לקוחות חדשים" value={analytics.customers.new} />
+        <Kpi icon={Target} label="יחס המרה" value={`${conversion}%`} />
+        <Kpi icon={Activity} label="עגלות נטושות" value={Math.max(0, analytics.funnel[2].value - analytics.funnel[4].value)} />
+        <Kpi icon={ShoppingCart} label="הספר הנמכר ביותר" value={bestSeller?.name || 'אין נתונים'} sub={`${bestSeller?.purchases || 0} רכישות`} />
       </div>
 
       <div className="mb-7 grid gap-5 xl:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold">Sales Funnel</h2>
+          <h2 className="mb-4 font-semibold">משפך מכירה</h2>
           <ResponsiveContainer width="100%" height={280}>
             <FunnelChart>
               <Tooltip />
@@ -108,7 +108,7 @@ export default function EcommerceAnalytics() {
           </ResponsiveContainer>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold">Most Viewed Books</h2>
+          <h2 className="mb-4 font-semibold">הספרים הנצפים ביותר</h2>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={topViewed} layout="vertical" margin={{ left: 30 }}>
               <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -123,17 +123,17 @@ export default function EcommerceAnalytics() {
 
       <div className="mb-7 grid gap-5 xl:grid-cols-3">
         <div className="rounded-lg border border-slate-200 bg-white p-5 xl:col-span-2">
-          <h2 className="mb-4 font-semibold">Book Analytics</h2>
+          <h2 className="mb-4 font-semibold">ניתוח לפי ספר</h2>
           <BookTable rows={productStats} />
         </div>
         <div className="space-y-5">
           <div className="rounded-lg border border-slate-200 bg-white p-5">
-            <h2 className="mb-4 font-semibold">Customer Analytics</h2>
+            <h2 className="mb-4 font-semibold">ניתוח לקוחות</h2>
             <ResponsiveContainer width="100%" height={210}>
               <LineChart data={[
-                { name: 'New', value: analytics.customers.new },
-                { name: 'Returning', value: analytics.customers.returning },
-                { name: 'Inactive', value: analytics.customers.inactive },
+                { name: 'חדשים', value: analytics.customers.new },
+                { name: 'חוזרים', value: analytics.customers.returning },
+                { name: 'לא פעילים', value: analytics.customers.inactive },
               ]}>
                 <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -144,13 +144,13 @@ export default function EcommerceAnalytics() {
             </ResponsiveContainer>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-5">
-            <h2 className="mb-4 flex items-center gap-2 font-semibold"><Search className="h-4 w-4 text-blue-600" />Search Analytics</h2>
+            <h2 className="mb-4 flex items-center gap-2 font-semibold"><Search className="h-4 w-4 text-blue-600" />ניתוח חיפושים</h2>
             <div className="space-y-3">
               {analytics.searchTerms.map((term) => (
                 <div key={term.term} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
                   <div>
                     <p className="font-semibold text-slate-800">{term.term}</p>
-                    <p className="text-xs text-slate-500">{term.noResults} no-result searches</p>
+                    <p className="text-xs text-slate-500">{term.noResults} חיפושים ללא תוצאות</p>
                   </div>
                   <span className="text-sm font-bold text-blue-700">{term.searches}</span>
                 </div>
@@ -162,20 +162,20 @@ export default function EcommerceAnalytics() {
 
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold">Highest Conversion Books</h2>
+          <h2 className="mb-4 font-semibold">ספרים עם ההמרה הגבוהה ביותר</h2>
           <BookTable rows={highestConversion} />
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold">Lowest Conversion Books</h2>
+          <h2 className="mb-4 font-semibold">ספרים עם ההמרה הנמוכה ביותר</h2>
           <BookTable rows={lowestConversion} />
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold">Recommendation Analytics</h2>
+          <h2 className="mb-4 font-semibold">ניתוח המלצות</h2>
           <div className="space-y-3 text-sm">
             {productStats.slice(0, 5).map((book, index) => (
               <div key={book.id} className="rounded-lg bg-slate-50 p-3">
-                <p className="font-semibold text-slate-950">Customers who bought {book.name} also bought:</p>
-                <p className="mt-1 text-slate-500">{productStats[(index + 1) % productStats.length]?.name || 'Related book'}, {productStats[(index + 2) % productStats.length]?.name || 'Companion book'}</p>
+                <p className="font-semibold text-slate-950">לקוחות שקנו את {book.name} קנו גם:</p>
+                <p className="mt-1 text-slate-500">{productStats[(index + 1) % productStats.length]?.name || 'ספר קשור'}, {productStats[(index + 2) % productStats.length]?.name || 'ספר משלים'}</p>
               </div>
             ))}
           </div>
@@ -184,4 +184,3 @@ export default function EcommerceAnalytics() {
     </div>
   );
 }
-
