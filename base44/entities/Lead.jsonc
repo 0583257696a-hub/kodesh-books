@@ -1,0 +1,39 @@
+{
+  "name": "Lead",
+  "type": "object",
+  "properties": {
+    "full_name": { "type": "string" },
+    "email": { "type": "string" },
+    "phone": { "type": "string" },
+    "registration_date": { "type": "string" },
+    "last_activity": { "type": "string" },
+    "cart_value": { "type": "number", "default": 0 },
+    "products_in_cart": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "New Visitor",
+        "Registered",
+        "Added Product To Cart",
+        "Checkout Started",
+        "Payment Pending",
+        "Payment Completed",
+        "Abandoned Cart",
+        "Contacted",
+        "Closed Sale"
+      ],
+      "default": "New Visitor"
+    },
+    "notes": { "type": "string" }
+  },
+  "required": ["full_name", "status"],
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "AnalyticsEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": ["visit", "product_view", "cart_add", "checkout_start", "purchase", "search"]
+    },
+    "product_id": { "type": "string" },
+    "product_name": { "type": "string" },
+    "customer_email": { "type": "string" },
+    "value": { "type": "number", "default": 0 },
+    "metadata": { "type": "object" }
+  },
+  "required": ["event_type"],
+  "rls": {
+    "create": {},
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

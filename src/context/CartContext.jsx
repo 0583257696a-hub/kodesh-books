@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 
 const CartContext = createContext();
 
@@ -13,6 +14,13 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = (product) => {
+    trackEcommerceEvent({
+      event_type: 'cart_add',
+      product_id: product.id,
+      product_name: product.name,
+      value: product.sale_price || product.price || 0,
+    });
+
     setItems(prev => {
       const existing = prev.find(i => i.product_id === product.id);
       if (existing) {

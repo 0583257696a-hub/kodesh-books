@@ -9,7 +9,7 @@ export default function AdminLayout() {
 
   return (
     <AdminGuard>
-      <div className="min-h-screen bg-background text-foreground" dir="rtl">
+      <div className="min-h-screen bg-white text-slate-950" dir="rtl">
         <AdminSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         <main className={cn(
           'transition-all duration-300 min-h-screen',

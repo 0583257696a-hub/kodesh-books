@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import ProductCard from '@/components/shared/ProductCard';
@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { CATEGORIES, CATEGORY_MAP } from '@/lib/categories';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 
 export default function Catalog() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -50,6 +51,22 @@ export default function Catalog() {
 
     return result;
   }, [allProducts, selectedCategory, searchQuery, sortBy, isSale]);
+
+  useEffect(() => {
+    if (!searchQuery.trim() || isLoading) return;
+    const timer = window.setTimeout(() => {
+      trackEcommerceEvent({
+        event_type: 'search',
+        metadata: {
+          term: searchQuery.trim(),
+          results: filteredProducts.length,
+          no_results: filteredProducts.length === 0,
+        },
+      });
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [filteredProducts.length, isLoading, searchQuery]);
 
   const FilterSidebar = () => (
     <div className="space-y-6">

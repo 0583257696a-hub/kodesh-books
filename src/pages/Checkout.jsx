@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
@@ -26,10 +27,25 @@ export default function Checkout() {
       total,
       status: 'pending',
     });
+    await trackEcommerceEvent({
+      event_type: 'purchase',
+      customer_email: form.customer_email,
+      value: total,
+      metadata: { item_count: items.length, status: 'pending' },
+    });
     clearCart();
     setOrderPlaced(true);
     setIsSubmitting(false);
   };
+
+  React.useEffect(() => {
+    if (!items.length) return;
+    trackEcommerceEvent({
+      event_type: 'checkout_start',
+      value: total,
+      metadata: { item_count: items.length },
+    });
+  }, []);
 
   if (orderPlaced) {
     return (

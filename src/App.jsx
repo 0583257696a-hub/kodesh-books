@@ -28,6 +28,9 @@ import AdminCoupons from '@/pages/admin/AdminCoupons';
 import AdminCategories from '@/pages/admin/AdminCategories';
 import AdminContent from '@/pages/admin/AdminContent';
 import AdminSettings from '@/pages/admin/AdminSettings';
+import SalesLeads from '@/pages/admin/SalesLeads';
+import BusinessManagement from '@/pages/admin/BusinessManagement';
+import EcommerceAnalytics from '@/pages/admin/EcommerceAnalytics';
 
 // Public store pages
 import AppLayout from '@/components/layout/AppLayout';
@@ -79,6 +82,9 @@ const AuthenticatedApp = () => {
         <Route path="products" element={<AdminProducts />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
+        <Route path="sales-leads" element={<SalesLeads />} />
+        <Route path="business" element={<BusinessManagement />} />
+        <Route path="analytics" element={<EcommerceAnalytics />} />
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="content" element={<AdminContent />} />

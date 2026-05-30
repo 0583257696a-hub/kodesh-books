@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { ShoppingCart, BookOpen, ArrowRight, Minus, Plus } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { CATEGORY_MAP } from '@/lib/categories';
 import { Skeleton } from '@/components/ui/skeleton';
+import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 
 export default function ProductDetail() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -23,6 +24,16 @@ export default function ProductDetail() {
     },
     enabled: !!productId,
   });
+
+  useEffect(() => {
+    if (!product) return;
+    trackEcommerceEvent({
+      event_type: 'product_view',
+      product_id: product.id,
+      product_name: product.name,
+      value: product.sale_price || product.price || 0,
+    });
+  }, [product]);
 
   if (isLoading) {
     return (
