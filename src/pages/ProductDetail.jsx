@@ -10,6 +10,7 @@ import { CATEGORY_MAP } from '@/lib/categories';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
+import AlsoBought from '@/components/product/AlsoBought';
 
 export default function ProductDetail() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -188,6 +189,9 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Also Bought */}
+      <AlsoBought currentProductId={product.id} category={product.category} />
 
       {/* Back */}
       <div className="max-w-5xl mx-auto px-4 py-8">
