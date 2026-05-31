@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { CATEGORY_MAP } from '@/lib/categories';
 
 const VISIBLE = 4; // items visible on desktop
-const INTERVAL = 4000; // 4 seconds
+const INTERVAL = 3500; // 3.5 seconds
 
 export default function AlsoBought({ currentProductId, category }) {
   const { addItem } = useCart();
