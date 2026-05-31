@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import CookieConsent from './CookieConsent';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function AppLayout() {
@@ -32,6 +33,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
       <Footer />
+      <CookieConsent />
     </div>
   );
 }
