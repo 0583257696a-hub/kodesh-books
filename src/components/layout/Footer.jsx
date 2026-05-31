@@ -100,6 +100,8 @@ export default function Footer() {
             <span>מדיניות פרטיות</span>
             <span className="text-gold">•</span>
             <span>מדיניות משלוחים</span>
+            <span className="text-gold">•</span>
+            <Link to="/accessibility" className="transition-colors hover:text-gold">הצהרת נגישות</Link>
           </div>
         </div>
       </div>

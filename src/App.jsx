@@ -40,6 +40,7 @@ import ProductDetail from '@/pages/ProductDetail';
 import Cart from '@/pages/Cart';
 import Checkout from '@/pages/Checkout';
 import Contact from '@/pages/Contact';
+import AccessibilityStatement from '@/pages/AccessibilityStatement';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -99,6 +100,7 @@ const AuthenticatedApp = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/accessibility" element={<AccessibilityStatement />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />
