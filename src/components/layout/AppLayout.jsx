@@ -9,7 +9,7 @@ export default function AppLayout() {
   const location = useLocation();
 
   useEffect(() => {
-    if (['/accessibility', '/terms'].includes(location.pathname)) return;
+    if (['/accessibility', '/terms', '/privacy', '/shipping-returns'].includes(location.pathname)) return;
 
     document.title = settings.seo_title || settings.store_name;
 

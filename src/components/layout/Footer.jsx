@@ -94,14 +94,16 @@ export default function Footer() {
       <div className="border-t border-gold/20 py-6">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-cream/50 text-xs font-body">© {new Date().getFullYear()} {settings.store_name}. כל הזכויות שמורות.</p>
-          <div className="flex items-center gap-2 text-xs text-cream/50 font-body">
-            <Link to="/terms" className="transition-colors hover:text-gold">תנאי שימוש</Link>
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-cream/50 font-body md:justify-start">
+            <Link to="/terms" className="transition-colors hover:text-gold">תקנון ותנאי שימוש</Link>
             <span className="text-gold">•</span>
-            <span>מדיניות פרטיות</span>
+            <Link to="/privacy" className="transition-colors hover:text-gold">מדיניות פרטיות</Link>
             <span className="text-gold">•</span>
-            <span>מדיניות משלוחים</span>
+            <Link to="/shipping-returns" className="transition-colors hover:text-gold">משלוחים והחזרות</Link>
             <span className="text-gold">•</span>
             <Link to="/accessibility" className="transition-colors hover:text-gold">הצהרת נגישות</Link>
+            <span className="text-gold">•</span>
+            <Link to="/contact" className="transition-colors hover:text-gold">צור קשר</Link>
           </div>
         </div>
       </div>

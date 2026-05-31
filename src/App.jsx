@@ -42,6 +42,8 @@ import Checkout from '@/pages/Checkout';
 import Contact from '@/pages/Contact';
 import AccessibilityStatement from '@/pages/AccessibilityStatement';
 import TermsOfUse from '@/pages/TermsOfUse';
+import ShippingReturns from '@/pages/ShippingReturns';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -103,6 +105,8 @@ const AuthenticatedApp = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/accessibility" element={<AccessibilityStatement />} />
         <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/shipping-returns" element={<ShippingReturns />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

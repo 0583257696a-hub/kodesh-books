@@ -125,13 +125,34 @@ export default function TermsOfUse() {
   return (
     <div className="min-h-screen bg-cream" dir="rtl">
       <div className="bg-walnut px-4 py-12 text-center">
-        <h1 className="font-heading text-3xl font-bold text-cream md:text-4xl">תנאי שימוש באתר אוצר הקדושה</h1>
+        <h1 className="font-heading text-3xl font-bold text-cream md:text-4xl">תקנון ותנאי שימוש</h1>
         <p className="mt-3 font-body text-sm text-cream/70">תאריך עדכון אחרון: 31/05/2026</p>
         <div className="mx-auto mt-4 h-0.5 w-16 bg-gold" />
       </div>
 
-      <main className="mx-auto max-w-4xl px-4 py-12">
-        <article className="rounded-xl border border-gold/10 bg-white p-6 shadow-sm md:p-10">
+      <main className="mx-auto max-w-5xl px-4 py-12">
+        <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
+          <aside className="hidden lg:block">
+            <nav className="sticky top-32 rounded-xl border border-gold/10 bg-white p-4 shadow-sm" aria-label="ניווט בעמוד">
+              <h2 className="mb-3 font-heading text-lg font-bold text-walnut">תוכן העניינים</h2>
+              <ul className="space-y-2 font-body text-sm">
+                {sections.map((section) => (
+                  <li key={section.title}>
+                    <a href={`#${section.title}`} className="text-muted-foreground transition-colors hover:text-gold">
+                      {section.title}
+                    </a>
+                  </li>
+                ))}
+                <li>
+                  <a href="#contact-terms" className="text-muted-foreground transition-colors hover:text-gold">
+                    16. שירות לקוחות ויצירת קשר
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </aside>
+
+          <article className="rounded-xl border border-gold/10 bg-white p-6 shadow-sm md:p-10 print:border-0 print:shadow-none">
           <div className="space-y-4 font-body text-base leading-8 text-foreground">
             <p>ברוכים הבאים לאתר "אוצר הקדושה – הכל לבית היהודי" (להלן: "האתר").</p>
             <p>האתר מופעל ומנוהל על ידי אוצר הקדושה (להלן: "החנות" או "מפעיל האתר").</p>
@@ -144,7 +165,7 @@ export default function TermsOfUse() {
 
           <div className="mt-10 space-y-10">
             {sections.map((section) => (
-              <section key={section.title} className="border-t border-gold/10 pt-8">
+              <section key={section.title} id={section.title} className="scroll-mt-28 border-t border-gold/10 pt-8">
                 <h2 className="font-heading text-2xl font-bold text-walnut">{section.title}</h2>
                 <div className="mt-4 space-y-3 font-body text-base leading-8 text-foreground">
                   {section.body.map((paragraph) => (
@@ -171,7 +192,7 @@ export default function TermsOfUse() {
             ))}
           </div>
 
-          <section className="mt-10 border-t border-gold/10 pt-8">
+          <section id="contact-terms" className="mt-10 scroll-mt-28 border-t border-gold/10 pt-8">
             <h2 className="font-heading text-2xl font-bold text-walnut">16. שירות לקוחות ויצירת קשר</h2>
             <div className="mt-4 space-y-3 font-body text-base leading-8 text-foreground">
               <p>לשאלות, בירורים או פניות ניתן ליצור קשר:</p>
@@ -180,7 +201,8 @@ export default function TermsOfUse() {
               <p>איש קשר: שניאור דהן</p>
             </div>
           </section>
-        </article>
+          </article>
+        </div>
       </main>
     </div>
   );
