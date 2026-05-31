@@ -28,6 +28,9 @@ const EMPTY_USER = {
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const [values, setValues] = useState({});
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [savingKey, setSavingKey] = useState('');
+  const [settingsMessage, setSettingsMessage] = useState('');
   const [newUser, setNewUser] = useState({ ...EMPTY_USER });
   const [creatingUser, setCreatingUser] = useState(false);
   const [userMessage, setUserMessage] = useState('');
@@ -44,25 +47,36 @@ export default function AdminSettings() {
   });
 
   useEffect(() => {
+    if (settingsLoaded || settings.length === 0) return;
     const map = {};
     settings.forEach((setting) => {
       map[setting.key] = setting.value;
     });
     setValues(map);
-  }, [settings]);
+    setSettingsLoaded(true);
+  }, [settings, settingsLoaded]);
 
   const saveSetting = async (key) => {
-    const existing = settings.find((setting) => setting.key === key);
-    if (existing) {
-      await base44.entities.SiteSettings.update(existing.id, { value: values[key] || '' });
-    } else {
-      await base44.entities.SiteSettings.create({
-        key,
-        value: values[key] || '',
-        label: FIELDS.find((field) => field.key === key)?.label || key,
-      });
+    setSavingKey(key);
+    setSettingsMessage('');
+    try {
+      const existing = settings.find((setting) => setting.key === key);
+      if (existing) {
+        await base44.entities.SiteSettings.update(existing.id, { value: values[key] || '' });
+      } else {
+        await base44.entities.SiteSettings.create({
+          key,
+          value: values[key] || '',
+          label: FIELDS.find((field) => field.key === key)?.label || key,
+        });
+      }
+      setSettingsMessage('ההגדרה נשמרה בהצלחה.');
+      await queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+    } catch (error) {
+      setSettingsMessage(error.message || 'שמירת ההגדרה נכשלה.');
+    } finally {
+      setSavingKey('');
     }
-    queryClient.invalidateQueries({ queryKey: ['site-settings'] });
   };
 
   const handleCreateUser = async (event) => {
@@ -245,6 +259,7 @@ export default function AdminSettings() {
 
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-6 font-bold text-slate-950">הגדרות חנות</h2>
+        {settingsMessage && <p className="mb-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">{settingsMessage}</p>}
         <div className="grid gap-5 sm:grid-cols-2">
           {FIELDS.map((field) => (
             <div key={field.key} className="space-y-1.5">
@@ -256,8 +271,14 @@ export default function AdminSettings() {
                   placeholder={field.placeholder}
                   className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
                 />
-                <Button onClick={() => saveSetting(field.key)} variant="outline" className="h-10 border-slate-200 px-3 text-xs text-slate-700 hover:bg-slate-50">
-                  שמור
+                <Button
+                  type="button"
+                  onClick={() => saveSetting(field.key)}
+                  disabled={savingKey === field.key}
+                  variant="outline"
+                  className="h-10 border-slate-200 px-3 text-xs text-slate-700 hover:bg-slate-50"
+                >
+                  {savingKey === field.key ? <Loader2 className="h-4 w-4 animate-spin" /> : 'שמור'}
                 </Button>
               </div>
             </div>
