@@ -15,11 +15,11 @@ export default function Cart() {
           <ShoppingCart className="h-20 w-20 text-gold/30 mx-auto mb-6" />
           <h1 className="font-heading text-3xl font-bold text-foreground mb-3">העגלה ריקה</h1>
           <p className="font-body text-muted-foreground mb-8">לא הוספת מוצרים עדיין</p>
-          <Link to="/catalog">
-            <Button className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">
+          <Button asChild className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">
+            <Link to="/catalog">
               לקטלוג הספרים
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     );
@@ -67,19 +67,19 @@ export default function Cart() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center border border-gold/20 rounded-lg overflow-hidden">
-                        <button onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="p-2 hover:bg-secondary transition-colors">
-                          <Minus className="h-3 w-3" />
+                        <button onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="p-2 hover:bg-secondary transition-colors" aria-label={`הפחת כמות עבור ${item.product_name}`}>
+                          <Minus className="h-3 w-3" aria-hidden="true" />
                         </button>
-                        <span className="px-4 font-body font-bold text-sm">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="p-2 hover:bg-secondary transition-colors">
-                          <Plus className="h-3 w-3" />
+                        <span className="px-4 font-body font-bold text-sm" aria-live="polite">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="p-2 hover:bg-secondary transition-colors" aria-label={`הוסף כמות עבור ${item.product_name}`}>
+                          <Plus className="h-3 w-3" aria-hidden="true" />
                         </button>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <span className="font-heading font-bold">₪{(item.price * item.quantity).toFixed(2)}</span>
-                        <button onClick={() => removeItem(item.product_id)} className="text-destructive hover:text-destructive/80 transition-colors">
-                          <Trash2 className="h-4 w-4" />
+                        <button onClick={() => removeItem(item.product_id)} className="text-destructive hover:text-destructive/80 transition-colors" aria-label={`הסר את ${item.product_name} מהעגלה`}>
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -108,17 +108,17 @@ export default function Cart() {
               </div>
             </div>
 
-            <Link to="/checkout">
-              <Button className="w-full mt-6 bg-gold text-walnut hover:bg-gold/90 font-body py-5 text-base rounded-lg animate-gold-pulse">
+            <Button asChild className="w-full mt-6 bg-gold text-walnut hover:bg-gold/90 font-body py-5 text-base rounded-lg animate-gold-pulse">
+              <Link to="/checkout">
                 מעבר לתשלום
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <a href={`https://wa.me/972501234567?text=שלום, אני רוצה להזמין: ${items.map(i => `${i.product_name} (${i.quantity})`).join(', ')}. סה"כ: ₪${totalPrice.toFixed(2)}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="w-full mt-3 border-gold/30 text-gold hover:bg-gold/10 font-body py-5">
+            <Button asChild variant="outline" className="w-full mt-3 border-gold/30 text-gold hover:bg-gold/10 font-body py-5">
+              <a href={`https://wa.me/972501234567?text=שלום, אני רוצה להזמין: ${items.map(i => `${i.product_name} (${i.quantity})`).join(', ')}. סה"כ: ₪${totalPrice.toFixed(2)}`} target="_blank" rel="noopener noreferrer">
                 הזמנה בוואצאפ
-              </Button>
-            </a>
+              </a>
+            </Button>
 
             <button onClick={clearCart} className="w-full text-center text-xs text-muted-foreground hover:text-destructive mt-4 font-body transition-colors">
               ריקון העגלה
@@ -127,12 +127,12 @@ export default function Cart() {
         </div>
 
         {/* Back */}
-        <Link to="/catalog">
-          <Button variant="ghost" className="font-body text-muted-foreground hover:text-gold mt-8">
+        <Button asChild variant="ghost" className="font-body text-muted-foreground hover:text-gold mt-8">
+          <Link to="/catalog">
             <ArrowRight className="h-4 w-4 ml-2" />
             המשך קניות
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </div>
   );

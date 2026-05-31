@@ -43,8 +43,9 @@ export default function ProductCard({ product }) {
             <Button
               onClick={(e) => { e.preventDefault(); addItem(product); }}
               className="w-full bg-gold/95 text-walnut hover:bg-gold font-body rounded-none py-3 text-sm"
+              aria-label={`הוסף את ${product.name} לעגלה`}
             >
-              <ShoppingCart className="h-4 w-4 ml-2" />
+              <ShoppingCart className="h-4 w-4 ml-2" aria-hidden="true" />
               הוסף לעגלה
             </Button>
           </div>

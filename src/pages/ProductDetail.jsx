@@ -56,11 +56,11 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
           <h1 className="font-heading text-3xl font-bold text-foreground mb-4">המוצר לא נמצא</h1>
-          <Link to="/catalog">
-            <Button className="bg-gold text-walnut hover:bg-gold/90 font-body">
+          <Button asChild className="bg-gold text-walnut hover:bg-gold/90 font-body">
+            <Link to="/catalog">
               חזור לקטלוג
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     );
@@ -76,13 +76,13 @@ export default function ProductDetail() {
     <div className="min-h-screen bg-cream">
       {/* Breadcrumb */}
       <div className="max-w-5xl mx-auto px-4 py-4">
-        <div className="flex items-center gap-2 font-body text-sm text-muted-foreground">
+        <nav className="flex items-center gap-2 font-body text-sm text-muted-foreground" aria-label="פירורי לחם">
           <Link to="/" className="hover:text-gold transition-colors">ראשי</Link>
-          <span>/</span>
+          <span aria-hidden="true">/</span>
           <Link to="/catalog" className="hover:text-gold transition-colors">קטלוג</Link>
-          <span>/</span>
-          <span className="text-foreground">{product.name}</span>
-        </div>
+          <span aria-hidden="true">/</span>
+          <span className="text-foreground" aria-current="page">{product.name}</span>
+        </nav>
       </div>
 
       {/* Product */}
@@ -132,12 +132,12 @@ export default function ProductDetail() {
             {/* Quantity & Add to cart */}
             <div className="flex items-center gap-4 pt-4">
               <div className="flex items-center border border-gold/20 rounded-lg overflow-hidden">
-                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 hover:bg-secondary transition-colors">
-                  <Minus className="h-4 w-4" />
+                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 hover:bg-secondary transition-colors" aria-label={`הפחת כמות עבור ${product.name}`}>
+                  <Minus className="h-4 w-4" aria-hidden="true" />
                 </button>
-                <span className="px-6 font-body font-bold text-lg">{quantity}</span>
-                <button onClick={() => setQuantity(q => q + 1)} className="p-3 hover:bg-secondary transition-colors">
-                  <Plus className="h-4 w-4" />
+                <span className="px-6 font-body font-bold text-lg" aria-live="polite">{quantity}</span>
+                <button onClick={() => setQuantity(q => q + 1)} className="p-3 hover:bg-secondary transition-colors" aria-label={`הוסף כמות עבור ${product.name}`}>
+                  <Plus className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
 
@@ -148,23 +148,23 @@ export default function ProductDetail() {
             </div>
 
             {/* WhatsApp */}
-            <a href={`https://wa.me/972501234567?text=שלום, אני מעוניין ב: ${product.name}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="w-full border-gold/30 text-gold hover:bg-gold/10 font-body py-5 mt-2">
+            <Button asChild variant="outline" className="w-full border-gold/30 text-gold hover:bg-gold/10 font-body py-5 mt-2">
+              <a href={`https://wa.me/972501234567?text=שלום, אני מעוניין ב: ${product.name}`} target="_blank" rel="noopener noreferrer">
                 שאל אותנו בוואצאפ
-              </Button>
-            </a>
+              </a>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Back */}
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <Link to="/catalog">
-          <Button variant="ghost" className="font-body text-muted-foreground hover:text-gold">
+        <Button asChild variant="ghost" className="font-body text-muted-foreground hover:text-gold">
+          <Link to="/catalog">
             <ArrowRight className="h-4 w-4 ml-2" />
             חזור לקטלוג
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </div>
   );

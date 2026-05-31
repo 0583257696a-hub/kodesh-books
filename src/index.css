@@ -102,6 +102,10 @@
     box-shadow: 0 0 25px rgba(212, 175, 55, 0.4), 0 0 50px rgba(212, 175, 55, 0.15);
   }
   .text-gold {
+    color: #8A5A00;
+  }
+  .bg-walnut .text-gold,
+  footer .text-gold {
     color: #D4AF37;
   }
   .bg-gold {
@@ -115,5 +119,39 @@
   }
   .border-gold {
     border-color: #D4AF37;
+  }
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 1000;
+    transform: translateY(-150%);
+    border-radius: 0.5rem;
+    background: #2A1B0E;
+    color: #FDFBF7;
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+  }
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    transform: translateY(0);
+    outline: 3px solid #D4AF37;
+    outline-offset: 3px;
+  }
+  :focus-visible {
+    outline: 3px solid #8A5A00;
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

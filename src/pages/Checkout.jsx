@@ -54,9 +54,9 @@ export default function Checkout() {
           <CheckCircle2 className="h-20 w-20 text-gold mx-auto mb-6" />
           <h1 className="font-heading text-3xl font-bold text-foreground mb-3">ההזמנה התקבלה!</h1>
           <p className="font-body text-muted-foreground mb-8">תודה רבה על הזמנתך. ניצור איתך קשר בהקדם לאישור ותיאום המשלוח.</p>
-          <Link to="/">
-            <Button className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">חזרה לעמוד הראשי</Button>
-          </Link>
+          <Button asChild className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">
+            <Link to="/">חזרה לעמוד הראשי</Link>
+          </Button>
         </div>
       </div>
     );
@@ -67,9 +67,9 @@ export default function Checkout() {
       <div className="min-h-[60vh] flex items-center justify-center bg-cream px-4">
         <div className="text-center">
           <h1 className="font-heading text-3xl font-bold text-foreground mb-3">העגלה ריקה</h1>
-          <Link to="/catalog">
-            <Button className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">לקטלוג הספרים</Button>
-          </Link>
+          <Button asChild className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">
+            <Link to="/catalog">לקטלוג הספרים</Link>
+          </Button>
         </div>
       </div>
     );
@@ -90,29 +90,29 @@ export default function Checkout() {
             <h2 className="font-heading text-xl font-bold text-foreground">פרטי המזמין</h2>
 
             <div className="space-y-2">
-              <Label className="font-body">שם מלא *</Label>
-              <Input required value={form.customer_name} onChange={e => setForm({ ...form, customer_name: e.target.value })} className="font-body border-gold/20" />
+              <Label htmlFor="checkout-name" className="font-body">שם מלא *</Label>
+              <Input id="checkout-name" required value={form.customer_name} onChange={e => setForm({ ...form, customer_name: e.target.value })} className="font-body border-gold/20" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="font-body">טלפון *</Label>
-                <Input required type="tel" value={form.customer_phone} onChange={e => setForm({ ...form, customer_phone: e.target.value })} className="font-body border-gold/20" />
+                <Label htmlFor="checkout-phone" className="font-body">טלפון *</Label>
+                <Input id="checkout-phone" required type="tel" value={form.customer_phone} onChange={e => setForm({ ...form, customer_phone: e.target.value })} className="font-body border-gold/20" />
               </div>
               <div className="space-y-2">
-                <Label className="font-body">אימייל</Label>
-                <Input type="email" value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} className="font-body border-gold/20" />
+                <Label htmlFor="checkout-email" className="font-body">אימייל</Label>
+                <Input id="checkout-email" type="email" value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} className="font-body border-gold/20" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="font-body">כתובת למשלוח *</Label>
-              <Input required value={form.shipping_address} onChange={e => setForm({ ...form, shipping_address: e.target.value })} className="font-body border-gold/20" />
+              <Label htmlFor="checkout-address" className="font-body">כתובת למשלוח *</Label>
+              <Input id="checkout-address" required value={form.shipping_address} onChange={e => setForm({ ...form, shipping_address: e.target.value })} className="font-body border-gold/20" />
             </div>
 
             <div className="space-y-2">
-              <Label className="font-body">הערות</Label>
-              <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="font-body border-gold/20" rows={3} />
+              <Label htmlFor="checkout-notes" className="font-body">הערות</Label>
+              <Textarea id="checkout-notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="font-body border-gold/20" rows={3} />
             </div>
 
             <Button type="submit" disabled={isSubmitting} className="w-full bg-gold text-walnut hover:bg-gold/90 font-body py-5 text-base rounded-lg">

@@ -65,20 +65,20 @@ export default function Contact() {
             <h2 className="font-heading text-xl font-bold text-foreground mb-6">שלח הודעה</h2>
             <form className="space-y-4" onSubmit={e => e.preventDefault()}>
               <div className="space-y-2">
-                <Label className="font-body">שם מלא</Label>
-                <Input className="font-body border-gold/20" />
+                <Label htmlFor="contact-name" className="font-body">שם מלא</Label>
+                <Input id="contact-name" className="font-body border-gold/20" />
               </div>
               <div className="space-y-2">
-                <Label className="font-body">טלפון</Label>
-                <Input type="tel" className="font-body border-gold/20" />
+                <Label htmlFor="contact-phone" className="font-body">טלפון</Label>
+                <Input id="contact-phone" type="tel" className="font-body border-gold/20" />
               </div>
               <div className="space-y-2">
-                <Label className="font-body">אימייל</Label>
-                <Input type="email" className="font-body border-gold/20" />
+                <Label htmlFor="contact-email" className="font-body">אימייל</Label>
+                <Input id="contact-email" type="email" className="font-body border-gold/20" />
               </div>
               <div className="space-y-2">
-                <Label className="font-body">הודעה</Label>
-                <Textarea className="font-body border-gold/20" rows={4} />
+                <Label htmlFor="contact-message" className="font-body">הודעה</Label>
+                <Textarea id="contact-message" className="font-body border-gold/20" rows={4} />
               </div>
               <Button className="w-full bg-gold text-walnut hover:bg-gold/90 font-body py-5 text-base rounded-lg gold-glow gold-glow-hover">
                 שליחה

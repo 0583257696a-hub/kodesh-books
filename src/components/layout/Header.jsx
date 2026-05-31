@@ -47,12 +47,12 @@ export default function Header() {
           {/* Mobile menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="פתיחת תפריט ניווט">
+                <Menu className="h-6 w-6" aria-hidden="true" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-cream w-80">
-              <nav className="flex flex-col gap-4 mt-8">
+              <nav className="flex flex-col gap-4 mt-8" aria-label="תפריט ניווט לנייד">
                 {NAV_ITEMS.map(item => (
                   <Link key={item.path + item.label} to={item.path} className="text-lg font-heading text-foreground hover:text-gold transition-colors py-2 border-b border-border">
                     {item.label}
@@ -64,14 +64,22 @@ export default function Header() {
 
           {/* Icons right */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setSearchOpen(!searchOpen)} className="hover:text-gold transition-colors">
-              <Search className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="hover:text-gold transition-colors"
+              aria-label={searchOpen ? 'סגירת חיפוש' : 'פתיחת חיפוש'}
+              aria-expanded={searchOpen}
+              aria-controls="site-search"
+            >
+              <Search className="h-5 w-5" aria-hidden="true" />
             </Button>
-            <Link to="/login">
-              <Button variant="ghost" size="icon" className="hover:text-gold transition-colors">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
+            <Button asChild variant="ghost" size="icon" className="hover:text-gold transition-colors">
+              <Link to="/login" aria-label="כניסה לחשבון">
+                <User className="h-5 w-5" aria-hidden="true" />
+              </Link>
+            </Button>
 
           </div>
 
@@ -85,21 +93,21 @@ export default function Header() {
           </Link>
 
           {/* Cart */}
-          <Link to="/cart" className="relative">
-            <Button variant="ghost" size="icon" className="hover:text-gold transition-colors">
-              <ShoppingCart className="h-5 w-5" />
+          <Button asChild variant="ghost" size="icon" className="relative hover:text-gold transition-colors">
+            <Link to="/cart" aria-label={`עגלת קניות, ${totalItems} מוצרים`}>
+              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gold text-walnut text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-gold text-walnut text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" aria-hidden="true">
                   {totalItems}
                 </span>
               )}
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
 
       {/* Desktop navigation */}
-      <nav className="hidden lg:block border-t border-gold/10 bg-cream">
+      <nav className="hidden lg:block border-t border-gold/10 bg-cream" aria-label="ניווט ראשי">
         <div className="max-w-7xl mx-auto px-4">
           <ul className="flex items-center justify-center gap-8 py-3">
             {NAV_ITEMS.map(item => (
@@ -117,19 +125,27 @@ export default function Header() {
       {/* Search overlay */}
       <AnimatePresence>
         {searchOpen && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-full left-0 right-0 bg-cream border-b border-gold/20 p-4 shadow-lg z-50">
+          <motion.div
+            id="site-search"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-full left-0 right-0 bg-cream border-b border-gold/20 p-4 shadow-lg z-50"
+          >
             <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex gap-3">
+              <label htmlFor="site-search-input" className="sr-only">חיפוש באתר</label>
               <input
+                id="site-search-input"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="חפש ספרים, מחברים..."
-                className="flex-1 px-4 py-3 rounded-lg border border-gold/30 bg-white focus:outline-none focus:ring-2 focus:ring-gold/50 font-body"
+                className="flex-1 px-4 py-3 rounded-lg border border-gold/30 bg-white font-body"
                 autoFocus
               />
               <Button type="submit" className="bg-gold text-walnut hover:bg-gold/90 font-body">חיפוש</Button>
-              <Button type="button" variant="ghost" size="icon" onClick={() => setSearchOpen(false)}>
-                <X className="h-5 w-5" />
+              <Button type="button" variant="ghost" size="icon" onClick={() => setSearchOpen(false)} aria-label="סגירת חיפוש">
+                <X className="h-5 w-5" aria-hidden="true" />
               </Button>
             </form>
           </motion.div>
