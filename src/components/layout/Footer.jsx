@@ -40,10 +40,17 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="font-heading text-lg font-bold text-gold">קישורים מהירים</h4>
             <ul className="space-y-2 font-body text-sm">
-              {['ראשי', 'ספרי קודש', 'גמרות', 'הלכה', 'חסידות', 'מבצעים'].map(item => (
-                <li key={item}>
-                  <Link to={item === 'ראשי' ? '/' : '/catalog'} className="text-cream/70 hover:text-gold transition-colors">
-                    {item}
+              {[
+                { label: 'ראשי', path: '/' },
+                { label: 'ספרי קודש', path: '/catalog' },
+                { label: 'גמרות ומשניות', path: '/catalog?category=gemarot' },
+                { label: 'הלכה', path: '/catalog?category=halacha' },
+                { label: 'חסידות וקבלה', path: '/catalog?category=chassidut' },
+                { label: 'מבצעים', path: '/catalog?sale=true' },
+              ].map(item => (
+                <li key={item.label}>
+                  <Link to={item.path} className="text-cream/70 hover:text-gold transition-colors">
+                    {item.label}
                   </Link>
                 </li>
               ))}

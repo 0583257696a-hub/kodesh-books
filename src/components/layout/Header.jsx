@@ -10,9 +10,9 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 const NAV_ITEMS = [
   { label: 'ראשי', path: '/' },
   { label: 'ספרי קודש', path: '/catalog' },
-  { label: 'גמרות', path: '/catalog?category=gemarot' },
+  { label: 'גמרות ומשניות', path: '/catalog?category=gemarot' },
   { label: 'הלכה', path: '/catalog?category=halacha' },
-  { label: 'חסידות', path: '/catalog?category=chassidut' },
+  { label: 'חסידות וקבלה', path: '/catalog?category=chassidut' },
   { label: 'ילדים ונוער', path: '/catalog?category=kids' },
   { label: 'מתנות יהודיות', path: '/catalog?category=gifts' },
   { label: 'מבצעים', path: '/catalog?sale=true' },

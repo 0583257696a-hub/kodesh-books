@@ -18,9 +18,9 @@ const ICON_MAP = { BookOpen, Library, Scale, Sparkles, Baby, BookHeart, Flame, G
 
 const categories = [
   { id: 'chumashim', name: 'חומשים', icon: 'BookOpen' },
-  { id: 'gemarot', name: 'גמרות', icon: 'Library' },
+  { id: 'gemarot', name: 'גמרות ומשניות', icon: 'Library' },
   { id: 'halacha', name: 'הלכה', icon: 'Scale' },
-  { id: 'chassidut', name: 'חסידות', icon: 'Sparkles' },
+  { id: 'chassidut', name: 'חסידות וקבלה', icon: 'Sparkles' },
   { id: 'kids', name: 'ספרי ילדים', icon: 'Baby' },
   { id: 'siddurim', name: 'סידורים ומחזורים', icon: 'BookHeart' },
   { id: 'tashmishei_kedusha', name: 'תשמישי קדושה', icon: 'Flame' },
