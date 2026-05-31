@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Header() {
+  const navigate = useNavigate();
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,10 +30,16 @@ export default function Header() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/catalog?search=${encodeURIComponent(searchQuery)}`;
       setSearchOpen(false);
       setSearchQuery('');
+      navigate(`/catalog?search=${encodeURIComponent(searchQuery)}`);
     }
+  };
+
+  const handleMobileNavigation = (path) => {
+    setMobileMenuOpen(false);
+    setSearchOpen(false);
+    navigate(path);
   };
 
   return (
@@ -55,14 +62,14 @@ export default function Header() {
             <SheetContent side="right" className="bg-cream w-80">
               <nav className="flex flex-col gap-4 mt-8" aria-label="תפריט ניווט לנייד">
                 {NAV_ITEMS.map(item => (
-                  <Link
+                  <button
+                    type="button"
                     key={item.path + item.label}
-                    to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="text-lg font-heading text-foreground hover:text-gold transition-colors py-2 border-b border-border"
+                    onClick={() => handleMobileNavigation(item.path)}
+                    className="border-b border-border py-2 text-right font-heading text-lg text-foreground transition-colors hover:text-gold"
                   >
                     {item.label}
-                  </Link>
+                  </button>
                 ))}
               </nav>
             </SheetContent>

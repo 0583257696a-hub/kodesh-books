@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import ProductCard from '@/components/shared/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 
 export default function Catalog() {
-  const urlParams = new URLSearchParams(window.location.search);
+  const location = useLocation();
+  const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const initialCategory = urlParams.get('category') || '';
   const initialSearch = urlParams.get('search') || '';
   const isSale = urlParams.get('sale') === 'true';
@@ -19,6 +21,11 @@ export default function Catalog() {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('newest');
+
+  useEffect(() => {
+    setSelectedCategory(initialCategory);
+    setSearchQuery(initialSearch);
+  }, [initialCategory, initialSearch]);
 
   const { data: allProducts = [], isLoading } = useQuery({
     queryKey: ['all-products'],
