@@ -40,8 +40,8 @@ export default function AdminCustomers() {
   const handleSendPasswordReset = async (userId, targetEmail) => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('adminUserManagement', { action: 'sendPasswordReset', userId, targetEmail });
-      setSuccessMsg(res.data?.message || 'נשלח מייל לאיפוס סיסמה');
+      await base44.auth.resetPasswordRequest(targetEmail);
+      setSuccessMsg(`נשלח מייל לאיפוס סיסמה ל-${targetEmail}`);
       setEditingUser(null);
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
