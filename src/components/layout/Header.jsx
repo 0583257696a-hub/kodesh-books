@@ -22,6 +22,7 @@ const NAV_ITEMS = [
 export default function Header() {
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -45,7 +46,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Mobile menu */}
-          <Sheet>
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="פתיחת תפריט ניווט">
                 <Menu className="h-6 w-6" aria-hidden="true" />
@@ -54,7 +55,12 @@ export default function Header() {
             <SheetContent side="right" className="bg-cream w-80">
               <nav className="flex flex-col gap-4 mt-8" aria-label="תפריט ניווט לנייד">
                 {NAV_ITEMS.map(item => (
-                  <Link key={item.path + item.label} to={item.path} className="text-lg font-heading text-foreground hover:text-gold transition-colors py-2 border-b border-border">
+                  <Link
+                    key={item.path + item.label}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-lg font-heading text-foreground hover:text-gold transition-colors py-2 border-b border-border"
+                  >
                     {item.label}
                   </Link>
                 ))}
