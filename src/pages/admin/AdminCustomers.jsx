@@ -4,13 +4,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Search, ShoppingBag, Shield, Key, X, Check } from 'lucide-react';
+import { Search, ShoppingBag, Shield, Key, X, Check, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function AdminCustomers() {
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState(null); // { id, type: 'role' | 'password' }
-  const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const queryClient = useQueryClient();
@@ -35,15 +34,13 @@ export default function AdminCustomers() {
     }
   };
 
-  const handleSetPassword = async (userId) => {
-    if (!newPassword || newPassword.length < 6) return;
+  const handleSendPasswordReset = async (userId, targetEmail) => {
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('adminUserManagement', { action: 'setPassword', userId, newPassword });
-      setSuccessMsg(res.data?.message || 'סיסמה עודכנה');
+      const res = await base44.functions.invoke('adminUserManagement', { action: 'sendPasswordReset', userId, targetEmail });
+      setSuccessMsg(res.data?.message || 'נשלח מייל לאיפוס סיסמה');
       setEditingUser(null);
-      setNewPassword('');
-      setTimeout(() => setSuccessMsg(''), 3000);
+      setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       setSuccessMsg('שגיאה: ' + err.message);
     } finally {
@@ -139,7 +136,7 @@ export default function AdminCustomers() {
                           size="sm"
                           variant="outline"
                           className="h-8 gap-1.5 border-amber-200 text-amber-700 hover:bg-amber-50 text-xs"
-                          onClick={() => setEditingUser(editingUser?.id === user.id ? null : { id: user.id, name: user.full_name || user.email })}
+                          onClick={() => setEditingUser(editingUser?.id === user.id ? null : { id: user.id, name: user.full_name || user.email, email: user.email })}
                         >
                           <Key className="h-3.5 w-3.5" />
                           סיסמה
@@ -150,31 +147,22 @@ export default function AdminCustomers() {
                   {editingUser?.id === user.id && (
                     <tr className="border-t border-amber-100 bg-amber-50/50">
                       <td colSpan={7} className="px-5 py-4">
-                        <div className="flex items-end gap-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">סיסמה חדשה עבור {editingUser.name}</Label>
-                            <Input
-                              type="password"
-                              value={newPassword}
-                              onChange={(e) => setNewPassword(e.target.value)}
-                              placeholder="לפחות 6 תווים"
-                              className="h-9 w-64 border-slate-200 text-sm"
-                              autoFocus
-                            />
-                          </div>
+                        <div className="flex items-center gap-3">
+                          <Mail className="h-4 w-4 text-amber-600" />
+                          <p className="text-sm text-slate-700">שלח מייל לאיפוס סיסמה ל-<span className="font-semibold">{editingUser.email}</span>?</p>
                           <Button
                             size="sm"
-                            className="h-9 bg-amber-600 hover:bg-amber-700 text-white"
-                            disabled={loading || newPassword.length < 6}
-                            onClick={() => handleSetPassword(user.id)}
+                            className="h-8 bg-amber-600 hover:bg-amber-700 text-white"
+                            disabled={loading}
+                            onClick={() => handleSendPasswordReset(user.id, editingUser.email)}
                           >
-                            {loading ? 'שומר...' : 'שמור סיסמה'}
+                            {loading ? 'שולח...' : 'שלח מייל איפוס'}
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-9 text-slate-500"
-                            onClick={() => { setEditingUser(null); setNewPassword(''); }}
+                            className="h-8 text-slate-500"
+                            onClick={() => setEditingUser(null)}
                           >
                             ביטול
                           </Button>

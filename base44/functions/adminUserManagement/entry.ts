@@ -9,16 +9,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { action, userId, newRole, newPassword } = await req.json();
+    const { action, userId, newRole, targetEmail } = await req.json();
 
     if (action === 'setRole') {
       await base44.asServiceRole.entities.User.update(userId, { role: newRole });
       return Response.json({ success: true, message: `תפקיד עודכן ל-${newRole}` });
     }
 
-    if (action === 'setPassword') {
-      await base44.asServiceRole.auth.adminSetPassword(userId, newPassword);
-      return Response.json({ success: true, message: 'סיסמה עודכנה בהצלחה' });
+    if (action === 'sendPasswordReset') {
+      // Send password reset email to user
+      await base44.auth.resetPasswordRequest(targetEmail);
+      return Response.json({ success: true, message: `נשלח מייל לאיפוס סיסמה ל-${targetEmail}` });
     }
 
     return Response.json({ error: 'פעולה לא מוכרת' }, { status: 400 });
