@@ -17,9 +17,13 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'sendPasswordReset') {
-      // Send password reset email to user
-      await base44.auth.resetPasswordRequest(targetEmail);
-      return Response.json({ success: true, message: `נשלח מייל לאיפוס סיסמה ל-${targetEmail}` });
+      // Use integration to send a password reset email
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: targetEmail,
+        subject: 'איפוס סיסמה - אוצר הקדושה',
+        body: `שלום,\n\nהמנהל שלח לך קישור לאיפוס הסיסמה.\nאנא גש לדף הכניסה של האפליקציה ולחץ על "שכחתי סיסמה" כדי לאפס את סיסמתך.\n\nבברכה,\nצוות אוצר הקדושה`
+      });
+      return Response.json({ success: true, message: `נשלח מייל איפוס ל-${targetEmail}` });
     }
 
     return Response.json({ error: 'פעולה לא מוכרת' }, { status: 400 });

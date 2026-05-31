@@ -29,6 +29,9 @@ export default function AdminCustomers() {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setSuccessMsg(`תפקיד עודכן ל-${newRole === 'admin' ? 'מנהל' : 'לקוח'}`);
       setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      setSuccessMsg('שגיאה: ' + (err.message || 'לא ניתן לעדכן תפקיד'));
+      setTimeout(() => setSuccessMsg(''), 4000);
     } finally {
       setLoading(false);
     }
