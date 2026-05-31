@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Building2, CreditCard, LineChart, Plus, ReceiptText, TrendingDown, TrendingUp } from 'lucide-react';
+import { Building2, CreditCard, LineChart, Plus, ReceiptText, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -75,22 +75,23 @@ function EntryForm({ type, onAdd }) {
       ) : (
         <Textarea placeholder="הערות" value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} className="min-h-10 resize-none bg-white" />
       )}
-      <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700"><Plus className="mr-2 h-4 w-4" />הוסף</Button>
+      <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700"><Plus className="ml-2 h-4 w-4" />הוסף</Button>
     </form>
   );
 }
 
-function LedgerTable({ rows, type }) {
+function LedgerTable({ rows, type, onDelete }) {
   return (
     <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
       <table className="w-full text-sm">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
-            <th className="px-4 py-3 text-left">תאריך</th>
-            <th className="px-4 py-3 text-left">קטגוריה</th>
-            <th className="px-4 py-3 text-left">{type === 'income' ? 'לקוח' : 'ספק'}</th>
-            <th className="px-4 py-3 text-left">סכום</th>
-            <th className="px-4 py-3 text-left">הערות</th>
+            <th className="px-4 py-3 text-right">תאריך</th>
+            <th className="px-4 py-3 text-right">קטגוריה</th>
+            <th className="px-4 py-3 text-right">{type === 'income' ? 'לקוח' : 'ספק'}</th>
+            <th className="px-4 py-3 text-right">סכום</th>
+            <th className="px-4 py-3 text-right">הערות</th>
+            <th className="px-4 py-3 text-right">פעולות</th>
           </tr>
         </thead>
         <tbody>
@@ -101,6 +102,18 @@ function LedgerTable({ rows, type }) {
               <td className="px-4 py-3 text-slate-700">{type === 'income' ? row.customer : row.supplier}</td>
               <td className="px-4 py-3 font-semibold text-slate-950">{currency(row.amount)}</td>
               <td className="px-4 py-3 text-slate-500">{row.notes || row.payment_method}</td>
+              <td className="px-4 py-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(row, type)}
+                  className="h-8 w-8 text-slate-500 hover:bg-rose-50 hover:text-rose-700"
+                  title="הסר שורה"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -110,8 +123,11 @@ function LedgerTable({ rows, type }) {
 }
 
 export default function BusinessManagement() {
+  const queryClient = useQueryClient();
   const [manualIncome, setManualIncome] = useState([]);
   const [manualExpenses, setManualExpenses] = useState([]);
+  const [hiddenIncomeIds, setHiddenIncomeIds] = useState([]);
+  const [hiddenExpenseIds, setHiddenExpenseIds] = useState([]);
 
   const { data = {} } = useQuery({
     queryKey: ['business-management-center'],
@@ -128,17 +144,57 @@ export default function BusinessManagement() {
 
   const rows = useMemo(() => {
     const leads = buildLeads({ ...data, events: data.events || [] });
-    const expenses = buildExpenseRows([...(data.expenses || []), ...manualExpenses]);
-    const incomes = buildIncomeRows(data.orders || [], [...(data.incomes || []), ...manualIncome]);
+    const expenses = buildExpenseRows([...(data.expenses || []), ...manualExpenses])
+      .filter((row) => !hiddenExpenseIds.includes(row.id));
+    const incomes = buildIncomeRows(data.orders || [], [...(data.incomes || []), ...manualIncome])
+      .filter((row) => !hiddenIncomeIds.includes(row.id));
     return { leads, expenses, incomes };
-  }, [data, manualExpenses, manualIncome]);
+  }, [data, hiddenExpenseIds, hiddenIncomeIds, manualExpenses, manualIncome]);
+
+  const deleteIncomeM = useMutation({
+    mutationFn: (id) => base44.entities.BusinessIncome.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['business-management-center'] }),
+  });
+
+  const deleteExpenseM = useMutation({
+    mutationFn: (id) => base44.entities.BusinessExpense.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['business-management-center'] }),
+  });
+
+  const handleDeleteRow = async (row, type) => {
+    const ok = window.confirm('להסיר את השורה מהטבלה?');
+    if (!ok) return;
+
+    const isLocalIncome = type === 'income' && (row.id?.startsWith('income-') || row.id?.startsWith('order-income-'));
+    const isLocalExpense = type === 'expense' && (row.id?.startsWith('expense-') || row.id?.startsWith('exp-'));
+
+    try {
+      if (type === 'income') {
+        if (row.id?.startsWith('income-')) {
+          setManualIncome((current) => current.filter((item) => item.id !== row.id));
+        } else if (!isLocalIncome) {
+          await deleteIncomeM.mutateAsync(row.id);
+        }
+        setHiddenIncomeIds((current) => [...new Set([...current, row.id])]);
+      } else {
+        if (row.id?.startsWith('expense-')) {
+          setManualExpenses((current) => current.filter((item) => item.id !== row.id));
+        } else if (!isLocalExpense) {
+          await deleteExpenseM.mutateAsync(row.id);
+        }
+        setHiddenExpenseIds((current) => [...new Set([...current, row.id])]);
+      }
+    } catch (error) {
+      window.alert(error.message || 'מחיקת השורה נכשלה.');
+    }
+  };
 
   const kpis = businessKpis({ orders: data.orders || [], users: data.users || [], leads: rows.leads, expenses: rows.expenses });
   const incomeChart = chartByMonth(rows.incomes);
   const expenseChart = chartByMonth(rows.expenses);
 
   return (
-    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
+    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">ניהול החנות</h1>
@@ -193,11 +249,11 @@ export default function BusinessManagement() {
         </TabsList>
         <TabsContent value="income">
           <EntryForm type="income" onAdd={(row) => setManualIncome((current) => [row, ...current])} />
-          <LedgerTable rows={rows.incomes} type="income" />
+          <LedgerTable rows={rows.incomes} type="income" onDelete={handleDeleteRow} />
         </TabsContent>
         <TabsContent value="expenses">
           <EntryForm type="expense" onAdd={(row) => setManualExpenses((current) => [row, ...current])} />
-          <LedgerTable rows={rows.expenses} type="expense" />
+          <LedgerTable rows={rows.expenses} type="expense" onDelete={handleDeleteRow} />
         </TabsContent>
       </Tabs>
     </div>
