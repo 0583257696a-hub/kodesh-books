@@ -29,7 +29,7 @@ const NAV = [
   { label: 'אנליטיקת ספרים', icon: BarChart3, path: '/secret-admin/analytics' },
   { label: 'קופונים', icon: Ticket, path: '/secret-admin/coupons' },
   { label: 'ניהול תוכן', icon: Megaphone, path: '/secret-admin/content' },
-  { label: 'הגדרות', icon: Settings, path: '/secret-admin/settings' },
+  { label: 'ניהול הרשאות', icon: Settings, path: '/secret-admin/settings' },
 ];
 
 export default function AdminSidebar({ collapsed, setCollapsed }) {

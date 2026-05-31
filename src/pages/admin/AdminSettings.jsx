@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Store, Phone, Globe, Share2, UserPlus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound } from 'lucide-react';
 
 const FIELDS = [
   { key: 'store_name', label: 'שם החנות', placeholder: 'אוצר הקדושה', icon: Store },
@@ -17,14 +18,30 @@ const FIELDS = [
   { key: 'instagram', label: 'קישור אינסטגרם', placeholder: 'https://instagram.com/...', icon: Share2 },
 ];
 
+const EMPTY_USER = {
+  full_name: '',
+  email: '',
+  password: '',
+  role: 'user',
+};
+
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const [values, setValues] = useState({});
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviting, setInviting] = useState(false);
-  const [inviteMsg, setInviteMsg] = useState('');
+  const [newUser, setNewUser] = useState({ ...EMPTY_USER });
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [userMessage, setUserMessage] = useState('');
+  const [deletingUserId, setDeletingUserId] = useState('');
 
-  const { data: settings = [] } = useQuery({ queryKey: ['site-settings'], queryFn: () => base44.entities.SiteSettings.list() });
+  const { data: settings = [] } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: () => base44.entities.SiteSettings.list(),
+  });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ['admin-users'],
+    queryFn: () => base44.entities.User.list('-created_date', 500),
+  });
 
   useEffect(() => {
     const map = {};
@@ -39,31 +56,191 @@ export default function AdminSettings() {
     if (existing) {
       await base44.entities.SiteSettings.update(existing.id, { value: values[key] || '' });
     } else {
-      await base44.entities.SiteSettings.create({ key, value: values[key] || '', label: FIELDS.find((field) => field.key === key)?.label || key });
+      await base44.entities.SiteSettings.create({
+        key,
+        value: values[key] || '',
+        label: FIELDS.find((field) => field.key === key)?.label || key,
+      });
     }
     queryClient.invalidateQueries({ queryKey: ['site-settings'] });
   };
 
-  const handleInviteAdmin = async () => {
-    if (!inviteEmail) return;
-    setInviting(true);
-    setInviteMsg('');
+  const handleCreateUser = async (event) => {
+    event.preventDefault();
+    setUserMessage('');
+
+    if (!newUser.email || !newUser.password) {
+      setUserMessage('יש למלא אימייל וסיסמה.');
+      return;
+    }
+
+    setCreatingUser(true);
     try {
-      await base44.users.inviteUser(inviteEmail, 'admin');
-      setInviteMsg(`הזמנה נשלחה אל ${inviteEmail}`);
-      setInviteEmail('');
-    } catch {
-      setInviteMsg('שגיאה בשליחת ההזמנה');
+      await base44.auth.register({
+        email: newUser.email,
+        password: newUser.password,
+      });
+
+      const matches = await base44.entities.User.filter({ email: newUser.email }, '-created_date', 1);
+      const created = matches?.[0];
+
+      if (created?.id) {
+        await base44.entities.User.update(created.id, {
+          full_name: newUser.full_name,
+          role: newUser.role,
+        });
+      }
+
+      setNewUser({ ...EMPTY_USER });
+      setUserMessage('המשתמש נפתח בהצלחה. אם נדרש אימות אימייל, המשתמש יקבל קוד בכניסה הראשונה.');
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    } catch (error) {
+      setUserMessage(error.message || 'פתיחת המשתמש נכשלה.');
     } finally {
-      setInviting(false);
+      setCreatingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (user) => {
+    const ok = window.confirm(`להסיר את המשתמש ${user.email}? פעולה זו אינה הפיכה.`);
+    if (!ok) return;
+
+    setDeletingUserId(user.id);
+    setUserMessage('');
+    try {
+      await base44.entities.User.delete(user.id);
+      setUserMessage('המשתמש הוסר בהצלחה.');
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    } catch (error) {
+      setUserMessage(error.message || 'הסרת המשתמש נכשלה.');
+    } finally {
+      setDeletingUserId('');
     }
   };
 
   return (
     <div className="min-h-screen space-y-8 bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">הגדרות מערכת</h1>
-        <p className="mt-1 text-sm text-slate-500">פרטי החנות, SEO ורשתות חברתיות.</p>
+        <h1 className="text-3xl font-bold tracking-tight">ניהול הרשאות</h1>
+        <p className="mt-1 text-sm text-slate-500">פתיחת משתמשים, בחירת סיסמה, הגדרת תפקידים והסרת משתמשים מהמערכת.</p>
+      </div>
+
+      <div className="rounded-lg border border-blue-100 bg-blue-50 p-6">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
+          <UserPlus className="h-5 w-5 text-blue-600" /> פתיחת משתמש חדש
+        </h2>
+        <p className="mb-5 text-sm text-slate-600">צור משתמש חדש עם סיסמה לבחירתך ובחר את רמת ההרשאה שלו.</p>
+
+        <form onSubmit={handleCreateUser} className="grid gap-4 lg:grid-cols-5">
+          <div className="space-y-1.5">
+            <Label className="text-sm text-slate-700">שם מלא</Label>
+            <Input
+              value={newUser.full_name}
+              onChange={(event) => setNewUser((current) => ({ ...current, full_name: event.target.value }))}
+              placeholder="שם המשתמש"
+              className="border-slate-200 bg-white text-slate-950"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm text-slate-700">אימייל *</Label>
+            <Input
+              type="email"
+              value={newUser.email}
+              onChange={(event) => setNewUser((current) => ({ ...current, email: event.target.value }))}
+              placeholder="user@example.com"
+              className="border-slate-200 bg-white text-slate-950"
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm text-slate-700">סיסמה *</Label>
+            <div className="relative">
+              <KeyRound className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                type="text"
+                value={newUser.password}
+                onChange={(event) => setNewUser((current) => ({ ...current, password: event.target.value }))}
+                placeholder="בחר סיסמה"
+                className="border-slate-200 bg-white pr-10 text-slate-950"
+                required
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm text-slate-700">הרשאה</Label>
+            <Select value={newUser.role} onValueChange={(value) => setNewUser((current) => ({ ...current, role: value }))}>
+              <SelectTrigger className="border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectItem value="user">לקוח</SelectItem>
+                <SelectItem value="admin">מנהל</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end">
+            <Button type="submit" disabled={creatingUser} className="h-10 w-full bg-blue-600 text-white hover:bg-blue-700">
+              {creatingUser ? <Loader2 className="h-4 w-4 animate-spin" /> : 'פתח משתמש'}
+            </Button>
+          </div>
+        </form>
+
+        {userMessage && <p className="mt-4 text-sm text-slate-700">{userMessage}</p>}
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <h2 className="flex items-center gap-2 font-bold text-slate-950">
+            <ShieldCheck className="h-5 w-5 text-blue-600" /> משתמשים והרשאות
+          </h2>
+          <span className="text-sm text-slate-500">{users.length} משתמשים</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[780px] text-sm">
+            <thead className="bg-white text-slate-500">
+              <tr>
+                <th className="px-5 py-3 text-right font-semibold">משתמש</th>
+                <th className="px-5 py-3 text-right font-semibold">אימייל</th>
+                <th className="px-5 py-3 text-right font-semibold">הרשאה</th>
+                <th className="px-5 py-3 text-right font-semibold">נוצר</th>
+                <th className="px-5 py-3 text-right font-semibold">פעולות</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id} className="border-t border-slate-100 hover:bg-slate-50/70">
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-blue-700">
+                        {user.full_name?.[0] || user.email?.[0] || '?'}
+                      </div>
+                      <span className="font-semibold text-slate-950">{user.full_name || '-'}</span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 text-slate-600">{user.email}</td>
+                  <td className="px-5 py-4">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${user.role === 'admin' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                      {user.role === 'admin' ? 'מנהל' : 'לקוח'}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-slate-500">{user.created_date ? new Date(user.created_date).toLocaleDateString('he-IL') : '-'}</td>
+                  <td className="px-5 py-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteUser(user)}
+                      disabled={deletingUserId === user.id}
+                      className="h-8 w-8 text-slate-500 hover:bg-rose-50 hover:text-rose-700"
+                      title="הסר משתמש"
+                    >
+                      {deletingUserId === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {users.length === 0 && <div className="py-16 text-center text-sm text-slate-500">אין משתמשים להצגה</div>}
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
@@ -86,26 +263,6 @@ export default function AdminSettings() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="rounded-lg border border-blue-100 bg-blue-50 p-6">
-        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
-          <UserPlus className="h-5 w-5 text-blue-600" /> הזמנת מנהל מערכת
-        </h2>
-        <p className="mb-5 text-sm text-slate-600">שלח הזמנה לאדמין חדש. הגישה מוגבלת למנהלים בלבד.</p>
-        <div className="flex max-w-sm gap-3">
-          <Input
-            type="email"
-            value={inviteEmail}
-            onChange={(event) => setInviteEmail(event.target.value)}
-            placeholder="admin@example.com"
-            className="flex-1 border-slate-200 bg-white text-slate-950"
-          />
-          <Button onClick={handleInviteAdmin} disabled={inviting || !inviteEmail} className="whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700">
-            {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'הזמן'}
-          </Button>
-        </div>
-        {inviteMsg && <p className={`mt-3 text-sm ${inviteMsg.startsWith('הזמנה') ? 'text-emerald-700' : 'text-rose-700'}`}>{inviteMsg}</p>}
       </div>
     </div>
   );
