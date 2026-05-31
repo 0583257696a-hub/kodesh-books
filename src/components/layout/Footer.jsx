@@ -95,7 +95,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-cream/50 text-xs font-body">© {new Date().getFullYear()} {settings.store_name}. כל הזכויות שמורות.</p>
           <div className="flex items-center gap-2 text-xs text-cream/50 font-body">
-            <span>תנאי שימוש</span>
+            <Link to="/terms" className="transition-colors hover:text-gold">תנאי שימוש</Link>
             <span className="text-gold">•</span>
             <span>מדיניות פרטיות</span>
             <span className="text-gold">•</span>
