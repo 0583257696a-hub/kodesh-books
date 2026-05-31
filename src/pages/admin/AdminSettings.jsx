@@ -11,6 +11,7 @@ const FIELDS = [
   { key: 'store_name', label: 'שם החנות', placeholder: 'אוצר הקדושה', icon: Store },
   { key: 'phone', label: 'טלפון', placeholder: '03-1234567', icon: Phone },
   { key: 'whatsapp', label: 'וואטסאפ', placeholder: '972501234567', icon: Phone },
+  { key: 'email', label: 'אימייל', placeholder: 'info@otzar-hakodesh.co.il', icon: Globe },
   { key: 'address', label: 'כתובת', placeholder: 'רחוב הרב קוק 12, ירושלים', icon: Store },
   { key: 'seo_title', label: 'כותרת SEO', placeholder: 'אוצר הקדושה | ספרי קודש', icon: Globe },
   { key: 'seo_description', label: 'תיאור SEO', placeholder: 'החנות המובילה לספרי קודש...', icon: Globe },

@@ -4,8 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Contact() {
+  const { settings } = useSiteSettings();
+  const contactItems = [
+    { icon: Phone, label: 'טלפון', value: settings.phone },
+    { icon: MessageCircle, label: 'וואצאפ', value: settings.whatsapp },
+    { icon: Mail, label: 'אימייל', value: settings.email },
+    { icon: MapPin, label: 'כתובת', value: settings.address },
+  ];
+
   return (
     <div className="min-h-screen bg-cream">
       <div className="bg-walnut py-12 px-4">
@@ -20,17 +29,12 @@ export default function Contact() {
           {/* Info */}
           <div className="space-y-8">
             <div>
-              <h2 className="font-heading text-2xl font-bold text-foreground mb-2">אוצר הקדושה</h2>
+              <h2 className="font-heading text-2xl font-bold text-foreground mb-2">{settings.store_name}</h2>
               <p className="font-body text-muted-foreground">נשמח לעמוד לשירותכם בכל שאלה או בקשה.</p>
             </div>
 
             <div className="space-y-5">
-              {[
-                { icon: Phone, label: 'טלפון', value: '03-123-4567' },
-                { icon: MessageCircle, label: 'וואצאפ', value: '050-123-4567' },
-                { icon: Mail, label: 'אימייל', value: 'info@otzar-hakodesh.co.il' },
-                { icon: MapPin, label: 'כתובת', value: 'רחוב הרב קוק 12, ירושלים' },
-              ].map(item => (
+              {contactItems.map(item => (
                 <div key={item.label} className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center">
                     <item.icon className="h-5 w-5 text-gold" />

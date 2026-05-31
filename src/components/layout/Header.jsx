@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const NAV_ITEMS = [
   { label: 'ראשי', path: '/' },
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
 
 export default function Header() {
   const { totalItems } = useCart();
+  const { settings } = useSiteSettings();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -37,7 +38,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-md border-b border-gold/20">
       {/* Top bar */}
       <div className="bg-walnut text-cream text-center py-2 text-sm font-body">
-        <span className="text-gold">✦</span> משלוח חינם בהזמנה מעל ₪200 <span className="text-gold">✦</span>
+        <span className="text-gold">✦</span> {settings.top_banner} <span className="text-gold">✦</span>
       </div>
 
       {/* Main header */}
@@ -78,7 +79,7 @@ export default function Header() {
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img 
               src="https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/2fdbeca5e_WhatsAppImage2026-05-29at170557.jpeg" 
-              alt="אוצר הקדושה" 
+              alt={settings.store_name} 
               className="h-16 md:h-20 object-contain drop-shadow-lg"
             />
           </Link>

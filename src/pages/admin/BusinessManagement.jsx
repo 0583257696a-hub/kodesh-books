@@ -61,6 +61,7 @@ function EntryForm({ type, onAdd }) {
         onAdd({ ...form, id: `${type}-${Date.now()}`, amount: Number(form.amount || 0) });
         setForm((current) => ({ ...current, customer: '', supplier: '', amount: '', notes: '' }));
       }}
+      dir="rtl"
       className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-6"
     >
       <Input type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} className="bg-white" />
@@ -83,7 +84,7 @@ function EntryForm({ type, onAdd }) {
 function LedgerTable({ rows, type, onDelete }) {
   return (
     <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <table className="w-full text-sm">
+      <table dir="rtl" className="w-full text-sm">
         <thead className="bg-slate-50 text-slate-500">
           <tr>
             <th className="px-4 py-3 text-right">תאריך</th>
