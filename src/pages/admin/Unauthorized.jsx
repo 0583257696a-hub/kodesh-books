@@ -4,19 +4,19 @@ import { Button } from '@/components/ui/button';
 
 export default function Unauthorized() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-4" dir="rtl">
+    <div className="flex min-h-screen items-center justify-center bg-white p-4" dir="rtl">
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 mb-6">
-          <ShieldX className="w-10 h-10 text-red-400" />
+        <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-lg border border-rose-100 bg-rose-50">
+          <ShieldX className="h-10 w-10 text-rose-600" />
         </div>
-        <h1 className="text-5xl font-heading font-bold text-white mb-3">403</h1>
-        <h2 className="text-xl font-heading text-zinc-300 mb-3">גישה נדחתה</h2>
-        <p className="text-zinc-500 font-body mb-8 max-w-sm">
+        <h1 className="mb-3 text-5xl font-bold text-slate-950">403</h1>
+        <h2 className="mb-3 text-xl font-bold text-slate-800">גישה נדחתה</h2>
+        <p className="mb-8 max-w-sm text-slate-500">
           אין לך הרשאות לגשת לאזור זה. הגישה מוגבלת למנהלי מערכת בלבד.
         </p>
         <Button
           onClick={() => window.location.href = '/'}
-          className="bg-gold text-[#0a0a0f] hover:bg-gold/90 font-body px-8"
+          className="bg-blue-600 px-8 text-white hover:bg-blue-700"
         >
           חזרה לאתר
         </Button>

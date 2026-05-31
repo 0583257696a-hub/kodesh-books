@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Pencil, FolderOpen, Loader2 } from 'lucide-react';
+import { Loader2, FolderOpen } from 'lucide-react';
 import { CATEGORIES } from '@/lib/categories';
 
 const CATEGORY_IMAGES = {
@@ -18,64 +14,57 @@ const CATEGORY_IMAGES = {
 };
 
 export default function AdminCategories() {
-  const [editCat, setEditCat] = useState(null);
-  const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [catImages, setCatImages] = useState({ ...CATEGORY_IMAGES });
 
-  const { base44 } = window.__base44__ || {};
-
-  const handleImageUpload = async (catId, e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = async (catId, event) => {
+    const file = event.target.files[0];
     if (!file) return;
     setUploading(true);
     try {
-      const { base44: sdk } = await import('@/api/base44Client');
-      const { file_url } = await sdk.integrations.Core.UploadFile({ file });
-      setCatImages(p => ({ ...p, [catId]: file_url }));
+      const { base44 } = await import('@/api/base44Client');
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setCatImages((current) => ({ ...current, [catId]: file_url }));
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-heading font-bold text-white">ניהול קטגוריות</h1>
-        <p className="text-zinc-500 font-body text-sm mt-1">{CATEGORIES.length} קטגוריות</p>
+    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
+      <div className="mb-7">
+        <h1 className="text-3xl font-bold tracking-tight">ניהול קטגוריות</h1>
+        <p className="mt-1 text-sm text-slate-500">{CATEGORIES.length} קטגוריות באתר</p>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {CATEGORIES.map(cat => (
-          <div key={cat.id} className="bg-[#13131a] border border-white/5 rounded-2xl overflow-hidden group">
-            <div className="relative aspect-video overflow-hidden">
-              <img src={catImages[cat.id]} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-black/40" />
-              <label className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer bg-black/50">
-                <div className="text-center">
-                  <p className="text-white font-body text-xs mb-1">החלף תמונה</p>
-                  {uploading && <Loader2 className="h-4 w-4 text-gold animate-spin mx-auto" />}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {CATEGORIES.map((cat) => (
+          <div key={cat.id} className="group overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="relative aspect-video overflow-hidden bg-slate-100">
+              <img src={catImages[cat.id]} alt={cat.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <label className="absolute inset-0 flex cursor-pointer items-center justify-center bg-slate-950/0 opacity-0 transition-all group-hover:bg-slate-950/40 group-hover:opacity-100">
+                <div className="rounded-lg bg-white px-3 py-2 text-center text-sm font-semibold text-slate-950 shadow-sm">
+                  החלף תמונה
+                  {uploading && <Loader2 className="mx-auto mt-1 h-4 w-4 animate-spin text-blue-600" />}
                 </div>
-                <input type="file" accept="image/*" className="hidden" onChange={e => handleImageUpload(cat.id, e)} />
+                <input type="file" accept="image/*" className="hidden" onChange={(event) => handleImageUpload(cat.id, event)} />
               </label>
             </div>
-            <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-2">
-                <FolderOpen className="h-4 w-4 text-gold" />
-                <p className="text-white font-heading font-bold">{cat.name}</p>
+                <FolderOpen className="h-4 w-4 text-blue-600" />
+                <p className="font-bold text-slate-950">{cat.name}</p>
               </div>
-              <a href={`/catalog?category=${cat.id}`} target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-500 hover:text-gold transition-colors font-body">
-                צפה ←
+              <a href={`/catalog?category=${cat.id}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-600 transition-colors hover:text-blue-800">
+                צפייה
               </a>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 bg-[#13131a] border border-white/5 rounded-2xl p-6">
-        <p className="text-zinc-500 font-body text-sm">
-          💡 לעריכת שמות קטגוריות ומזהים, ערוך את הקובץ <code className="text-gold bg-gold/10 px-1.5 py-0.5 rounded text-xs">lib/categories.js</code>
-        </p>
+      <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
+        לעריכת שמות קטגוריות ומזהים יש לעדכן את הקובץ <code className="rounded bg-white px-1.5 py-0.5 text-blue-700">lib/categories.js</code>.
       </div>
     </div>
   );

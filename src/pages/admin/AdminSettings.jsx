@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,12 +9,12 @@ import { Loader2, Store, Phone, Globe, Share2, UserPlus } from 'lucide-react';
 const FIELDS = [
   { key: 'store_name', label: 'שם החנות', placeholder: 'אוצר הקדושה', icon: Store },
   { key: 'phone', label: 'טלפון', placeholder: '03-1234567', icon: Phone },
-  { key: 'whatsapp', label: 'וואצאפ', placeholder: '972501234567', icon: Phone },
+  { key: 'whatsapp', label: 'וואטסאפ', placeholder: '972501234567', icon: Phone },
   { key: 'address', label: 'כתובת', placeholder: 'רחוב הרב קוק 12, ירושלים', icon: Store },
   { key: 'seo_title', label: 'כותרת SEO', placeholder: 'אוצר הקדושה | ספרי קודש', icon: Globe },
   { key: 'seo_description', label: 'תיאור SEO', placeholder: 'החנות המובילה לספרי קודש...', icon: Globe },
-  { key: 'facebook', label: 'Facebook URL', placeholder: 'https://facebook.com/...', icon: Share2 },
-  { key: 'instagram', label: 'Instagram URL', placeholder: 'https://instagram.com/...', icon: Share2 },
+  { key: 'facebook', label: 'קישור פייסבוק', placeholder: 'https://facebook.com/...', icon: Share2 },
+  { key: 'instagram', label: 'קישור אינסטגרם', placeholder: 'https://instagram.com/...', icon: Share2 },
 ];
 
 export default function AdminSettings() {
@@ -28,16 +28,18 @@ export default function AdminSettings() {
 
   useEffect(() => {
     const map = {};
-    settings.forEach(s => { map[s.key] = s.value; });
+    settings.forEach((setting) => {
+      map[setting.key] = setting.value;
+    });
     setValues(map);
   }, [settings]);
 
   const saveSetting = async (key) => {
-    const existing = settings.find(s => s.key === key);
+    const existing = settings.find((setting) => setting.key === key);
     if (existing) {
       await base44.entities.SiteSettings.update(existing.id, { value: values[key] || '' });
     } else {
-      await base44.entities.SiteSettings.create({ key, value: values[key] || '', label: FIELDS.find(f => f.key === key)?.label || key });
+      await base44.entities.SiteSettings.create({ key, value: values[key] || '', label: FIELDS.find((field) => field.key === key)?.label || key });
     }
     queryClient.invalidateQueries({ queryKey: ['site-settings'] });
   };
@@ -48,9 +50,9 @@ export default function AdminSettings() {
     setInviteMsg('');
     try {
       await base44.users.inviteUser(inviteEmail, 'admin');
-      setInviteMsg(`✓ הזמנה נשלחה ל-${inviteEmail}`);
+      setInviteMsg(`הזמנה נשלחה אל ${inviteEmail}`);
       setInviteEmail('');
-    } catch (e) {
+    } catch {
       setInviteMsg('שגיאה בשליחת ההזמנה');
     } finally {
       setInviting(false);
@@ -58,27 +60,26 @@ export default function AdminSettings() {
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-8">
+    <div className="min-h-screen space-y-8 bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-white">הגדרות מערכת</h1>
-        <p className="text-zinc-500 font-body text-sm mt-1">פרטי החנות, SEO ורשתות חברתיות</p>
+        <h1 className="text-3xl font-bold tracking-tight">הגדרות מערכת</h1>
+        <p className="mt-1 text-sm text-slate-500">פרטי החנות, SEO ורשתות חברתיות.</p>
       </div>
 
-      {/* Settings Fields */}
-      <div className="bg-[#13131a] border border-white/5 rounded-2xl p-6">
-        <h2 className="font-heading font-bold text-white mb-6">הגדרות חנות</h2>
-        <div className="grid sm:grid-cols-2 gap-5">
-          {FIELDS.map(field => (
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-6 font-bold text-slate-950">הגדרות חנות</h2>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {FIELDS.map((field) => (
             <div key={field.key} className="space-y-1.5">
-              <Label className="text-zinc-300 font-body text-sm">{field.label}</Label>
+              <Label className="text-sm text-slate-700">{field.label}</Label>
               <div className="flex gap-2">
                 <Input
                   value={values[field.key] || ''}
-                  onChange={e => setValues(p => ({ ...p, [field.key]: e.target.value }))}
+                  onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
                   placeholder={field.placeholder}
-                  className="bg-[#1c1c28] border-white/10 text-white font-body flex-1"
+                  className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
                 />
-                <Button onClick={() => saveSetting(field.key)} variant="outline" className="border-white/10 text-zinc-400 hover:text-white hover:bg-white/5 font-body h-10 px-3 text-xs">
+                <Button onClick={() => saveSetting(field.key)} variant="outline" className="h-10 border-slate-200 px-3 text-xs text-slate-700 hover:bg-slate-50">
                   שמור
                 </Button>
               </div>
@@ -87,27 +88,24 @@ export default function AdminSettings() {
         </div>
       </div>
 
-      {/* Invite Admin */}
-      <div className="bg-[#13131a] border border-gold/10 rounded-2xl p-6">
-        <h2 className="font-heading font-bold text-white mb-2 flex items-center gap-2">
-          <UserPlus className="h-5 w-5 text-gold" /> הזמנת מנהל מערכת
+      <div className="rounded-lg border border-blue-100 bg-blue-50 p-6">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
+          <UserPlus className="h-5 w-5 text-blue-600" /> הזמנת מנהל מערכת
         </h2>
-        <p className="text-zinc-500 font-body text-sm mb-5">שלח הזמנה לאדמין חדש. הגישה מוגבלת — רק מנהלים יכולים לגשת לפאנל.</p>
-        <div className="flex gap-3 max-w-sm">
+        <p className="mb-5 text-sm text-slate-600">שלח הזמנה לאדמין חדש. הגישה מוגבלת למנהלים בלבד.</p>
+        <div className="flex max-w-sm gap-3">
           <Input
             type="email"
             value={inviteEmail}
-            onChange={e => setInviteEmail(e.target.value)}
+            onChange={(event) => setInviteEmail(event.target.value)}
             placeholder="admin@example.com"
-            className="bg-[#1c1c28] border-white/10 text-white font-body flex-1"
+            className="flex-1 border-slate-200 bg-white text-slate-950"
           />
-          <Button onClick={handleInviteAdmin} disabled={inviting || !inviteEmail} className="bg-gold text-[#0a0a0f] hover:bg-gold/90 font-body whitespace-nowrap">
+          <Button onClick={handleInviteAdmin} disabled={inviting || !inviteEmail} className="whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700">
             {inviting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'הזמן'}
           </Button>
         </div>
-        {inviteMsg && (
-          <p className={`mt-3 text-sm font-body ${inviteMsg.startsWith('✓') ? 'text-green-400' : 'text-red-400'}`}>{inviteMsg}</p>
-        )}
+        {inviteMsg && <p className={`mt-3 text-sm ${inviteMsg.startsWith('הזמנה') ? 'text-emerald-700' : 'text-rose-700'}`}>{inviteMsg}</p>}
       </div>
     </div>
   );
