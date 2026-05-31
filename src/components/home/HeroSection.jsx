@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BookOpen, MessageCircle } from 'lucide-react';
+import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f511806de_generated_bffda8a3.png';
 
 export default function HeroSection() {
+  const { settings } = useSiteSettings();
+
   return (
     <section className="relative min-h-[85vh] flex items-center overflow-hidden">
       {/* Background */}
@@ -44,7 +47,7 @@ export default function HeroSection() {
                 לקטלוג הספרים
               </Button>
             </Link>
-            <a href="https://wa.me/972501234567" target="_blank" rel="noopener noreferrer">
+            <a href={buildWhatsappUrl(settings.whatsapp, 'שלום, אני רוצה לבצע הזמנה מאתר אוצר הקדושה')} target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="border-gold/50 text-gold hover:bg-gold/10 font-body text-base px-8 py-6 rounded-lg transition-all">
                 <MessageCircle className="h-5 w-5 ml-2" />
                 וואצאפ להזמנות

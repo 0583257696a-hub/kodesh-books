@@ -9,12 +9,14 @@ import { useCart } from '@/context/CartContext';
 import { CATEGORY_MAP } from '@/lib/categories';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
+import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function ProductDetail() {
   const urlParams = new URLSearchParams(window.location.search);
   const productId = window.location.pathname.split('/product/')[1];
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCart();
+  const { settings } = useSiteSettings();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
@@ -149,7 +151,7 @@ export default function ProductDetail() {
 
             {/* WhatsApp */}
             <Button asChild variant="outline" className="w-full border-gold/30 text-gold hover:bg-gold/10 font-body py-5 mt-2">
-              <a href={`https://wa.me/972501234567?text=שלום, אני מעוניין ב: ${product.name}`} target="_blank" rel="noopener noreferrer">
+              <a href={buildWhatsappUrl(settings.whatsapp, `שלום, אני מעוניין ב: ${product.name}`)} target="_blank" rel="noopener noreferrer">
                 שאל אותנו בוואצאפ
               </a>
             </Button>

@@ -38,3 +38,18 @@ export function useSiteSettings() {
     },
   };
 }
+
+export function normalizeWhatsappNumber(value = '') {
+  const digits = String(value).replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('972')) return digits;
+  if (digits.startsWith('0')) return `972${digits.slice(1)}`;
+  return digits;
+}
+
+export function buildWhatsappUrl(number, text = '') {
+  const normalized = normalizeWhatsappNumber(number);
+  if (!normalized) return '#';
+  const message = text ? `?text=${encodeURIComponent(text)}` : '';
+  return `https://wa.me/${normalized}${message}`;
+}

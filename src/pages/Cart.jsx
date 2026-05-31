@@ -4,9 +4,12 @@ import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
+  const { settings } = useSiteSettings();
+  const whatsappOrderText = `שלום, אני רוצה להזמין: ${items.map(i => `${i.product_name} (${i.quantity})`).join(', ')}. סה"כ: ₪${totalPrice.toFixed(2)}`;
 
   if (items.length === 0) {
     return (
@@ -115,7 +118,7 @@ export default function Cart() {
             </Button>
 
             <Button asChild variant="outline" className="w-full mt-3 border-gold/30 text-gold hover:bg-gold/10 font-body py-5">
-              <a href={`https://wa.me/972501234567?text=שלום, אני רוצה להזמין: ${items.map(i => `${i.product_name} (${i.quantity})`).join(', ')}. סה"כ: ₪${totalPrice.toFixed(2)}`} target="_blank" rel="noopener noreferrer">
+              <a href={buildWhatsappUrl(settings.whatsapp, whatsappOrderText)} target="_blank" rel="noopener noreferrer">
                 הזמנה בוואצאפ
               </a>
             </Button>
