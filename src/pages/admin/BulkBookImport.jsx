@@ -69,6 +69,36 @@ const falsey = (value) => ['false', '0', 'no', 'n', 'לא', 'לא פעיל', 'כ
 const numberValue = (value) => Number(String(value ?? '').replace(/[^\d.-]/g, '')) || 0;
 const clean = (value) => String(value ?? '').trim();
 const slugify = (value) => clean(value).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 90);
+const normalizeImageKey = (value) => clean(value).toLowerCase().replace(/\s+/g, '');
+const numericImageKey = (value) => {
+  const normalized = normalizeImageKey(value).replace(/\.[^.]+$/, '');
+  return /^\d+$/.test(normalized) ? String(Number(normalized)) : '';
+};
+
+function imageLookupKeys(value) {
+  const raw = clean(value);
+  if (!raw) return [];
+  const base = raw.replace(/\.[^.]+$/, '');
+  const keys = [
+    raw,
+    normalizeImageKey(raw),
+    base,
+    normalizeImageKey(base),
+    `${base}.jpg`,
+    `${base}.jpeg`,
+    `${base}.png`,
+    `${base}.webp`,
+    normalizeImageKey(`${base}.jpg`),
+    normalizeImageKey(`${base}.jpeg`),
+    normalizeImageKey(`${base}.png`),
+    normalizeImageKey(`${base}.webp`),
+  ];
+  const numeric = numericImageKey(raw);
+  if (numeric) {
+    keys.push(numeric, `${numeric}.jpg`, `${numeric}.jpeg`, `${numeric}.png`, `${numeric}.webp`);
+  }
+  return [...new Set(keys.filter(Boolean))];
+}
 
 function categoryIdFromSheet(sheetName) {
   return CATEGORY_NAME_TO_ID[sheetName] || slugify(sheetName).replace(/-/g, '_');
@@ -81,11 +111,10 @@ function buildProduct(row, sheetName, uploadedImages = {}) {
   const publisher = clean(row.Publisher);
   const description = clean(row.Description);
   const imageRef = clean(row.ImageFileName) || sku;
-  const imageCandidates = /\.(png|jpe?g|webp)$/i.test(imageRef)
-    ? [imageRef]
-    : [imageRef, `${imageRef}.jpg`, `${imageRef}.jpeg`, `${imageRef}.png`, `${imageRef}.webp`];
-  const gallery = uploadedImages[imageRef]?.gallery || uploadedImages[sku]?.gallery || [];
-  const imageUrl = imageCandidates.map((key) => uploadedImages[key]?.main).find(Boolean) || uploadedImages[imageRef]?.main || uploadedImages[sku]?.main || gallery[0] || '';
+  const imageCandidates = [...imageLookupKeys(imageRef), ...imageLookupKeys(sku)];
+  const imageBucket = imageCandidates.map((key) => uploadedImages[key]).find(Boolean);
+  const gallery = [...new Set(imageCandidates.flatMap((key) => uploadedImages[key]?.gallery || []))];
+  const imageUrl = imageCandidates.map((key) => uploadedImages[key]?.main).find(Boolean) || imageBucket?.main || gallery[0] || '';
 
   return {
     sku,
@@ -173,19 +202,23 @@ async function readImagesZip(file) {
   const result = {};
 
   for (const entry of entries) {
-    const fileName = entry.name.split('/').pop();
+    const fileName = entry.name.split(/[\\/]/).pop().trim();
     const baseName = fileName.replace(/\.[^.]+$/, '');
     const sku = baseName.replace(/-\d+$/, '');
     const blob = await entry.async('blob');
     const imageFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
     const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
 
-    result[fileName] = { main: file_url };
-    result[sku] ||= { main: '', gallery: [] };
+    const keys = [...imageLookupKeys(fileName), ...imageLookupKeys(baseName), ...imageLookupKeys(sku)];
+    keys.forEach((key) => {
+      result[key] ||= { main: '', gallery: [] };
+    });
     if (/-\d+$/.test(baseName)) {
-      result[sku].gallery.push(file_url);
+      keys.forEach((key) => result[key].gallery.push(file_url));
     } else {
-      result[sku].main = file_url;
+      keys.forEach((key) => {
+        result[key].main ||= file_url;
+      });
     }
   }
 
