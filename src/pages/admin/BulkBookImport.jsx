@@ -173,6 +173,14 @@ export default function BulkBookImport() {
   })), [sheets]);
 
   const previewRows = sheets.flatMap((sheet) => sheet.rows.slice(0, 6).map((row) => ({ sheetName: sheet.sheetName, ...row }))).slice(0, 30);
+  const totalImportRows = summary.reduce((total, item) => total + item.count, 0);
+  const hasBlockingMissingColumns = summary.some((item) => item.missing.length > 0);
+
+  const confirmFinalImport = () => {
+    if (!totalImportRows || hasBlockingMissingColumns) return;
+    const approved = window.confirm(`לאשר יבוא סופי של ${totalImportRows} ספרים מתוך ${summary.length} קטגוריות?`);
+    if (approved) executeImport();
+  };
 
   const analyzeWorkbook = async () => {
     if (!workbookFile) return;
@@ -328,7 +336,6 @@ export default function BulkBookImport() {
               {Object.entries(IMPORT_ACTIONS).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Button onClick={executeImport} disabled={sheets.length === 0 || busy} variant="outline">ביצוע יבוא</Button>
         </div>
         {busy && <Progress value={progress} className="mt-4" />}
       </section>
@@ -362,6 +369,50 @@ export default function BulkBookImport() {
                 </tr>
               ))}</tbody>
             </table>
+          </div>
+        </section>
+      )}
+
+      {summary.length > 0 && (
+        <section className="rounded-lg border border-blue-200 bg-blue-50 p-5 shadow-sm">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-slate-950">
+            <CheckCircle2 className="h-5 w-5 text-blue-600" /> סיכום ואישור יבוא סופי
+          </h2>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-lg border border-blue-100 bg-white p-4">
+              <p className="text-sm text-slate-500">קטגוריות ליבוא</p>
+              <p className="mt-1 text-2xl font-bold">{summary.length}</p>
+            </div>
+            <div className="rounded-lg border border-blue-100 bg-white p-4">
+              <p className="text-sm text-slate-500">ספרים שיזוהו ליבוא</p>
+              <p className="mt-1 text-2xl font-bold">{totalImportRows}</p>
+            </div>
+            <div className="rounded-lg border border-blue-100 bg-white p-4">
+              <p className="text-sm text-slate-500">פעולת יבוא</p>
+              <p className="mt-1 text-lg font-bold">{IMPORT_ACTIONS[action]}</p>
+            </div>
+          </div>
+          {hasBlockingMissingColumns && (
+            <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">
+              חסרות עמודות חובה באחד הגיליונות. תקן את הקובץ ובצע זיהוי גיליונות מחדש לפני יבוא סופי.
+            </p>
+          )}
+          {!hasBlockingMissingColumns && totalImportRows === 0 && (
+            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-800">
+              לא נמצאו שורות ספרים ליבוא. מלא את קובץ האקסל ובצע זיהוי גיליונות מחדש.
+            </p>
+          )}
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Button
+              onClick={confirmFinalImport}
+              disabled={busy || !totalImportRows || hasBlockingMissingColumns}
+              className="h-11 bg-blue-600 px-8 text-base font-bold text-white hover:bg-blue-700"
+            >
+              <UploadCloud className="ml-2 h-5 w-5" /> בצע יבוא סופי
+            </Button>
+            <p className="text-sm text-slate-600">
+              לאחר הלחיצה תתבצע יצירה או עדכון מוצרים לפי הפעולה שנבחרה למעלה.
+            </p>
           </div>
         </section>
       )}
