@@ -13,9 +13,9 @@ import { CATEGORY_NAME_TO_ID } from '@/lib/categories';
 
 const REQUIRED_COLUMNS = ['SKU', 'BookName', 'Price'];
 const BULK_COLUMNS = [
-  'SKU', 'Barcode', 'BookName', 'SubCategory', 'Author', 'Rabbi', 'Publisher', 'Description',
+  'SKU', 'Barcode', 'BookName', 'SubCategory', 'AdditionalCategories', 'Author', 'Rabbi', 'Publisher', 'Description',
   'LongDescription', 'Price', 'SalePrice', 'StockQuantity', 'Weight', 'Language', 'ImageFileName',
-  'Featured', 'Recommended', 'New', 'Active', 'AdditionalCategories',
+  'Featured', 'Recommended', 'New', 'Active',
 ];
 const IMPORT_ACTIONS = {
   create: 'Create New',
@@ -25,6 +25,28 @@ const IMPORT_ACTIONS = {
 };
 const IMPORT_TEMPLATE_URL = '/templates/otzar_hakodesh_books_import_template.xlsx';
 const FULL_IMPORT_UTILITY_SHEETS = ['הוראות', 'עדכון מחירים', 'עדכון מלאי'];
+const HEBREW_COLUMN_TO_FIELD = {
+  'מק"ט': 'SKU',
+  'ברקוד': 'Barcode',
+  'שם הספר': 'BookName',
+  'תת קטגוריה': 'SubCategory',
+  'קטגוריות נוספות': 'AdditionalCategories',
+  'מחבר': 'Author',
+  'רב': 'Rabbi',
+  'הוצאה לאור': 'Publisher',
+  'תיאור קצר': 'Description',
+  'תיאור ארוך': 'LongDescription',
+  'מחיר': 'Price',
+  'מחיר מבצע': 'SalePrice',
+  'כמות במלאי': 'StockQuantity',
+  'משקל': 'Weight',
+  'שפה': 'Language',
+  'שם קובץ תמונה': 'ImageFileName',
+  'מוצג בדף הבית': 'Featured',
+  'מומלץ': 'Recommended',
+  'חדש': 'New',
+  'פעיל': 'Active',
+};
 
 const truthy = (value) => ['true', '1', 'yes', 'y', 'כן', 'פעיל', 'חדש', 'מומלץ'].includes(String(value ?? '').trim().toLowerCase());
 const falsey = (value) => ['false', '0', 'no', 'n', 'לא', 'לא פעיל', 'כבוי'].includes(String(value ?? '').trim().toLowerCase());
@@ -85,10 +107,6 @@ function findDuplicate(product, existingProducts) {
   ));
 }
 
-function isTemplateLabelRow(row) {
-  return clean(row.SKU) === 'מק"ט' || clean(row.BookName) === 'שם הספר';
-}
-
 function isTemplateExampleRow(row) {
   return clean(row.Barcode) === '7290000000011' && (
     clean(row.BookName).includes('לדוגמה') ||
@@ -97,12 +115,21 @@ function isTemplateExampleRow(row) {
   );
 }
 
+function normalizeWorkbookRow(row) {
+  return Object.entries(row).reduce((normalized, [key, value]) => {
+    const fieldName = HEBREW_COLUMN_TO_FIELD[clean(key)] || key;
+    normalized[fieldName] = value;
+    return normalized;
+  }, {});
+}
+
 function normalizeWorkbookRows(rows) {
-  return rows.filter((row) => (
-    !isTemplateLabelRow(row) &&
-    !isTemplateExampleRow(row) &&
-    BULK_COLUMNS.some((column) => clean(row[column]))
-  ));
+  return rows
+    .map(normalizeWorkbookRow)
+    .filter((row) => (
+      !isTemplateExampleRow(row) &&
+      BULK_COLUMNS.some((column) => clean(row[column]))
+    ));
 }
 
 async function readWorkbook(file, options = {}) {
