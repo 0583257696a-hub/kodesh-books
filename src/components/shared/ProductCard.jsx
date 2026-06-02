@@ -20,13 +20,15 @@ export default function ProductCard({ product }) {
       <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gold/10">
         {/* Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-          {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary to-muted">
-              <BookOpen className="h-16 w-16 text-gold/30" />
-            </div>
-          )}
+          <Link to={`/product/${product.id}`} className="block h-full w-full" aria-label={`פתח את ${product.name}`}>
+            {product.image_url ? (
+              <img src={product.image_url} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted">
+                <BookOpen className="h-16 w-16 text-gold/30" />
+              </div>
+            )}
+          </Link>
 
           {/* Tags */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
@@ -39,7 +41,7 @@ export default function ProductCard({ product }) {
           </div>
 
           {/* Add to cart overlay */}
-          <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <div className="absolute bottom-0 left-0 right-0 z-10 translate-y-full transition-transform duration-300 group-hover:translate-y-0">
             <Button
               onClick={(e) => { e.preventDefault(); addItem(product); }}
               className="w-full bg-gold/95 text-walnut hover:bg-gold font-body rounded-none py-3 text-sm"
