@@ -13,6 +13,27 @@ import { cn } from '@/lib/utils';
 
 const QUICK_ACTIONS = ['חפש ספר', 'רבי מכר', 'מבצעים', 'ספרי ילדים', 'סידורים ומחזורים', 'דבר עם נציג'];
 const HALACHA_PATTERNS = ['מה הדין', 'מה ההלכה', 'מותר', 'אסור', 'פסק הלכה', 'שאלה הלכתית'];
+const CONTACT_PATTERNS = [
+  'נציג',
+  'וואטסאפ',
+  'ווצאפ',
+  'תחזרו',
+  'תחזור',
+  'חזרו אלי',
+  'חזור אלי',
+  'שיחזרו אלי',
+  'שיחזור אלי',
+  'חזרה אלי',
+  'שיחזרו',
+  'צרו קשר',
+  'תתקשרו',
+  'תתקשר',
+  'התקשרו',
+  'התקשר',
+  'דברו איתי',
+  'דבר איתי',
+  'בקשת חזרה',
+];
 const SYNONYMS = {
   'שס': ['גמרא', 'גמרות', 'תלמוד'],
   'ש"ס': ['גמרא', 'גמרות', 'תלמוד'],
@@ -95,6 +116,11 @@ function productText(product) {
     product.category,
     product.sub_category,
   ].filter(Boolean).join(' '));
+}
+
+function isContactIntent(text) {
+  const lower = normalize(text);
+  return CONTACT_PATTERNS.some((pattern) => lower.includes(normalize(pattern)));
 }
 
 function scoreText(haystack, terms) {
@@ -285,20 +311,20 @@ export default function StoreChatBot() {
 
   const buildAnswer = (text) => {
     const lower = normalize(text);
+    if (isContactIntent(text)) {
+      return {
+        intent: 'agent',
+        text: 'בשמחה. השאר פרטים ונציג יחזור אליך בהקדם, או עבור ישירות לוואטסאפ.',
+        products: [],
+      };
+    }
+
     if (HALACHA_PATTERNS.some((pattern) => lower.includes(pattern))) {
       const productsFound = findProducts(products, text, synonyms, rules);
       return {
         intent: 'halacha_referral',
         text: 'אינני מספק פסיקה הלכתית. אשמח להמליץ על ספרים בנושא כדי שתוכל ללמוד או להתייעץ עם רב מוסמך.',
         products: productsFound,
-      };
-    }
-
-    if (lower.includes('נציג') || lower.includes('וואטסאפ') || lower.includes('ווצאפ')) {
-      return {
-        intent: 'agent',
-        text: 'בשמחה. אפשר לדבר עם נציג בוואטסאפ, או להשאיר פרטים ואנחנו נחזור אליך.',
-        products: [],
       };
     }
 
@@ -329,10 +355,11 @@ export default function StoreChatBot() {
     const sid = await ensureSession();
     await saveMessage('user', trimmed);
     const answer = buildAnswer(trimmed);
-    const searchId = await saveSearchAnalytics(trimmed, answer.products || [], sid);
+    const searchId = answer.intent === 'agent' ? null : await saveSearchAnalytics(trimmed, answer.products || [], sid);
     setLastSearchId(searchId);
     setMessages((current) => [...current, { role: 'assistant', text: answer.text, products: answer.products, intent: answer.intent }]);
     await saveMessage('assistant', answer.text, answer.intent, answer.products);
+    if (answer.intent === 'agent') setLeadOpen(true);
     if (answer.intent === 'no_results') setLeadOpen(true);
   };
 
