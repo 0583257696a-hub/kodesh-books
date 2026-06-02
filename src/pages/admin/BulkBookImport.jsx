@@ -219,16 +219,17 @@ export default function BulkBookImport() {
     category: sheet.sheetName,
     id: categoryIdFromSheet(sheet.sheetName),
     count: sheet.rows.length,
-    missing: REQUIRED_COLUMNS.filter((col) => !Object.keys(sheet.rows[0] || {}).includes(col)),
+    missing: sheet.rows.length === 0 ? [] : REQUIRED_COLUMNS.filter((col) => !Object.keys(sheet.rows[0] || {}).includes(col)),
   })), [sheets]);
 
   const previewRows = sheets.flatMap((sheet) => sheet.rows.slice(0, 6).map((row) => ({ sheetName: sheet.sheetName, ...row }))).slice(0, 30);
+  const activeSummary = summary.filter((item) => item.count > 0);
   const totalImportRows = summary.reduce((total, item) => total + item.count, 0);
-  const hasBlockingMissingColumns = summary.some((item) => item.missing.length > 0);
+  const hasBlockingMissingColumns = activeSummary.some((item) => item.missing.length > 0);
 
   const confirmFinalImport = () => {
     if (!totalImportRows || hasBlockingMissingColumns) return;
-    const approved = window.confirm(`לאשר יבוא סופי של ${totalImportRows} ספרים מתוך ${summary.length} קטגוריות?`);
+    const approved = window.confirm(`לאשר יבוא סופי של ${totalImportRows} ספרים מתוך ${activeSummary.length} קטגוריות?`);
     if (approved) executeImport();
   };
 
@@ -401,7 +402,13 @@ export default function BulkBookImport() {
               <div key={item.category} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <p className="font-bold">{item.category}</p>
                 <p className="mt-1 text-sm text-slate-500">{item.count} מוצרים</p>
-                {item.missing.length > 0 ? <Badge className="mt-3 bg-rose-50 text-rose-700">חסרים: {item.missing.join(', ')}</Badge> : <Badge className="mt-3 bg-emerald-50 text-emerald-700">תקין</Badge>}
+                {item.count === 0 ? (
+                  <Badge className="mt-3 bg-slate-100 text-slate-600">ריק - לא ייובא</Badge>
+                ) : item.missing.length > 0 ? (
+                  <Badge className="mt-3 bg-rose-50 text-rose-700">חסרים: {item.missing.join(', ')}</Badge>
+                ) : (
+                  <Badge className="mt-3 bg-emerald-50 text-emerald-700">תקין</Badge>
+                )}
               </div>
             ))}
           </div>
@@ -433,8 +440,8 @@ export default function BulkBookImport() {
           </h2>
           <div className="grid gap-3 md:grid-cols-3">
             <div className="rounded-lg border border-blue-100 bg-white p-4">
-              <p className="text-sm text-slate-500">קטגוריות ליבוא</p>
-              <p className="mt-1 text-2xl font-bold">{summary.length}</p>
+              <p className="text-sm text-slate-500">קטגוריות עם מוצרים</p>
+              <p className="mt-1 text-2xl font-bold">{activeSummary.length}</p>
             </div>
             <div className="rounded-lg border border-blue-100 bg-white p-4">
               <p className="text-sm text-slate-500">ספרים שיזוהו ליבוא</p>
