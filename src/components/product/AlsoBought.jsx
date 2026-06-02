@@ -14,6 +14,7 @@ export default function AlsoBought({ currentProductId, category }) {
   const { addItem } = useCart();
   const [current, setCurrent] = useState(0);
   const timerRef = useRef(null);
+  const scrollerRef = useRef(null);
 
   const { data: products = [] } = useQuery({
     queryKey: ['also-bought', category],
@@ -27,23 +28,55 @@ export default function AlsoBought({ currentProductId, category }) {
   const total = products.length;
   const maxIndex = Math.max(0, total - VISIBLE);
 
-  const next = () => setCurrent((c) => (c >= maxIndex ? 0 : c + 1));
-  const prev = () => setCurrent((c) => (c <= 0 ? maxIndex : c - 1));
+  const scrollToIndex = (index) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const nextIndex = Math.max(0, Math.min(index, maxIndex));
+    const firstCard = scroller.querySelector('[data-carousel-item]');
+    const cardWidth = firstCard?.getBoundingClientRect().width || 220;
+    scroller.scrollTo({ left: nextIndex * (cardWidth + 16), behavior: 'smooth' });
+    setCurrent(nextIndex);
+  };
+
+  const autoAdvance = () => {
+    setCurrent((index) => {
+      const nextIndex = index >= maxIndex ? 0 : index + 1;
+      const scroller = scrollerRef.current;
+      if (scroller) {
+        const firstCard = scroller.querySelector('[data-carousel-item]');
+        const cardWidth = firstCard?.getBoundingClientRect().width || 220;
+        scroller.scrollTo({ left: nextIndex * (cardWidth + 16), behavior: 'smooth' });
+      }
+      return nextIndex;
+    });
+  };
+
+  const next = () => scrollToIndex(current >= maxIndex ? 0 : current + 1);
+  const prev = () => scrollToIndex(current <= 0 ? maxIndex : current - 1);
 
   // Auto-advance every 4 seconds
   useEffect(() => {
     if (total <= VISIBLE) return;
-    timerRef.current = setInterval(next, INTERVAL);
+    timerRef.current = setInterval(autoAdvance, INTERVAL);
     return () => clearInterval(timerRef.current);
   }, [total, maxIndex]);
 
   const resetTimer = () => {
     clearInterval(timerRef.current);
-    timerRef.current = setInterval(next, INTERVAL);
+    timerRef.current = setInterval(autoAdvance, INTERVAL);
   };
 
   const handleNext = () => { next(); resetTimer(); };
   const handlePrev = () => { prev(); resetTimer(); };
+
+  const handleScroll = () => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const firstCard = scroller.querySelector('[data-carousel-item]');
+    const cardWidth = firstCard?.getBoundingClientRect().width || 220;
+    const nextIndex = Math.round(scroller.scrollLeft / (cardWidth + 16));
+    setCurrent(Math.max(0, Math.min(nextIndex, maxIndex)));
+  };
 
   if (total === 0) return null;
 
@@ -55,15 +88,21 @@ export default function AlsoBought({ currentProductId, category }) {
 
       <div className="relative">
         {/* Carousel track */}
-        <div className="overflow-hidden">
+        <div
+          ref={scrollerRef}
+          onScroll={handleScroll}
+          dir="ltr"
+          className="snap-x overflow-x-auto overflow-y-hidden scroll-smooth pb-2 touch-pan-x [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           <div
-            className="flex transition-transform duration-500 ease-in-out gap-4"
-            style={{ transform: `translateX(${current * (100 / VISIBLE)}%)` }}
+            className="flex gap-4"
           >
             {products.map((product) => (
               <div
                 key={product.id}
-                className="flex-shrink-0 w-[calc(25%-12px)] min-w-[180px]"
+                data-carousel-item
+                dir="rtl"
+                className="w-56 flex-shrink-0 snap-start sm:w-60 lg:w-[calc(25%-12px)]"
               >
                 <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gold/10 group">
                   {/* Image */}
@@ -142,7 +181,7 @@ export default function AlsoBought({ currentProductId, category }) {
             {Array.from({ length: maxIndex + 1 }).map((_, i) => (
               <button
                 key={i}
-                onClick={() => { setCurrent(i); resetTimer(); }}
+                onClick={() => { scrollToIndex(i); resetTimer(); }}
                 className={`h-1.5 rounded-full transition-all duration-300 ${i === current ? 'w-5 bg-gold' : 'w-1.5 bg-gold/30'}`}
                 aria-label={`עבור לשקופית ${i + 1}`}
               />
