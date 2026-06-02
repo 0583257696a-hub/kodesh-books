@@ -16,7 +16,7 @@ const BULK_COLUMNS = [
   'SKU', 'Barcode', 'BookName', 'Author', 'Publisher', 'Description', 'Price', 'SalePrice', 'StockQuantity', 'ImageFileName',
 ];
 const FIELD_LABELS = {
-  SKU: 'מק"ט',
+  SKU: 'מספר',
   Barcode: 'ברקוד',
   BookName: 'שם הספר',
   Author: 'מחבר / רב',
@@ -25,7 +25,7 @@ const FIELD_LABELS = {
   Price: 'מחיר',
   SalePrice: 'מחיר מבצע',
   StockQuantity: 'מלאי',
-  ImageFileName: 'תמונה',
+  ImageFileName: 'מספר תמונה',
 };
 const IMPORT_ACTIONS = {
   create: 'Create New',
@@ -37,6 +37,8 @@ const IMPORT_TEMPLATE_URL = '/templates/otzar_hakodesh_books_import_template.xls
 const FULL_IMPORT_UTILITY_SHEETS = ['הוראות', 'עדכון מחירים', 'עדכון מלאי'];
 const HEBREW_COLUMN_TO_FIELD = {
   'מק"ט': 'SKU',
+  'מספר': 'SKU',
+  'מספר ספר': 'SKU',
   'ברקוד': 'Barcode',
   'שם הספר': 'BookName',
   'תת קטגוריה': 'SubCategory',
@@ -55,6 +57,7 @@ const HEBREW_COLUMN_TO_FIELD = {
   'שפה': 'Language',
   'שם קובץ תמונה': 'ImageFileName',
   'תמונה': 'ImageFileName',
+  'מספר תמונה': 'ImageFileName',
   'מוצג בדף הבית': 'Featured',
   'מומלץ': 'Recommended',
   'חדש': 'New',
@@ -77,9 +80,12 @@ function buildProduct(row, sheetName, uploadedImages = {}) {
   const author = clean(row.Author);
   const publisher = clean(row.Publisher);
   const description = clean(row.Description);
-  const imageKey = clean(row.ImageFileName) || `${sku}.jpg`;
-  const gallery = uploadedImages[sku]?.gallery || [];
-  const imageUrl = uploadedImages[imageKey]?.main || uploadedImages[sku]?.main || gallery[0] || '';
+  const imageRef = clean(row.ImageFileName) || sku;
+  const imageCandidates = /\.(png|jpe?g|webp)$/i.test(imageRef)
+    ? [imageRef]
+    : [imageRef, `${imageRef}.jpg`, `${imageRef}.jpeg`, `${imageRef}.png`, `${imageRef}.webp`];
+  const gallery = uploadedImages[imageRef]?.gallery || uploadedImages[sku]?.gallery || [];
+  const imageUrl = imageCandidates.map((key) => uploadedImages[key]?.main).find(Boolean) || uploadedImages[imageRef]?.main || uploadedImages[sku]?.main || gallery[0] || '';
 
   return {
     sku,
@@ -113,9 +119,14 @@ function buildProduct(row, sheetName, uploadedImages = {}) {
 
 function findDuplicate(product, existingProducts) {
   return existingProducts.find((item) => (
-    (product.sku && item.sku === product.sku) ||
     (product.barcode && item.barcode === product.barcode) ||
-    (product.name && product.author && item.name === product.name && item.author === product.author)
+    (
+      product.name &&
+      product.author &&
+      item.name === product.name &&
+      item.author === product.author &&
+      (!product.category || !item.category || item.category === product.category)
+    )
   ));
 }
 
