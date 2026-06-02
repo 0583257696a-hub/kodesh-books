@@ -1,0 +1,18 @@
+{
+  "name": "ChatSession",
+  "type": "object",
+  "properties": {
+    "visitor_id": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "ended_at": { "type": "string", "format": "date-time" },
+    "lead_created": { "type": "boolean", "default": false },
+    "searches_count": { "type": "number", "default": 0 }
+  },
+  "required": ["visitor_id", "started_at"],
+  "rls": {
+    "create": {},
+    "read": { "user_condition": { "role": "admin" } },
+    "update": {},
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

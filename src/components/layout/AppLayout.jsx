@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import CookieConsent from './CookieConsent';
+import StoreChatBot from '@/components/chat/StoreChatBot';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function AppLayout() {
@@ -34,6 +35,7 @@ export default function AppLayout() {
       </main>
       <Footer />
       <CookieConsent />
+      <StoreChatBot />
     </div>
   );
 }

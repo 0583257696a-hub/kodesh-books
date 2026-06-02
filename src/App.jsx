@@ -33,6 +33,7 @@ import SalesLeads from '@/pages/admin/SalesLeads';
 import BusinessManagement from '@/pages/admin/BusinessManagement';
 import EcommerceAnalytics from '@/pages/admin/EcommerceAnalytics';
 import BulkBookImport from '@/pages/admin/BulkBookImport';
+import AIChatSettings from '@/pages/admin/AIChatSettings';
 
 // Public store pages
 import AppLayout from '@/components/layout/AppLayout';
@@ -92,6 +93,7 @@ const AuthenticatedApp = () => {
         <Route path="business" element={<BusinessManagement />} />
         <Route path="analytics" element={<EcommerceAnalytics />} />
         <Route path="book-import" element={<BulkBookImport />} />
+        <Route path="ai-chat" element={<AIChatSettings />} />
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="content" element={<AdminContent />} />

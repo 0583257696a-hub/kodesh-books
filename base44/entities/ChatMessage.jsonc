@@ -1,0 +1,26 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "session_id": { "type": "string" },
+    "visitor_id": { "type": "string" },
+    "role": {
+      "type": "string",
+      "enum": ["user", "assistant", "system"]
+    },
+    "message": { "type": "string" },
+    "intent": { "type": "string" },
+    "matched_products": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["role", "message", "created_at"],
+  "rls": {
+    "create": {},
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
