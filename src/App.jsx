@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { CartProvider } from '@/context/CartContext';
+import ScrollToTop from '@/components/layout/ScrollToTop';
 
 // Public auth pages
 import Login from '@/pages/Login';
@@ -120,6 +121,7 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <CartProvider>
           <Router>
+            <ScrollToTop />
             <AuthenticatedApp />
           </Router>
           <Toaster />
