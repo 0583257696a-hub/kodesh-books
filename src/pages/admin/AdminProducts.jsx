@@ -20,6 +20,7 @@ const EMPTY = {
   image_url: '',
   author: '',
   sku: '',
+  tags: [],
   is_new: false,
   is_on_sale: false,
   is_featured: false,
@@ -92,6 +93,7 @@ export default function AdminProducts() {
       product.author?.toLowerCase().includes(q) ||
       product.rabbi?.toLowerCase().includes(q) ||
       product.publisher?.toLowerCase().includes(q) ||
+      (product.tags || []).some((tag) => tag?.toLowerCase().includes(q)) ||
       product.barcode?.toLowerCase().includes(q) ||
       product.sub_category?.toLowerCase().includes(q) ||
       CATEGORY_MAP[product.category]?.toLowerCase().includes(q) ||
@@ -188,7 +190,8 @@ export default function AdminProducts() {
                       {product.is_new && <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tagClass.new}`}>חדש</span>}
                       {product.is_on_sale && <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tagClass.sale}`}>מבצע</span>}
                       {product.is_featured && <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tagClass.featured}`}>מומלץ</span>}
-                      {!product.is_new && !product.is_on_sale && !product.is_featured && <span className="text-xs text-slate-400">אין תגיות</span>}
+                      {(product.tags || []).slice(0, 3).map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">{tag}</span>)}
+                      {!product.is_new && !product.is_on_sale && !product.is_featured && !(product.tags || []).length && <span className="text-xs text-slate-400">אין תגיות</span>}
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -251,6 +254,20 @@ export default function AdminProducts() {
               <div className="space-y-1.5">
                 <Label className="text-sm text-slate-700">תיאור מלא</Label>
                 <Textarea value={editItem.description || ''} onChange={(event) => setEditItem((current) => ({ ...current, description: event.target.value }))} className="border-slate-200 bg-white text-slate-950" rows={3} />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-sm text-slate-700">תגיות חיפוש והמלצה</Label>
+                <Input
+                  value={(editItem.tags || []).join(', ')}
+                  onChange={(event) => setEditItem((current) => ({
+                    ...current,
+                    tags: event.target.value.split(',').map((tag) => tag.trim()).filter(Boolean),
+                  }))}
+                  placeholder="אמונה, חינוך, שלום בית, ילדים, חתונה"
+                  className="border-slate-200 bg-white text-slate-950"
+                />
+                <p className="text-xs text-slate-500">הפרד תגיות בפסיקים. הספרן הדיגיטלי יחפש וימליץ גם לפי תגיות אלו.</p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">

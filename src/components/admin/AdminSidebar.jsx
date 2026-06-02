@@ -30,7 +30,7 @@ const NAV = [
   { label: 'ניהול החנות', icon: BriefcaseBusiness, path: '/secret-admin/business' },
   { label: 'אנליטיקת ספרים', icon: BarChart3, path: '/secret-admin/analytics' },
   { label: 'יבוא ספרים', icon: UploadCloud, path: '/secret-admin/book-import' },
-  { label: 'צ׳אט AI', icon: Bot, path: '/secret-admin/ai-chat' },
+  { label: 'Chat Intelligence', icon: Bot, path: '/secret-admin/chat-intelligence' },
   { label: 'קופונים', icon: Ticket, path: '/secret-admin/coupons' },
   { label: 'ניהול תוכן', icon: Megaphone, path: '/secret-admin/content' },
   { label: 'ניהול הרשאות', icon: Settings, path: '/secret-admin/settings' },

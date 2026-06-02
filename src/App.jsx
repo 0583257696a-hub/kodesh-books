@@ -94,6 +94,7 @@ const AuthenticatedApp = () => {
         <Route path="analytics" element={<EcommerceAnalytics />} />
         <Route path="book-import" element={<BulkBookImport />} />
         <Route path="ai-chat" element={<AIChatSettings />} />
+        <Route path="chat-intelligence" element={<AIChatSettings />} />
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="content" element={<AdminContent />} />

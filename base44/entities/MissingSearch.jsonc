@@ -1,0 +1,18 @@
+{
+  "name": "MissingSearch",
+  "type": "object",
+  "properties": {
+    "search_term": { "type": "string" },
+    "normalized_term": { "type": "string" },
+    "count": { "type": "number", "default": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "last_seen_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["search_term", "normalized_term"],
+  "rls": {
+    "create": {},
+    "read": { "user_condition": { "role": "admin" } },
+    "update": {},
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

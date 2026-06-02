@@ -1,17 +1,16 @@
 {
-  "name": "ChatFAQ",
+  "name": "RecommendationRule",
   "type": "object",
   "properties": {
-    "question": { "type": "string" },
-    "answer": { "type": "string" },
-    "category": { "type": "string" },
-    "keywords": {
+    "trigger_term": { "type": "string" },
+    "recommended_tags": {
       "type": "array",
       "items": { "type": "string" }
     },
-    "is_active": { "type": "boolean", "default": true }
+    "priority": { "type": "number", "default": 1 },
+    "active": { "type": "boolean", "default": true }
   },
-  "required": ["question", "answer"],
+  "required": ["trigger_term"],
   "rls": {
     "create": { "user_condition": { "role": "admin" } },
     "read": {
