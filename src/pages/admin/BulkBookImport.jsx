@@ -13,10 +13,20 @@ import { CATEGORY_NAME_TO_ID } from '@/lib/categories';
 
 const REQUIRED_COLUMNS = ['SKU', 'BookName', 'Price'];
 const BULK_COLUMNS = [
-  'SKU', 'Barcode', 'BookName', 'SubCategory', 'AdditionalCategories', 'Author', 'Rabbi', 'Publisher', 'Description',
-  'LongDescription', 'Price', 'SalePrice', 'StockQuantity', 'Weight', 'Language', 'ImageFileName',
-  'Featured', 'Recommended', 'New', 'Active',
+  'SKU', 'Barcode', 'BookName', 'Author', 'Publisher', 'Description', 'Price', 'SalePrice', 'StockQuantity', 'ImageFileName',
 ];
+const FIELD_LABELS = {
+  SKU: 'מק"ט',
+  Barcode: 'ברקוד',
+  BookName: 'שם הספר',
+  Author: 'מחבר / רב',
+  Publisher: 'הוצאה לאור',
+  Description: 'תיאור',
+  Price: 'מחיר',
+  SalePrice: 'מחיר מבצע',
+  StockQuantity: 'מלאי',
+  ImageFileName: 'תמונה',
+};
 const IMPORT_ACTIONS = {
   create: 'Create New',
   update: 'Update Existing',
@@ -32,6 +42,7 @@ const HEBREW_COLUMN_TO_FIELD = {
   'תת קטגוריה': 'SubCategory',
   'קטגוריות נוספות': 'AdditionalCategories',
   'מחבר': 'Author',
+  'מחבר / רב': 'Author',
   'רב': 'Rabbi',
   'הוצאה לאור': 'Publisher',
   'תיאור קצר': 'Description',
@@ -39,9 +50,11 @@ const HEBREW_COLUMN_TO_FIELD = {
   'מחיר': 'Price',
   'מחיר מבצע': 'SalePrice',
   'כמות במלאי': 'StockQuantity',
+  'מלאי': 'StockQuantity',
   'משקל': 'Weight',
   'שפה': 'Language',
   'שם קובץ תמונה': 'ImageFileName',
+  'תמונה': 'ImageFileName',
   'מוצג בדף הבית': 'Featured',
   'מומלץ': 'Recommended',
   'חדש': 'New',
@@ -67,14 +80,13 @@ function buildProduct(row, sheetName, uploadedImages = {}) {
   const imageKey = clean(row.ImageFileName) || `${sku}.jpg`;
   const gallery = uploadedImages[sku]?.gallery || [];
   const imageUrl = uploadedImages[imageKey]?.main || uploadedImages[sku]?.main || gallery[0] || '';
-  const active = clean(row.Active) ? !falsey(row.Active) : true;
 
   return {
     sku,
     barcode: clean(row.Barcode),
     name,
-    sub_category: clean(row.SubCategory),
-    additional_categories: clean(row.AdditionalCategories).split('|').map((item) => item.trim()).filter(Boolean),
+    sub_category: '',
+    additional_categories: [],
     author,
     rabbi: clean(row.Rabbi),
     publisher,
@@ -88,10 +100,10 @@ function buildProduct(row, sheetName, uploadedImages = {}) {
     image_url: imageUrl,
     gallery_urls: gallery,
     category: categoryIdFromSheet(sheetName),
-    is_featured: truthy(row.Featured) || truthy(row.Recommended),
-    is_new: truthy(row.New),
+    is_featured: false,
+    is_new: false,
     is_on_sale: numberValue(row.SalePrice) > 0,
-    in_stock: active && numberValue(row.StockQuantity) !== 0,
+    in_stock: numberValue(row.StockQuantity) !== 0,
     seo_title: `${name} | אוצר הקדושה`,
     meta_description: description || [name, author, publisher].filter(Boolean).join(' - '),
     slug: slugify(`${name}-${sku}`),
@@ -243,7 +255,10 @@ export default function BulkBookImport() {
               if (action === 'create' || action === 'skip') {
                 counts.skipped += 1;
               } else {
-                await base44.entities.Product.update(duplicate.id, product);
+                const updateProduct = { ...product };
+                delete updateProduct.is_featured;
+                delete updateProduct.is_new;
+                await base44.entities.Product.update(duplicate.id, updateProduct);
                 counts.updated += 1;
               }
             } else if (action === 'update') {
@@ -386,13 +401,13 @@ export default function BulkBookImport() {
         <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="mb-4 text-xl font-bold">תצוגה מקדימה</h2>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px] text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead className="bg-slate-50 text-slate-500">
-                <tr>{['גיליון', ...BULK_COLUMNS.slice(0, 9)].map((col) => <th key={col} className="px-3 py-2 text-right">{col}</th>)}</tr>
+                <tr>{['גיליון', ...BULK_COLUMNS].map((col) => <th key={col} className="px-3 py-2 text-right">{FIELD_LABELS[col] || col}</th>)}</tr>
               </thead>
               <tbody>{previewRows.map((row, index) => (
                 <tr key={`${row.sheetName}-${index}`} className="border-t border-slate-100">
-                  {['sheetName', ...BULK_COLUMNS.slice(0, 9)].map((col) => <td key={col} className="px-3 py-2 text-slate-700">{clean(row[col])}</td>)}
+                  {['sheetName', ...BULK_COLUMNS].map((col) => <td key={col} className="px-3 py-2 text-slate-700">{clean(row[col])}</td>)}
                 </tr>
               ))}</tbody>
             </table>
