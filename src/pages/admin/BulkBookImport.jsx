@@ -24,6 +24,7 @@ const IMPORT_ACTIONS = {
   skip: 'Skip Existing',
 };
 const IMPORT_TEMPLATE_URL = '/templates/otzar_hakodesh_books_import_template.xlsx';
+const FULL_IMPORT_UTILITY_SHEETS = ['הוראות', 'עדכון מחירים', 'עדכון מלאי'];
 
 const truthy = (value) => ['true', '1', 'yes', 'y', 'כן', 'פעיל', 'חדש', 'מומלץ'].includes(String(value ?? '').trim().toLowerCase());
 const falsey = (value) => ['false', '0', 'no', 'n', 'לא', 'לא פעיל', 'כבוי'].includes(String(value ?? '').trim().toLowerCase());
@@ -84,13 +85,35 @@ function findDuplicate(product, existingProducts) {
   ));
 }
 
-async function readWorkbook(file) {
+function isTemplateLabelRow(row) {
+  return clean(row.SKU) === 'מק"ט' || clean(row.BookName) === 'שם הספר';
+}
+
+function isTemplateExampleRow(row) {
+  return clean(row.Barcode) === '7290000000011' && (
+    clean(row.BookName).includes('לדוגמה') ||
+    clean(row.Author).includes('לדוגמה') ||
+    clean(row.Publisher).includes('לדוגמה')
+  );
+}
+
+function normalizeWorkbookRows(rows) {
+  return rows.filter((row) => (
+    !isTemplateLabelRow(row) &&
+    !isTemplateExampleRow(row) &&
+    BULK_COLUMNS.some((column) => clean(row[column]))
+  ));
+}
+
+async function readWorkbook(file, options = {}) {
   const buffer = await file.arrayBuffer();
   const workbook = XLSX.read(buffer, { type: 'array' });
-  return workbook.SheetNames.map((sheetName) => ({
-    sheetName,
-    rows: XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' }),
-  }));
+  return workbook.SheetNames
+    .filter((sheetName) => !options.fullImport || !FULL_IMPORT_UTILITY_SHEETS.includes(sheetName))
+    .map((sheetName) => ({
+      sheetName,
+      rows: normalizeWorkbookRows(XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: '' })),
+    }));
 }
 
 async function readImagesZip(file) {
@@ -156,7 +179,7 @@ export default function BulkBookImport() {
     setBusy(true);
     setErrors([]);
     try {
-      const parsed = await readWorkbook(workbookFile);
+      const parsed = await readWorkbook(workbookFile, { fullImport: true });
       setSheets(parsed);
       setStep(2);
     } catch (error) {
