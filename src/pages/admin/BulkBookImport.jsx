@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, FileSpreadsheet, Image as ImageIcon, PackageSearch, UploadCloud } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, Image as ImageIcon, PackageSearch, UploadCloud } from 'lucide-react';
 import { CATEGORY_NAME_TO_ID } from '@/lib/categories';
 
 const REQUIRED_COLUMNS = ['SKU', 'BookName', 'Price'];
@@ -23,6 +23,7 @@ const IMPORT_ACTIONS = {
   upsert: 'Create + Update',
   skip: 'Skip Existing',
 };
+const IMPORT_TEMPLATE_URL = '/templates/otzar_hakodesh_books_import_template.xlsx';
 
 const truthy = (value) => ['true', '1', 'yes', 'y', 'כן', 'פעיל', 'חדש', 'מומלץ'].includes(String(value ?? '').trim().toLowerCase());
 const falsey = (value) => ['false', '0', 'no', 'n', 'לא', 'לא פעיל', 'כבוי'].includes(String(value ?? '').trim().toLowerCase());
@@ -290,6 +291,11 @@ export default function BulkBookImport() {
           </label>
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
+          <Button asChild variant="outline" className="border-amber-300 bg-amber-50 text-slate-900 hover:bg-amber-100">
+            <a href={IMPORT_TEMPLATE_URL} download="תבנית יבוא ספרים - אוצר הקדושה.xlsx">
+              <Download className="ml-2 h-4 w-4" /> הורדת תבנית Excel
+            </a>
+          </Button>
           <Button onClick={analyzeWorkbook} disabled={!workbookFile || busy} className="bg-blue-600 text-white hover:bg-blue-700">
             <FileSpreadsheet className="ml-2 h-4 w-4" /> זיהוי גיליונות
           </Button>
