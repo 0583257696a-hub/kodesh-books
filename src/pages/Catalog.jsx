@@ -46,6 +46,12 @@ export default function Catalog() {
       result = result.filter(p =>
         p.name?.toLowerCase().includes(q) ||
         p.author?.toLowerCase().includes(q) ||
+        p.rabbi?.toLowerCase().includes(q) ||
+        p.publisher?.toLowerCase().includes(q) ||
+        p.sku?.toLowerCase().includes(q) ||
+        p.barcode?.toLowerCase().includes(q) ||
+        p.sub_category?.toLowerCase().includes(q) ||
+        CATEGORY_MAP[p.category]?.toLowerCase().includes(q) ||
         p.description?.toLowerCase().includes(q)
       );
     }

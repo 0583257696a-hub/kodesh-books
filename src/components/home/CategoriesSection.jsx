@@ -21,7 +21,7 @@ const categories = [
   { id: 'gemarot', name: 'גמרות ומשניות', icon: 'Library' },
   { id: 'halacha', name: 'הלכה', icon: 'Scale' },
   { id: 'chassidut', name: 'חסידות וקבלה', icon: 'Sparkles' },
-  { id: 'kids', name: 'ספרי ילדים', icon: 'Baby' },
+  { id: 'kids', name: 'ספרי ילדים ונוער', icon: 'Baby' },
   { id: 'siddurim', name: 'סידורים ומחזורים', icon: 'BookHeart' },
   { id: 'tashmishei_kedusha', name: 'תשמישי קדושה', icon: 'Flame' },
   { id: 'gifts', name: 'מתנות יהודיות', icon: 'Gift' },

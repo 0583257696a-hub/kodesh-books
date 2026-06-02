@@ -32,6 +32,7 @@ import AdminSettings from '@/pages/admin/AdminSettings';
 import SalesLeads from '@/pages/admin/SalesLeads';
 import BusinessManagement from '@/pages/admin/BusinessManagement';
 import EcommerceAnalytics from '@/pages/admin/EcommerceAnalytics';
+import BulkBookImport from '@/pages/admin/BulkBookImport';
 
 // Public store pages
 import AppLayout from '@/components/layout/AppLayout';
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
         <Route path="sales-leads" element={<SalesLeads />} />
         <Route path="business" element={<BusinessManagement />} />
         <Route path="analytics" element={<EcommerceAnalytics />} />
+        <Route path="book-import" element={<BulkBookImport />} />
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="content" element={<AdminContent />} />

@@ -1,0 +1,68 @@
+{
+  "name": "ImportHistory",
+  "type": "object",
+  "properties": {
+    "file_name": {
+      "type": "string",
+      "description": "שם הקובץ"
+    },
+    "import_type": {
+      "type": "string",
+      "description": "סוג יבוא"
+    },
+    "categories_imported": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "קטגוריות שיובאו"
+    },
+    "products_created": {
+      "type": "number",
+      "default": 0
+    },
+    "products_updated": {
+      "type": "number",
+      "default": 0
+    },
+    "products_skipped": {
+      "type": "number",
+      "default": 0
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "user_email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "file_name",
+    "import_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -90,6 +90,11 @@ export default function AdminProducts() {
     return (
       product.name?.toLowerCase().includes(q) ||
       product.author?.toLowerCase().includes(q) ||
+      product.rabbi?.toLowerCase().includes(q) ||
+      product.publisher?.toLowerCase().includes(q) ||
+      product.barcode?.toLowerCase().includes(q) ||
+      product.sub_category?.toLowerCase().includes(q) ||
+      CATEGORY_MAP[product.category]?.toLowerCase().includes(q) ||
       product.sku?.toLowerCase().includes(q)
     );
   });

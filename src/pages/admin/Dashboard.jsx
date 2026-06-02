@@ -2,14 +2,14 @@ import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { format, startOfMonth, subDays } from 'date-fns';
+import { format, isToday, startOfMonth, subDays } from 'date-fns';
 import { AlertCircle, Bell, CheckCircle2, Package, ShoppingBag, TrendingUp, Users } from 'lucide-react';
 import { buildAnalytics, buildExpenseRows, buildLeads, businessKpis, currency, safeDate } from '@/lib/businessCenterData';
 import { getLocalAnalyticsEvents } from '@/lib/ecommerceTracking';
 
 const q = async (entity, fallback = []) => {
   try {
-    return await base44.entities[entity].list('-created_date', 500);
+    return await base44.entities[entity].list('-created_date', entity === 'Product' ? 10000 : 500);
   } catch {
     return fallback;
   }
@@ -60,6 +60,9 @@ export default function Dashboard() {
   const monthlyOrders = orders.filter((order) => order.status !== 'cancelled' && safeDate(order.created_date) >= monthStart);
   const pendingPayments = orders.filter((order) => order.status === 'pending');
   const bestSeller = [...analytics.productStats].sort((a, b) => b.purchases - a.purchases)[0];
+  const outOfStockBooks = products.filter((product) => !product.in_stock || Number(product.stock_quantity || 0) === 0).length;
+  const lowStockBooks = products.filter((product) => product.in_stock && Number(product.stock_quantity || 0) > 0 && Number(product.stock_quantity || 0) <= 5).length;
+  const importedToday = products.filter((product) => product.imported_at && isToday(safeDate(product.imported_at))).length;
 
   const revenueChart = Array.from({ length: 10 }).map((_, index) => {
     const day = subDays(new Date(), 9 - index);
@@ -98,6 +101,9 @@ export default function Dashboard() {
         <StatCard icon={Package} label="הספר הנמכר ביותר" value={bestSeller?.name || 'אין נתונים'} sub={`${bestSeller?.purchases || 0} רכישות`} tone="amber" />
         <StatCard icon={Users} label="לידים חדשים" value={leads.filter((lead) => ['New Visitor', 'Registered'].includes(lead.status)).length} tone="blue" />
         <StatCard icon={ShoppingBag} label="הרשמות חדשות" value={users.filter((user) => safeDate(user.created_date) >= monthStart).length} tone="slate" />
+        <StatCard icon={Package} label="סה״כ ספרים" value={products.length} sub={`${products.filter((product) => product.in_stock).length} פעילים`} tone="blue" />
+        <StatCard icon={AlertCircle} label="אזלו מהמלאי" value={outOfStockBooks} sub={`${lowStockBooks} במלאי נמוך`} tone="rose" />
+        <StatCard icon={CheckCircle2} label="יובאו היום" value={importedToday} sub="ספרים חדשים מהיבוא" tone="green" />
       </div>
 
       <div className="mb-7 grid gap-5 xl:grid-cols-2">
