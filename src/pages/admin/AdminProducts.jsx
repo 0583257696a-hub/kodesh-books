@@ -21,6 +21,7 @@ const EMPTY = {
   author: '',
   sku: '',
   tags: [],
+  gallery_urls: [],
   is_new: false,
   is_on_sale: false,
   is_featured: false,
@@ -85,6 +86,33 @@ export default function AdminProducts() {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setEditItem((current) => ({ ...current, image_url: file_url }));
     setUploading(false);
+  };
+
+  const handleGalleryImages = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        uploaded.push(file_url);
+      }
+      setEditItem((current) => ({
+        ...current,
+        gallery_urls: [...(current.gallery_urls || []), ...uploaded],
+      }));
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
+  };
+
+  const removeGalleryImage = (url) => {
+    setEditItem((current) => ({
+      ...current,
+      gallery_urls: (current.gallery_urls || []).filter((item) => item !== url),
+    }));
   };
 
   const filtered = products.filter((product) => {
@@ -298,6 +326,29 @@ export default function AdminProducts() {
                 <Input type="file" accept="image/*" onChange={handleImage} className="border-slate-200 bg-white text-slate-950" />
                 {uploading && <p className="text-sm text-blue-700">מעלה תמונה...</p>}
                 {editItem.image_url && <img src={editItem.image_url} alt="תמונת מוצר" className="mt-2 h-24 w-24 rounded-lg border border-slate-200 object-cover" />}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-sm text-slate-700">תמונות נוספות לספר</Label>
+                <Input type="file" accept="image/*" multiple onChange={handleGalleryImages} className="border-slate-200 bg-white text-slate-950" />
+                <p className="text-xs text-slate-500">אפשר לבחור כמה תמונות יחד. הן יוצגו בגלריה בדף המוצר.</p>
+                {(editItem.gallery_urls || []).length > 0 && (
+                  <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-5">
+                    {(editItem.gallery_urls || []).map((url) => (
+                      <div key={url} className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                        <img src={url} alt="תמונה נוספת" className="h-24 w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeGalleryImage(url)}
+                          className="absolute left-1 top-1 rounded-full bg-white/90 p-1 text-rose-600 shadow-sm hover:bg-rose-50"
+                          aria-label="הסר תמונה"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">

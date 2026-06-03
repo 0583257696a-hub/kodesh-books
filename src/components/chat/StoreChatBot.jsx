@@ -41,6 +41,7 @@ const SYNONYMS = {
   'חומש': ['תורה', 'מקראות גדולות'],
   'רב עובדיה': ['עובדיה יוסף', 'חזון עובדיה', 'יביע אומר'],
   'ילדים': ['נוער', 'ילד', 'ילדה'],
+  'מתנה': ['מתנות', 'מתנות יהודיות'],
   'ספר לחתן': ['חתונה', 'שלום בית', 'הדרכת חתנים'],
   'ספר לילד': ['ילדים', 'נוער'],
 };
@@ -130,15 +131,48 @@ function scoreText(haystack, terms) {
     if (haystack.includes(term)) return total + 5;
     if (words.some((word) => word.startsWith(term))) return total + 4;
     if (words.some((word) => term.startsWith(word) && word.length > 2)) return total + 2;
-    if (term.length >= 4 && words.some((word) => Math.abs(word.length - term.length) <= 1 && editDistance(word, term) <= 1)) return total + 2;
+    if (term.length >= 5 && words.some((word) => Math.abs(word.length - term.length) <= 1 && editDistance(word, term) <= 1)) return total + 1;
     return total;
   }, 0);
+}
+
+function scoreField(value, terms, weight) {
+  const text = normalize(value);
+  if (!text) return 0;
+  const words = text.split(/\s+/).filter(Boolean);
+  return terms.reduce((total, term) => {
+    if (!term) return total;
+    if (text === term) return total + weight * 3;
+    if (text.includes(term)) return total + weight * 2;
+    if (words.some((word) => word.startsWith(term))) return total + weight * 1.6;
+    if (term.length >= 5 && words.some((word) => Math.abs(word.length - term.length) <= 1 && editDistance(word, term) <= 1)) {
+      return total + weight * 0.5;
+    }
+    return total;
+  }, 0);
+}
+
+function scoreProduct(product, terms, categoryMap = CATEGORY_MAP) {
+  return (
+    scoreField(product.name, terms, 10) +
+    scoreField(product.author, terms, 7) +
+    scoreField(product.rabbi, terms, 7) +
+    scoreField(product.publisher, terms, 5) +
+    scoreField(categoryMap[product.category], terms, 8) +
+    scoreField(product.category, terms, 5) +
+    scoreField(product.sub_category, terms, 7) +
+    scoreField((product.tags || []).join(' '), terms, 8) +
+    scoreField((product.additional_categories || []).join(' '), terms, 6) +
+    scoreField(product.description, terms, 2) +
+    scoreField(product.long_description, terms, 1)
+  );
 }
 
 function findProducts(products, message, dynamicSynonyms = [], rules = [], categoryMap = CATEGORY_MAP) {
   const cacheKey = `${normalize(message)}|${products.length}|${dynamicSynonyms.length}|${rules.length}`;
   if (SEARCH_CACHE.has(cacheKey)) return SEARCH_CACHE.get(cacheKey);
   const terms = expandTerms(message, dynamicSynonyms);
+  if (terms.length === 0) return [];
   const saleMode = normalize(message).includes('מבצע');
   const kidsMode = normalize(message).includes('ילד') || normalize(message).includes('נוער');
   const bestMode = normalize(message).includes('רבי מכר') || normalize(message).includes('מומלץ');
@@ -151,7 +185,7 @@ function findProducts(products, message, dynamicSynonyms = [], rules = [], categ
     .filter((product) => product.in_stock !== false)
     .map((product) => {
       const haystack = productText(product, categoryMap);
-      let score = scoreText(haystack, terms);
+      let score = scoreProduct(product, terms, categoryMap);
       const tags = (product.tags || []).map(normalize);
       score += ruleTags.reduce((total, tag) => total + (tags.includes(normalize(tag)) || haystack.includes(normalize(tag)) ? 8 : 0), 0);
       if (saleMode && product.is_on_sale) score += 8;
@@ -161,7 +195,7 @@ function findProducts(products, message, dynamicSynonyms = [], rules = [], categ
       if (normalize(product.name).includes(normalize(message))) score += 12;
       return { product, score };
     })
-    .filter((item) => item.score > 0)
+    .filter((item) => item.score >= 6)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5)
     .map((item) => item.product);

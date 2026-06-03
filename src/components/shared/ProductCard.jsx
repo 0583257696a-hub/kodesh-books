@@ -4,12 +4,18 @@ import { ShoppingCart, BookOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
+  const navigate = useNavigate();
   const { categoryMap } = useStoreCategories();
+  const productPath = `/product/${product.id}`;
+
+  const openProduct = () => {
+    navigate(productPath);
+  };
 
   return (
     <motion.div
@@ -20,8 +26,20 @@ export default function ProductCard({ product }) {
     >
       <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gold/10">
         {/* Image */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
-          <Link to={`/product/${product.id}`} className="block h-full w-full" aria-label={`פתח את ${product.name}`}>
+        <div
+          role="link"
+          tabIndex={0}
+          onClick={openProduct}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openProduct();
+            }
+          }}
+          className="relative aspect-[3/4] cursor-pointer overflow-hidden bg-secondary"
+          aria-label={`פתח את ${product.name}`}
+        >
+          <div className="block h-full w-full">
             {product.image_url ? (
               <img src={product.image_url} alt={product.name} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
             ) : (
@@ -29,7 +47,7 @@ export default function ProductCard({ product }) {
                 <BookOpen className="h-16 w-16 text-gold/30" />
               </div>
             )}
-          </Link>
+          </div>
 
           {/* Tags */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
@@ -44,7 +62,7 @@ export default function ProductCard({ product }) {
           {/* Add to cart overlay */}
           <div className="absolute bottom-0 left-0 right-0 z-10 translate-y-full transition-transform duration-300 group-hover:translate-y-0">
             <Button
-              onClick={(e) => { e.preventDefault(); addItem(product); }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); addItem(product); }}
               className="w-full bg-gold/95 text-walnut hover:bg-gold font-body rounded-none py-3 text-sm"
               aria-label={`הוסף את ${product.name} לעגלה`}
             >
@@ -55,7 +73,7 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* Info */}
-        <Link to={`/product/${product.id}`}>
+        <Link to={productPath}>
           <div className="p-4">
             {product.category && (
               <span className="text-gold text-xs font-body">{categoryMap[product.category] || product.category}</span>

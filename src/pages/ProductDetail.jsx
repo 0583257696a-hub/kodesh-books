@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -11,14 +11,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import AlsoBought from '@/components/product/AlsoBought';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 export default function ProductDetail() {
   const urlParams = new URLSearchParams(window.location.search);
   const productId = window.location.pathname.split('/product/')[1];
   const [quantity, setQuantity] = useState(1);
   const [imageOpen, setImageOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState('');
   const { addItem } = useCart();
   const { settings } = useSiteSettings();
+  const { categoryMap } = useStoreCategories();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
@@ -31,6 +34,7 @@ export default function ProductDetail() {
 
   useEffect(() => {
     if (!product) return;
+    setSelectedImage(product.image_url || product.gallery_urls?.[0] || '');
     trackEcommerceEvent({
       event_type: 'product_view',
       product_id: product.id,
@@ -38,6 +42,13 @@ export default function ProductDetail() {
       value: product.sale_price || product.price || 0,
     });
   }, [product]);
+
+  const productImages = useMemo(() => {
+    if (!product) return [];
+    return [...new Set([product.image_url, ...(product.gallery_urls || [])].filter(Boolean))];
+  }, [product]);
+
+  const mainImage = selectedImage || productImages[0] || '';
 
   useEffect(() => {
     if (!imageOpen) return undefined;
@@ -111,35 +122,52 @@ export default function ProductDetail() {
       <div className="max-w-5xl mx-auto px-4 py-6">
         <div className="grid md:grid-cols-2 gap-10">
           {/* Image */}
-          <div className="relative rounded-xl overflow-hidden bg-white shadow-sm border border-gold/10 aspect-[3/4]">
-            {product.image_url ? (
-              <button
-                type="button"
-                onClick={() => setImageOpen(true)}
-                className="group h-full w-full cursor-zoom-in"
-                aria-label={`פתח תמונה מוגדלת של ${product.name}`}
-              >
-                <img src={product.image_url} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-lg bg-walnut/85 px-3 py-2 font-body text-sm font-semibold text-cream opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                  <ZoomIn className="h-4 w-4" aria-hidden="true" />
-                  הגדל תמונה
-                </span>
-              </button>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-secondary">
-                <BookOpen className="h-24 w-24 text-gold/20" aria-hidden="true" />
+          <div>
+            <div className="relative rounded-xl overflow-hidden bg-white shadow-sm border border-gold/10 aspect-[3/4]">
+              {mainImage ? (
+                <button
+                  type="button"
+                  onClick={() => setImageOpen(true)}
+                  className="group h-full w-full cursor-zoom-in"
+                  aria-label={`פתח תמונה מוגדלת של ${product.name}`}
+                >
+                  <img src={mainImage} alt={product.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <span className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-lg bg-walnut/85 px-3 py-2 font-body text-sm font-semibold text-cream opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                    <ZoomIn className="h-4 w-4" aria-hidden="true" />
+                    הגדל תמונה
+                  </span>
+                </button>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-secondary">
+                  <BookOpen className="h-24 w-24 text-gold/20" aria-hidden="true" />
+                </div>
+              )}
+              <div className="absolute top-4 right-4 flex flex-col gap-2">
+                {product.is_new && <Badge className="bg-gold text-walnut font-body">חדש</Badge>}
+                {product.is_on_sale && <Badge className="bg-red-600 text-white font-body">מבצע</Badge>}
+              </div>
+            </div>
+            {productImages.length > 1 && (
+              <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
+                {productImages.map((imageUrl, index) => (
+                  <button
+                    key={imageUrl}
+                    type="button"
+                    onClick={() => setSelectedImage(imageUrl)}
+                    className={`aspect-square overflow-hidden rounded-lg border bg-white transition ${imageUrl === mainImage ? 'border-gold ring-2 ring-gold/30' : 'border-gold/15 hover:border-gold/60'}`}
+                    aria-label={`הצג תמונה ${index + 1} של ${product.name}`}
+                  >
+                    <img src={imageUrl} alt={`${product.name} תמונה ${index + 1}`} className="h-full w-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
-            <div className="absolute top-4 right-4 flex flex-col gap-2">
-              {product.is_new && <Badge className="bg-gold text-walnut font-body">חדש</Badge>}
-              {product.is_on_sale && <Badge className="bg-red-600 text-white font-body">מבצע</Badge>}
-            </div>
           </div>
 
           {/* Info */}
           <div className="space-y-6">
             {product.category && (
-              <span className="text-gold font-body text-sm">{CATEGORY_MAP[product.category]}</span>
+              <span className="text-gold font-body text-sm">{categoryMap[product.category] || CATEGORY_MAP[product.category]}</span>
             )}
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground">{product.name}</h1>
             {product.author && (
@@ -203,7 +231,7 @@ export default function ProductDetail() {
         </Button>
       </div>
 
-      {imageOpen && product.image_url && (
+      {imageOpen && mainImage && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-walnut/85 p-4 backdrop-blur-sm"
           role="dialog"
@@ -224,7 +252,7 @@ export default function ProductDetail() {
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
-            <img src={product.image_url} alt={product.name} className="max-h-[86vh] w-full rounded-lg object-contain" />
+            <img src={mainImage} alt={product.name} className="max-h-[86vh] w-full rounded-lg object-contain" />
           </div>
         </div>
       )}
