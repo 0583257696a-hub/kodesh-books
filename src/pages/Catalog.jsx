@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { CATEGORIES, CATEGORY_MAP } from '@/lib/categories';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 export default function Catalog() {
   const location = useLocation();
@@ -21,6 +21,7 @@ export default function Catalog() {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('newest');
+  const { categories, categoryMap } = useStoreCategories();
 
   useEffect(() => {
     setSelectedCategory(initialCategory);
@@ -51,7 +52,7 @@ export default function Catalog() {
         p.sku?.toLowerCase().includes(q) ||
         p.barcode?.toLowerCase().includes(q) ||
         p.sub_category?.toLowerCase().includes(q) ||
-        CATEGORY_MAP[p.category]?.toLowerCase().includes(q) ||
+        categoryMap[p.category]?.toLowerCase().includes(q) ||
         p.description?.toLowerCase().includes(q)
       );
     }
@@ -63,7 +64,7 @@ export default function Catalog() {
     }
 
     return result;
-  }, [allProducts, selectedCategory, searchQuery, sortBy, isSale]);
+  }, [allProducts, selectedCategory, searchQuery, sortBy, isSale, categoryMap]);
 
   useEffect(() => {
     if (!searchQuery.trim() || isLoading) return;
@@ -93,7 +94,7 @@ export default function Catalog() {
           >
             הכל
           </Button>
-          {CATEGORIES.map(cat => (
+          {categories.map(cat => (
             <Button
               key={cat.id}
               variant={selectedCategory === cat.id ? 'default' : 'ghost'}
@@ -134,7 +135,7 @@ export default function Catalog() {
       <div className="bg-walnut py-12 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="font-heading text-3xl md:text-4xl font-bold text-cream mb-2">
-            {isSale ? 'מבצעים' : selectedCategory ? CATEGORY_MAP[selectedCategory] : 'קטלוג ספרים'}
+            {isSale ? 'מבצעים' : selectedCategory ? categoryMap[selectedCategory] : 'קטלוג ספרים'}
           </h1>
           <div className="w-16 h-0.5 bg-gold mx-auto" />
         </div>

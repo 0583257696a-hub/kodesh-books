@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, ShoppingCart, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
-import { CATEGORY_MAP } from '@/lib/categories';
 
 const VISIBLE = 4; // items visible on desktop
 const INTERVAL = 3500; // 3.5 seconds

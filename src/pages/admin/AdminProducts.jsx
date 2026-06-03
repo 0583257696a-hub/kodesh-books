@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Loader2, Search, Package } from 'lucide-react';
-import { CATEGORIES, CATEGORY_MAP } from '@/lib/categories';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 const EMPTY = {
   name: '',
@@ -41,6 +41,7 @@ export default function AdminProducts() {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
+  const { categories, categoryMap } = useStoreCategories();
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['admin-products'],
@@ -96,7 +97,7 @@ export default function AdminProducts() {
       (product.tags || []).some((tag) => tag?.toLowerCase().includes(q)) ||
       product.barcode?.toLowerCase().includes(q) ||
       product.sub_category?.toLowerCase().includes(q) ||
-      CATEGORY_MAP[product.category]?.toLowerCase().includes(q) ||
+      categoryMap[product.category]?.toLowerCase().includes(q) ||
       product.sku?.toLowerCase().includes(q)
     );
   });
@@ -169,7 +170,7 @@ export default function AdminProducts() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-slate-600">{CATEGORY_MAP[product.category] || '-'}</td>
+                  <td className="px-5 py-4 text-slate-600">{categoryMap[product.category] || '-'}</td>
                   <td className="px-5 py-4">
                     {product.is_on_sale && product.sale_price ? (
                       <div>
@@ -284,8 +285,8 @@ export default function AdminProducts() {
                   <Select value={editItem.category} onValueChange={(value) => setEditItem((current) => ({ ...current, category: value }))}>
                     <SelectTrigger className="border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-white">
-                      {CATEGORIES.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.slug} value={category.slug}>{category.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

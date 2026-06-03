@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCart } from '@/context/CartContext';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import { CATEGORY_MAP } from '@/lib/categories';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { cn } from '@/lib/utils';
 
 const QUICK_ACTIONS = ['חפש ספר', 'רבי מכר', 'מבצעים', 'ספרי ילדים', 'סידורים ומחזורים', 'דבר עם נציג'];
@@ -102,7 +103,7 @@ function expandTerms(text, dynamicSynonyms = []) {
   return [...new Set([...base, ...staticExtra, ...dynamicExtra].flatMap(singularVariants))].filter((term) => term.length > 1);
 }
 
-function productText(product) {
+function productText(product, categoryMap = CATEGORY_MAP) {
   return normalize([
     product.name,
     product.author,
@@ -112,7 +113,7 @@ function productText(product) {
     product.long_description,
     ...(product.tags || []),
     ...(product.additional_categories || []),
-    CATEGORY_MAP[product.category],
+    categoryMap[product.category],
     product.category,
     product.sub_category,
   ].filter(Boolean).join(' '));
@@ -134,7 +135,7 @@ function scoreText(haystack, terms) {
   }, 0);
 }
 
-function findProducts(products, message, dynamicSynonyms = [], rules = []) {
+function findProducts(products, message, dynamicSynonyms = [], rules = [], categoryMap = CATEGORY_MAP) {
   const cacheKey = `${normalize(message)}|${products.length}|${dynamicSynonyms.length}|${rules.length}`;
   if (SEARCH_CACHE.has(cacheKey)) return SEARCH_CACHE.get(cacheKey);
   const terms = expandTerms(message, dynamicSynonyms);
@@ -149,7 +150,7 @@ function findProducts(products, message, dynamicSynonyms = [], rules = []) {
   const results = products
     .filter((product) => product.in_stock !== false)
     .map((product) => {
-      const haystack = productText(product);
+      const haystack = productText(product, categoryMap);
       let score = scoreText(haystack, terms);
       const tags = (product.tags || []).map(normalize);
       score += ruleTags.reduce((total, tag) => total + (tags.includes(normalize(tag)) || haystack.includes(normalize(tag)) ? 8 : 0), 0);
@@ -186,6 +187,7 @@ export default function StoreChatBot() {
   const queryClient = useQueryClient();
   const { addItem } = useCart();
   const { settings } = useSiteSettings();
+  const { categoryMap } = useStoreCategories();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [sessionId, setSessionId] = useState(null);
@@ -320,7 +322,7 @@ export default function StoreChatBot() {
     }
 
     if (HALACHA_PATTERNS.some((pattern) => lower.includes(pattern))) {
-      const productsFound = findProducts(products, text, synonyms, rules);
+      const productsFound = findProducts(products, text, synonyms, rules, categoryMap);
       return {
         intent: 'halacha_referral',
         text: 'אינני מספק פסיקה הלכתית. אשמח להמליץ על ספרים בנושא כדי שתוכל ללמוד או להתייעץ עם רב מוסמך.',
@@ -329,7 +331,7 @@ export default function StoreChatBot() {
     }
 
     const faq = findFAQ(faqs, text, synonyms);
-    const productsFound = findProducts(products, text, synonyms, rules);
+    const productsFound = findProducts(products, text, synonyms, rules, categoryMap);
     if (productsFound.length) {
       return {
         intent: 'product_search',

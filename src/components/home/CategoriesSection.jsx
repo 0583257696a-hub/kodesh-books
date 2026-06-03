@@ -1,33 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, Library, Scale, Sparkles, Baby, BookHeart, Flame, Gift } from 'lucide-react';
+import { Baby, BookHeart, BookOpen, Boxes, Flame, FolderOpen, Gift, Library, Scale, Sparkles } from 'lucide-react';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 
-const CATEGORY_IMAGES = {
-  chumashim: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/c7956dabc_generated_58adb81d.png',
-  gemarot: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/522a640b6_generated_aae8d1f9.png',
-  halacha: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/492a71714_generated_ef0436d4.png',
-  chassidut: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f0982ad6d_generated_8f79bc9b.png',
-  kids: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/cd371a324_generated_686fa02d.png',
-  siddurim: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f910326d1_generated_d7cb5ac1.png',
-  tashmishei_kedusha: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/583d0969f_generated_5e782f7b.png',
-  gifts: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/0d11dfa5e_generated_df9cd4ac.png',
-};
-
-const ICON_MAP = { BookOpen, Library, Scale, Sparkles, Baby, BookHeart, Flame, Gift };
-
-const categories = [
-  { id: 'chumashim', name: 'חומשים', icon: 'BookOpen' },
-  { id: 'gemarot', name: 'גמרות ומשניות', icon: 'Library' },
-  { id: 'halacha', name: 'הלכה', icon: 'Scale' },
-  { id: 'chassidut', name: 'חסידות וקבלה', icon: 'Sparkles' },
-  { id: 'kids', name: 'ספרי ילדים ונוער', icon: 'Baby' },
-  { id: 'siddurim', name: 'סידורים ומחזורים', icon: 'BookHeart' },
-  { id: 'tashmishei_kedusha', name: 'תשמישי קדושה', icon: 'Flame' },
-  { id: 'gifts', name: 'מתנות יהודיות', icon: 'Gift' },
-];
+const ICON_MAP = { Baby, BookHeart, BookOpen, Boxes, Flame, FolderOpen, Gift, Library, Scale, Sparkles };
 
 export default function CategoriesSection() {
+  const { categories } = useStoreCategories();
+  const homeCategories = categories.filter((category) => category.show_in_home);
+
   return (
     <section className="py-20 px-4 bg-cream">
       <div className="max-w-7xl mx-auto">
@@ -40,19 +22,25 @@ export default function CategoriesSection() {
 
         {/* Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {categories.map((cat, i) => {
-            const Icon = ICON_MAP[cat.icon];
+          {homeCategories.map((cat, i) => {
+            const Icon = ICON_MAP[cat.icon] || FolderOpen;
             return (
               <motion.div
-                key={cat.id}
+                key={cat.slug}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.5 }}
               >
-                <Link to={`/catalog?category=${cat.id}`} className="block group">
+                <Link to={`/catalog?category=${cat.slug}`} className="block group">
                   <div className="relative overflow-hidden rounded-xl aspect-square shadow-md hover:shadow-xl transition-all duration-500">
-                    <img src={CATEGORY_IMAGES[cat.id]} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    {cat.image_url ? (
+                      <img src={cat.image_url} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-walnut/10">
+                        <Icon className="h-12 w-12 text-gold" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-walnut/90 via-walnut/40 to-transparent" />
                     
                     {/* Content */}

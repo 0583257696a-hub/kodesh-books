@@ -10,6 +10,7 @@ export const CATEGORIES = [
   { id: 'siddurim', name: 'סידורים ומחזורים', icon: 'BookHeart' },
   { id: 'tashmishei_kedusha', name: 'תשמישי קדושה', icon: 'Flame' },
   { id: 'gifts', name: 'מתנות יהודיות', icon: 'Gift' },
+  { id: 'other', name: 'שונות', icon: 'Boxes' },
 ];
 
 export const CATEGORY_MAP = CATEGORIES.reduce((acc, cat) => {
@@ -24,4 +25,8 @@ export const CATEGORY_NAME_TO_ID = CATEGORIES.reduce((acc, cat) => {
   'ספרי ילדים ונוער': 'kids',
   'ספרי חב"ד': 'chabad',
   'ספרי חב״ד': 'chabad',
+  'אחר': 'other',
+  'אחרים': 'other',
+  'כללי': 'other',
+  'שונות': 'other',
 });

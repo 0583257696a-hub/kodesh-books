@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, Image as ImageIcon, PackageSearch, UploadCloud } from 'lucide-react';
 import { CATEGORY_NAME_TO_ID } from '@/lib/categories';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 const REQUIRED_COLUMNS = ['SKU', 'BookName', 'Price'];
 const BULK_COLUMNS = [
@@ -33,7 +34,6 @@ const IMPORT_ACTIONS = {
   upsert: 'Create + Update',
   skip: 'Skip Existing',
 };
-const IMPORT_TEMPLATE_URL = '/templates/otzar_hakodesh_books_import_template.xlsx';
 const FULL_IMPORT_UTILITY_SHEETS = ['הוראות', 'עדכון מחירים', 'עדכון מלאי'];
 const HEBREW_COLUMN_TO_FIELD = {
   'מק"ט': 'SKU',
@@ -100,11 +100,11 @@ function imageLookupKeys(value) {
   return [...new Set(keys.filter(Boolean))];
 }
 
-function categoryIdFromSheet(sheetName) {
-  return CATEGORY_NAME_TO_ID[sheetName] || slugify(sheetName).replace(/-/g, '_');
+function categoryIdFromSheet(sheetName, categoryNameToId = CATEGORY_NAME_TO_ID) {
+  return categoryNameToId[sheetName] || slugify(sheetName).replace(/-/g, '_');
 }
 
-function buildProduct(row, sheetName, uploadedImages = {}) {
+function buildProduct(row, sheetName, uploadedImages = {}, categoryNameToId = CATEGORY_NAME_TO_ID) {
   const sku = clean(row.SKU);
   const name = clean(row.BookName);
   const author = clean(row.Author);
@@ -134,7 +134,7 @@ function buildProduct(row, sheetName, uploadedImages = {}) {
     language: clean(row.Language),
     image_url: imageUrl,
     gallery_urls: gallery,
-    category: categoryIdFromSheet(sheetName),
+    category: categoryIdFromSheet(sheetName, categoryNameToId),
     is_featured: false,
     is_new: false,
     is_on_sale: numberValue(row.SalePrice) > 0,
@@ -227,6 +227,7 @@ async function readImagesZip(file) {
 
 export default function BulkBookImport() {
   const queryClient = useQueryClient();
+  const { categories, categoryNameToId } = useStoreCategories();
   const [workbookFile, setWorkbookFile] = useState(null);
   const [zipFile, setZipFile] = useState(null);
   const [sheets, setSheets] = useState([]);
@@ -250,10 +251,10 @@ export default function BulkBookImport() {
 
   const summary = useMemo(() => sheets.map((sheet) => ({
     category: sheet.sheetName,
-    id: categoryIdFromSheet(sheet.sheetName),
+    id: categoryIdFromSheet(sheet.sheetName, categoryNameToId),
     count: sheet.rows.length,
     missing: sheet.rows.length === 0 ? [] : REQUIRED_COLUMNS.filter((col) => !Object.keys(sheet.rows[0] || {}).includes(col)),
-  })), [sheets]);
+  })), [sheets, categoryNameToId]);
 
   const previewRows = sheets.flatMap((sheet) => sheet.rows.slice(0, 6).map((row) => ({ sheetName: sheet.sheetName, ...row }))).slice(0, 30);
   const activeSummary = summary.filter((item) => item.count > 0);
@@ -291,7 +292,7 @@ export default function BulkBookImport() {
       for (let i = 0; i < rows.length; i += 1) {
         const { sheetName, row } = rows[i];
         try {
-          const product = buildProduct(row, sheetName, uploadedImages);
+          const product = buildProduct(row, sheetName, uploadedImages, categoryNameToId);
           if (!product.name || !product.price) {
             counts.skipped += 1;
           } else {
@@ -375,6 +376,40 @@ export default function BulkBookImport() {
     }
   };
 
+  const downloadImportTemplate = () => {
+    const workbook = XLSX.utils.book_new();
+    workbook.Workbook = { Views: [{ RTL: true }] };
+    const headers = BULK_COLUMNS.map((column) => FIELD_LABELS[column]);
+    const exampleRow = ['1', '', 'שם הספר', 'מחבר / רב', 'הוצאה לאור', 'תיאור קצר', 100, 80, 10, '1'];
+
+    const instructionRows = [
+      ['הוראות'],
+      ['כל גיליון הוא קטגוריה באתר. אפשר להוסיף ספרים רק בגיליונות הרלוונטיים ולהשאיר גיליונות אחרים ריקים.'],
+      ['עמודות חובה: מספר, שם הספר, מחיר. מספר התמונה תואם לקובץ תמונה בתוך images.zip, לדוגמה 1.jpg או 1.png.'],
+      ['ניתן להתחיל בכל גיליון שוב ממספר 1. כפילות נבדקת לפי ברקוד או לפי שם הספר + מחבר + קטגוריה.'],
+    ];
+    const instructions = XLSX.utils.aoa_to_sheet(instructionRows);
+    instructions['!rtl'] = true;
+    XLSX.utils.book_append_sheet(workbook, instructions, 'הוראות');
+
+    categories.forEach((category) => {
+      const sheet = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
+      sheet['!rtl'] = true;
+      sheet['!cols'] = headers.map(() => ({ wch: 18 }));
+      XLSX.utils.book_append_sheet(workbook, sheet, category.name.slice(0, 31));
+    });
+
+    const priceSheet = XLSX.utils.aoa_to_sheet([['מספר', 'מחיר', 'מחיר מבצע'], ['1', 100, 80]]);
+    priceSheet['!rtl'] = true;
+    XLSX.utils.book_append_sheet(workbook, priceSheet, 'עדכון מחירים');
+
+    const stockSheet = XLSX.utils.aoa_to_sheet([['מספר', 'מלאי'], ['1', 10]]);
+    stockSheet['!rtl'] = true;
+    XLSX.utils.book_append_sheet(workbook, stockSheet, 'עדכון מלאי');
+
+    XLSX.writeFile(workbook, 'תבנית יבוא ספרים - אוצר הקדושה.xlsx', { bookType: 'xlsx' });
+  };
+
   return (
     <div className="min-h-screen space-y-6 bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div>
@@ -409,10 +444,8 @@ export default function BulkBookImport() {
           </label>
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button asChild variant="outline" className="border-amber-300 bg-amber-50 text-slate-900 hover:bg-amber-100">
-            <a href={IMPORT_TEMPLATE_URL} download="תבנית יבוא ספרים - אוצר הקדושה.xlsx">
-              <Download className="ml-2 h-4 w-4" /> הורדת תבנית Excel
-            </a>
+          <Button type="button" onClick={downloadImportTemplate} variant="outline" className="border-amber-300 bg-amber-50 text-slate-900 hover:bg-amber-100">
+            <Download className="ml-2 h-4 w-4" /> הורדת תבנית Excel לפי הקטגוריות
           </Button>
           <Button onClick={analyzeWorkbook} disabled={!workbookFile || busy} className="bg-blue-600 text-white hover:bg-blue-700">
             <FileSpreadsheet className="ml-2 h-4 w-4" /> זיהוי גיליונות

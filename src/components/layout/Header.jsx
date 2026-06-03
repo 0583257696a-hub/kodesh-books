@@ -6,26 +6,26 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
-
-const NAV_ITEMS = [
-  { label: 'ראשי', path: '/' },
-  { label: 'ספרי קודש', path: '/catalog' },
-  { label: 'גמרות ומשניות', path: '/catalog?category=gemarot' },
-  { label: 'הלכה', path: '/catalog?category=halacha' },
-  { label: 'חסידות וקבלה', path: '/catalog?category=chassidut' },
-  { label: 'ילדים ונוער', path: '/catalog?category=kids' },
-  { label: 'מתנות יהודיות', path: '/catalog?category=gifts' },
-  { label: 'מבצעים', path: '/catalog?sale=true' },
-  { label: 'צור קשר', path: '/contact' },
-];
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 export default function Header() {
   const navigate = useNavigate();
   const { totalItems } = useCart();
   const { settings } = useSiteSettings();
+  const { categories } = useStoreCategories();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const navItems = [
+    { label: 'ראשי', path: '/' },
+    { label: 'כל הספרים', path: '/catalog' },
+    ...categories
+      .filter((category) => category.show_in_nav)
+      .map((category) => ({ label: category.name, path: `/catalog?category=${category.slug}` })),
+    { label: 'מבצעים', path: '/catalog?sale=true' },
+    { label: 'צור קשר', path: '/contact' },
+  ];
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -60,8 +60,8 @@ export default function Header() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-cream w-80">
-              <nav className="flex flex-col gap-4 mt-8" aria-label="תפריט ניווט לנייד">
-                {NAV_ITEMS.map(item => (
+              <nav className="mt-8 flex max-h-[calc(100vh-5rem)] flex-col gap-3 overflow-y-auto pr-1" aria-label="תפריט ניווט לנייד">
+                {navItems.map(item => (
                   <button
                     type="button"
                     key={item.path + item.label}
@@ -122,8 +122,8 @@ export default function Header() {
       {/* Desktop navigation */}
       <nav className="hidden lg:block border-t border-gold/10 bg-cream" aria-label="ניווט ראשי">
         <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex items-center justify-center gap-8 py-3">
-            {NAV_ITEMS.map(item => (
+          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3">
+            {navItems.map(item => (
               <li key={item.path + item.label}>
                 <Link to={item.path} className="font-body text-sm text-foreground hover:text-gold transition-colors relative group">
                   {item.label}

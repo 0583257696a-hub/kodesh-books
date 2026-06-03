@@ -5,10 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { Link } from 'react-router-dom';
-import { CATEGORY_MAP } from '@/lib/categories';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
+  const { categoryMap } = useStoreCategories();
 
   return (
     <motion.div
@@ -57,7 +58,7 @@ export default function ProductCard({ product }) {
         <Link to={`/product/${product.id}`}>
           <div className="p-4">
             {product.category && (
-              <span className="text-gold text-xs font-body">{CATEGORY_MAP[product.category]}</span>
+              <span className="text-gold text-xs font-body">{categoryMap[product.category] || product.category}</span>
             )}
             <h3 className="font-heading text-base font-bold mt-1 text-foreground line-clamp-2 leading-snug">{product.name}</h3>
             {product.author && (

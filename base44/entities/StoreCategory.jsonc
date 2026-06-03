@@ -1,0 +1,78 @@
+{
+  "name": "StoreCategory",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "שם הקטגוריה"
+    },
+    "slug": {
+      "type": "string",
+      "description": "מזהה קטגוריה לשימוש באתר ובייבוא"
+    },
+    "description": {
+      "type": "string",
+      "description": "תיאור קצר"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "תמונת קטגוריה"
+    },
+    "icon": {
+      "type": "string",
+      "default": "FolderOpen",
+      "description": "שם אייקון"
+    },
+    "display_order": {
+      "type": "number",
+      "default": 100,
+      "description": "סדר תצוגה"
+    },
+    "show_in_home": {
+      "type": "boolean",
+      "default": true,
+      "description": "הצגה בדף הבית"
+    },
+    "show_in_nav": {
+      "type": "boolean",
+      "default": true,
+      "description": "הצגה בתפריט האתר"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "קטגוריה פעילה"
+    }
+  },
+  "required": [
+    "name",
+    "slug"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {},
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
