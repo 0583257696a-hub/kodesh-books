@@ -54,7 +54,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="relative flex h-16 items-center justify-between md:h-28">
           {/* Mobile menu */}
-          <div className="flex items-center">
+          <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center lg:static lg:translate-y-0">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="פתיחת תפריט ניווט">
@@ -79,7 +79,7 @@ export default function Header() {
           </div>
 
           {/* Icons right */}
-          <div className="absolute left-1/2 top-1/2 z-20 flex w-44 -translate-x-1/2 -translate-y-1/2 items-center justify-between md:static md:z-auto md:w-auto md:translate-x-0 md:translate-y-0 md:gap-3">
+          <div className="absolute left-1/2 top-1/2 z-20 flex w-44 -translate-x-1/2 -translate-y-1/2 items-center justify-between lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:translate-y-0 lg:gap-3">
             <Button
               variant="ghost"
               size="icon"
@@ -100,7 +100,7 @@ export default function Header() {
           </div>
 
           {/* Logo center */}
-          <Link to="/" className="absolute left-1/2 z-10 -translate-x-1/2 md:static md:z-auto md:translate-x-0">
+          <Link to="/" className="absolute left-1/2 z-10 -translate-x-1/2">
             <img 
               src={STORE_LOGO_URL}
               alt={settings.store_name} 
@@ -109,7 +109,7 @@ export default function Header() {
           </Link>
 
           {/* Cart */}
-          <Button asChild variant="ghost" size="icon" className="relative hover:text-gold transition-colors">
+          <Button asChild variant="ghost" size="icon" className="absolute left-3 top-1/2 -translate-y-1/2 hover:text-gold transition-colors lg:static lg:translate-y-0">
             <Link to="/cart" aria-label={`עגלת קניות, ${totalItems} מוצרים`}>
               <ShoppingCart className="h-5 w-5" aria-hidden="true" />
               {totalItems > 0 && (
