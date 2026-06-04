@@ -4,6 +4,7 @@ import Header from './Header';
 import Footer from './Footer';
 import CookieConsent from './CookieConsent';
 import StoreChatBot from '@/components/chat/StoreChatBot';
+import CartDrawer from '@/components/cart/CartDrawer';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function AppLayout() {
@@ -35,6 +36,7 @@ export default function AppLayout() {
       </main>
       <Footer />
       <CookieConsent />
+      <CartDrawer />
       <StoreChatBot />
     </div>
   );

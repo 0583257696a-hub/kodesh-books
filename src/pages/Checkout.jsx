@@ -8,14 +8,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
+import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
+  const { settings } = useSiteSettings();
   const [form, setForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', shipping_address: '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
 
-  const shipping = totalPrice >= 200 ? 0 : 30;
+  const shipping = getShippingCost(settings, totalPrice);
   const total = totalPrice + shipping;
 
   const handleSubmit = async (e) => {

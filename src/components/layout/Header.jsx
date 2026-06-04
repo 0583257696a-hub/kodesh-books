@@ -11,7 +11,7 @@ import { STORE_LOGO_URL } from '@/lib/branding';
 
 export default function Header() {
   const navigate = useNavigate();
-  const { totalItems } = useCart();
+  const { totalItems, openCart } = useCart();
   const { settings } = useSiteSettings();
   const { categories } = useStoreCategories();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -109,15 +109,20 @@ export default function Header() {
           </Link>
 
           {/* Cart */}
-          <Button asChild variant="ghost" size="icon" className="absolute left-3 top-1/2 -translate-y-1/2 hover:text-gold transition-colors lg:static lg:translate-y-0">
-            <Link to="/cart" aria-label={`עגלת קניות, ${totalItems} מוצרים`}>
-              <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gold text-walnut text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" aria-hidden="true">
-                  {totalItems}
-                </span>
-              )}
-            </Link>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={openCart}
+            className="absolute left-3 top-1/2 -translate-y-1/2 hover:text-gold transition-colors lg:static lg:translate-y-0"
+            aria-label={`עגלת קניות, ${totalItems} מוצרים`}
+          >
+            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 bg-gold text-walnut text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" aria-hidden="true">
+                {totalItems}
+              </span>
+            )}
           </Button>
         </div>
       </div>

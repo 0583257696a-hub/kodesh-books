@@ -12,6 +12,8 @@ export const DEFAULT_SITE_SETTINGS = {
   facebook: '',
   instagram: '',
   top_banner: 'משלוח חינם בהזמנה מעל ₪200',
+  shipping_cost: '30',
+  free_shipping_threshold: '200',
 };
 
 export function settingsArrayToMap(settings = []) {
@@ -68,4 +70,11 @@ export function buildMailUrl(email, subject = '') {
   if (!cleanEmail) return '#';
   const query = subject ? `?subject=${encodeURIComponent(subject)}` : '';
   return `mailto:${cleanEmail}${query}`;
+}
+
+export function getShippingCost(settings = DEFAULT_SITE_SETTINGS, subtotal = 0) {
+  const cost = Number(settings.shipping_cost ?? DEFAULT_SITE_SETTINGS.shipping_cost) || 0;
+  const freeThreshold = Number(settings.free_shipping_threshold ?? DEFAULT_SITE_SETTINGS.free_shipping_threshold) || 0;
+  if (freeThreshold > 0 && subtotal >= freeThreshold) return 0;
+  return cost;
 }

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound } from 'lucide-react';
+import { Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound, Truck } from 'lucide-react';
 
 const FIELDS = [
   { key: 'store_name', label: 'שם החנות', placeholder: 'אוצר הקדושה', icon: Store },
@@ -17,6 +17,8 @@ const FIELDS = [
   { key: 'seo_description', label: 'תיאור SEO', placeholder: 'החנות המובילה לספרי קודש...', icon: Globe },
   { key: 'facebook', label: 'קישור פייסבוק', placeholder: 'https://facebook.com/...', icon: Share2 },
   { key: 'instagram', label: 'קישור אינסטגרם', placeholder: 'https://instagram.com/...', icon: Share2 },
+  { key: 'shipping_cost', label: 'עלות משלוח', placeholder: '30', icon: Truck, type: 'number' },
+  { key: 'free_shipping_threshold', label: 'משלוח חינם מעל סכום', placeholder: '200', icon: Truck, type: 'number' },
 ];
 
 const EMPTY_USER = {
@@ -270,6 +272,7 @@ export default function AdminSettings() {
                   value={values[field.key] || ''}
                   onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
                   placeholder={field.placeholder}
+                  type={field.type || 'text'}
                   className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
                 />
                 <Button

@@ -8,6 +8,7 @@ export function CartProvider({ children }) {
     const saved = localStorage.getItem('otzar_cart');
     return saved ? JSON.parse(saved) : [];
   });
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('otzar_cart', JSON.stringify(items));
@@ -28,6 +29,7 @@ export function CartProvider({ children }) {
       }
       return [...prev, { product_id: product.id, product_name: product.name, price: product.sale_price || product.price, image_url: product.image_url, quantity: 1 }];
     });
+    setIsCartOpen(true);
   };
 
   const removeItem = (productId) => {
@@ -46,9 +48,11 @@ export function CartProvider({ children }) {
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalPrice = items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+  const openCart = () => setIsCartOpen(true);
+  const closeCart = () => setIsCartOpen(false);
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, totalItems, totalPrice, isCartOpen, openCart, closeCart }}>
       {children}
     </CartContext.Provider>
   );

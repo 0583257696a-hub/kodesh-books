@@ -4,12 +4,14 @@ import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
+import { buildWhatsappUrl, getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
-  const whatsappOrderText = `שלום, אני רוצה להזמין: ${items.map(i => `${i.product_name} (${i.quantity})`).join(', ')}. סה"כ: ₪${totalPrice.toFixed(2)}`;
+  const shipping = getShippingCost(settings, totalPrice);
+  const orderTotal = totalPrice + shipping;
+  const whatsappOrderText = `שלום, אני רוצה להזמין: ${items.map(i => `${i.product_name} (${i.quantity})`).join(', ')}. משלוח: ${shipping === 0 ? 'חינם' : `₪${shipping.toFixed(2)}`}. סה"כ: ₪${orderTotal.toFixed(2)}`;
 
   if (items.length === 0) {
     return (
@@ -103,11 +105,11 @@ export default function Cart() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">משלוח</span>
-                <span className="text-gold">{totalPrice >= 200 ? 'חינם' : '₪30'}</span>
+                <span className="text-gold">{shipping === 0 ? 'חינם' : `₪${shipping.toFixed(2)}`}</span>
               </div>
               <div className="border-t border-gold/10 pt-3 flex justify-between">
                 <span className="font-heading font-bold text-lg">סה"כ</span>
-                <span className="font-heading font-bold text-lg text-gold">₪{(totalPrice + (totalPrice >= 200 ? 0 : 30)).toFixed(2)}</span>
+                <span className="font-heading font-bold text-lg text-gold">₪{orderTotal.toFixed(2)}</span>
               </div>
             </div>
 
