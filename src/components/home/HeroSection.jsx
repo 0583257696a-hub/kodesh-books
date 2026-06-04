@@ -19,52 +19,54 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-l from-walnut/90 via-walnut/70 to-walnut/40" />
       </div>
 
-      <motion.img
-        src={STORE_LOGO_URL}
-        alt={settings.store_name}
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
-        className="pointer-events-none absolute left-[10%] top-[23%] z-10 hidden h-[165px] w-auto bg-transparent object-contain brightness-125 contrast-125 drop-shadow-2xl md:block lg:left-[13%] lg:h-[180px] xl:left-[15%] xl:h-[195px]"
-      />
-
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-20">
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-xl mr-0 ml-auto lg:mr-0 text-right"
-        >
-          {/* Decorative line */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="h-px flex-1 bg-gold/40" />
-            <span className="text-gold text-sm font-body tracking-widest">ברוכים הבאים</span>
-          </div>
+        <div className="grid items-start gap-10 md:grid-cols-[minmax(260px,430px)_minmax(0,1fr)]">
+          <motion.img
+            src={STORE_LOGO_URL}
+            alt={settings.store_name}
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
+            className="pointer-events-none hidden h-[205px] w-auto justify-self-center bg-transparent object-contain brightness-125 contrast-125 drop-shadow-2xl md:block lg:h-[225px] xl:h-[238px]"
+          />
 
-          <h1 className="font-heading text-5xl md:text-7xl font-bold text-cream leading-tight mb-4">
-            אוצר <span className="text-gold">הקדושה</span>
-          </h1>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="max-w-xl justify-self-end text-right"
+          >
+            {/* Decorative line */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-px flex-1 bg-gold/40" />
+              <span className="text-gold text-sm font-body tracking-widest">ברוכים הבאים</span>
+            </div>
 
-          <p className="font-body text-lg md:text-xl text-cream/80 mb-8 leading-relaxed">
-            ספרי קודש <span className="text-gold">•</span> תשמישי קדושה <span className="text-gold">•</span> הכל לבית היהודי
-          </p>
+            <h1 className="font-heading text-5xl md:text-7xl font-bold text-cream leading-tight mb-4">
+              אוצר <span className="text-gold">הקדושה</span>
+            </h1>
 
-          <div className="flex flex-wrap gap-4">
-            <Link to="/catalog">
-              <Button className="bg-gold text-walnut hover:bg-gold/90 font-body text-base px-8 py-6 rounded-lg gold-glow gold-glow-hover transition-all">
-                <BookOpen className="h-5 w-5 ml-2" />
-                לקטלוג הספרים
-              </Button>
-            </Link>
-            <a href={buildWhatsappUrl(settings.whatsapp, 'שלום, אני רוצה לבצע הזמנה מאתר אוצר הקדושה')} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="border-gold/50 text-gold hover:bg-gold/10 font-body text-base px-8 py-6 rounded-lg transition-all">
-                <MessageCircle className="h-5 w-5 ml-2" />
-                וואצאפ להזמנות
-              </Button>
-            </a>
-          </div>
-        </motion.div>
+            <p className="font-body text-lg md:text-xl text-cream/80 mb-8 leading-relaxed">
+              ספרי קודש <span className="text-gold">•</span> תשמישי קדושה <span className="text-gold">•</span> הכל לבית היהודי
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              <Link to="/catalog">
+                <Button className="bg-gold text-walnut hover:bg-gold/90 font-body text-base px-8 py-6 rounded-lg gold-glow gold-glow-hover transition-all">
+                  <BookOpen className="h-5 w-5 ml-2" />
+                  לקטלוג הספרים
+                </Button>
+              </Link>
+              <a href={buildWhatsappUrl(settings.whatsapp, 'שלום, אני רוצה לבצע הזמנה מאתר אוצר הקדושה')} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="border-gold/50 text-gold hover:bg-gold/10 font-body text-base px-8 py-6 rounded-lg transition-all">
+                  <MessageCircle className="h-5 w-5 ml-2" />
+                  וואצאפ להזמנות
+                </Button>
+              </a>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
       {/* Scroll indicator */}

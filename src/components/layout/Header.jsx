@@ -52,7 +52,7 @@ export default function Header() {
 
       {/* Main header */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-24">
+        <div className="flex items-center justify-between h-28">
           {/* Mobile menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
@@ -102,7 +102,7 @@ export default function Header() {
             <img 
               src={STORE_LOGO_URL}
               alt={settings.store_name} 
-              className="h-24 w-auto bg-transparent object-contain md:h-28"
+              className="h-28 w-auto bg-transparent object-contain md:h-32"
             />
           </Link>
 
