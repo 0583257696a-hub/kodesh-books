@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { buildMailUrl, buildPhoneUrl, buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Contact() {
   const { settings } = useSiteSettings();
   const contactItems = [
-    { icon: Phone, label: 'טלפון', value: settings.phone },
-    { icon: MessageCircle, label: 'וואצאפ', value: settings.whatsapp },
-    { icon: Mail, label: 'אימייל', value: settings.email },
+    { icon: Phone, label: 'טלפון', value: settings.phone, href: buildPhoneUrl(settings.phone), external: false },
+    { icon: MessageCircle, label: 'וואצאפ', value: settings.whatsapp, href: buildWhatsappUrl(settings.whatsapp, 'שלום, אשמח לקבל שירות מאתר אוצר הקדושה'), external: true },
+    { icon: Mail, label: 'אימייל', value: settings.email, href: buildMailUrl(settings.email, 'פנייה מאתר אוצר הקדושה'), external: false },
     { icon: MapPin, label: 'כתובת', value: settings.address },
   ];
 
@@ -35,15 +35,22 @@ export default function Contact() {
 
             <div className="space-y-5">
               {contactItems.map(item => (
-                <div key={item.label} className="flex items-center gap-4">
+                <a
+                  key={item.label}
+                  href={item.href || undefined}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  className={`flex items-center gap-4 rounded-lg transition-colors ${item.href ? 'hover:bg-gold/5' : ''}`}
+                  aria-label={item.href ? `${item.label}: ${item.value}` : undefined}
+                >
                   <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center">
                     <item.icon className="h-5 w-5 text-gold" />
                   </div>
                   <div>
                     <p className="font-body text-xs text-muted-foreground">{item.label}</p>
-                    <p className="font-body font-semibold text-foreground">{item.value}</p>
+                    <p className={`font-body font-semibold text-foreground ${item.href ? 'hover:text-gold' : ''}`}>{item.value}</p>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
 

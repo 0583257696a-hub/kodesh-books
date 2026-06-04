@@ -53,3 +53,19 @@ export function buildWhatsappUrl(number, text = '') {
   const message = text ? `?text=${encodeURIComponent(text)}` : '';
   return `https://wa.me/${normalized}${message}`;
 }
+
+export function normalizePhoneNumber(value = '') {
+  return String(value).replace(/[^\d+]/g, '');
+}
+
+export function buildPhoneUrl(number) {
+  const normalized = normalizePhoneNumber(number);
+  return normalized ? `tel:${normalized}` : '#';
+}
+
+export function buildMailUrl(email, subject = '') {
+  const cleanEmail = String(email || '').trim();
+  if (!cleanEmail) return '#';
+  const query = subject ? `?subject=${encodeURIComponent(subject)}` : '';
+  return `mailto:${cleanEmail}${query}`;
+}

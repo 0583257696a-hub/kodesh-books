@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, Clock, MessageCircle, Instagram, Facebook } from 'lucide-react';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { buildMailUrl, buildPhoneUrl, buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import { STORE_LOGO_URL } from '@/lib/branding';
 
 export default function Footer() {
@@ -62,17 +62,23 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="font-heading text-lg font-bold text-gold">צור קשר</h4>
             <ul className="space-y-3 font-body text-sm">
-              <li className="flex items-center gap-3 text-cream/70">
-                <Phone className="h-4 w-4 text-gold" />
-                <span>{settings.phone}</span>
+              <li>
+                <a href={buildPhoneUrl(settings.phone)} className="flex items-center gap-3 text-cream/70 transition-colors hover:text-gold" aria-label={`התקשר אל ${settings.phone}`}>
+                  <Phone className="h-4 w-4 text-gold" />
+                  <span>{settings.phone}</span>
+                </a>
               </li>
-              <li className="flex items-center gap-3 text-cream/70">
-                <MessageCircle className="h-4 w-4 text-gold" />
-                <span>{settings.whatsapp}</span>
+              <li>
+                <a href={buildWhatsappUrl(settings.whatsapp, 'שלום, אשמח לקבל שירות מאתר אוצר הקדושה')} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-cream/70 transition-colors hover:text-gold" aria-label={`פתח וואטסאפ אל ${settings.whatsapp}`}>
+                  <MessageCircle className="h-4 w-4 text-gold" />
+                  <span>{settings.whatsapp}</span>
+                </a>
               </li>
-              <li className="flex items-center gap-3 text-cream/70">
-                <Mail className="h-4 w-4 text-gold" />
-                <span>{settings.email}</span>
+              <li>
+                <a href={buildMailUrl(settings.email, 'פנייה מאתר אוצר הקדושה')} className="flex items-center gap-3 text-cream/70 transition-colors hover:text-gold" aria-label={`שלח מייל אל ${settings.email}`}>
+                  <Mail className="h-4 w-4 text-gold" />
+                  <span>{settings.email}</span>
+                </a>
               </li>
             </ul>
           </div>
