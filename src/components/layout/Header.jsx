@@ -46,13 +46,13 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-md border-b border-gold/20">
       {/* Top bar */}
-      <div className="bg-walnut text-cream text-center py-2 text-sm font-body">
+      <div className="bg-walnut px-3 py-1 text-center font-body text-xs leading-snug text-cream md:py-2 md:text-sm">
         <span className="text-gold">✦</span> {settings.top_banner} <span className="text-gold">✦</span>
       </div>
 
       {/* Main header */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-28">
+        <div className="flex h-16 items-center justify-between md:h-28">
           {/* Mobile menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
@@ -102,7 +102,7 @@ export default function Header() {
             <img 
               src={STORE_LOGO_URL}
               alt={settings.store_name} 
-              className="h-28 w-auto object-contain md:h-32"
+              className="h-16 w-auto object-contain md:h-32"
             />
           </Link>
 
