@@ -78,7 +78,8 @@ export default function AdminCategories() {
 
   const deleteMutation = useMutation({
     mutationFn: async (category) => {
-      if (!window.confirm(`להסיר את הקטגוריה "${category.name}" מהאתר ומהאקסל לייבוא?`)) {
+      const confirmation = window.prompt(`כדי להסיר את הקטגוריה "${category.name}", כתוב בדיוק: הסר קטגוריה`);
+      if (confirmation !== 'הסר קטגוריה') {
         return null;
       }
 
