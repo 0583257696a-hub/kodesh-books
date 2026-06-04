@@ -21,21 +21,23 @@ export default function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-20">
-        <div className="grid items-start gap-10 md:grid-cols-[minmax(260px,430px)_minmax(0,1fr)]">
-          <motion.img
-            src={STORE_LOGO_URL}
-            alt={settings.store_name}
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.12 }}
-            className="pointer-events-none hidden h-[220px] w-auto justify-self-center object-contain drop-shadow-2xl md:block lg:h-[238px] xl:h-[250px]"
-          />
-
+        <div className="grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_minmax(260px,430px)]" dir="ltr">
+          <div className="hidden justify-self-center md:block">
+            <motion.img
+              src={STORE_LOGO_URL}
+              alt={settings.store_name}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.12 }}
+              className="pointer-events-none h-[220px] w-auto object-contain drop-shadow-2xl lg:h-[238px] xl:h-[250px]"
+            />
+          </div>
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className="max-w-xl justify-self-end text-right"
+            dir="rtl"
           >
             {/* Decorative line */}
             <div className="flex items-center gap-3 mb-6">
