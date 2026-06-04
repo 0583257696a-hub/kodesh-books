@@ -14,20 +14,25 @@ export const CATEGORY_IMAGES = {
   gifts: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/0d11dfa5e_generated_df9cd4ac.png',
 };
 
-const normalizeCategory = (category, index = 0) => ({
-  id: category.slug || category.id,
-  slug: category.slug || category.id,
+const DEFAULT_CATEGORY_IDS = new Set(CATEGORIES.map((category) => category.id));
+
+const normalizeCategory = (category, index = 0) => {
+  const slug = category.slug || category.id;
+  return ({
+  id: slug,
+  slug,
   name: category.name,
   description: category.description || '',
   icon: category.icon || 'FolderOpen',
-  image_url: category.image_url || CATEGORY_IMAGES[category.slug || category.id] || '',
+  image_url: category.image_url || CATEGORY_IMAGES[slug] || '',
   display_order: Number(category.display_order ?? index),
   show_in_home: category.show_in_home !== false,
   show_in_nav: category.show_in_nav !== false,
   active: category.active !== false,
-  system: !!category.id && !category.slug,
+  system: DEFAULT_CATEGORY_IDS.has(slug),
   record_id: category.id && category.slug ? category.id : '',
 });
+};
 
 export function buildCategoryCollections(dynamicCategories = []) {
   const merged = new Map();

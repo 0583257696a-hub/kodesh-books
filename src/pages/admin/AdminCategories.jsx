@@ -77,7 +77,37 @@ export default function AdminCategories() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (category) => base44.entities.StoreCategory.delete(category.record_id),
+    mutationFn: async (category) => {
+      if (!window.confirm(`להסיר את הקטגוריה "${category.name}" מהאתר ומהאקסל לייבוא?`)) {
+        return null;
+      }
+
+      if (category.system) {
+        const payload = {
+          name: category.name,
+          slug: category.slug,
+          description: category.description || '',
+          image_url: category.image_url || '',
+          icon: category.icon || 'FolderOpen',
+          display_order: Number(category.display_order || 100),
+          show_in_home: false,
+          show_in_nav: false,
+          active: false,
+        };
+
+        if (category.record_id) {
+          return base44.entities.StoreCategory.update(category.record_id, payload);
+        }
+
+        return base44.entities.StoreCategory.create(payload);
+      }
+
+      if (category.record_id) {
+        return base44.entities.StoreCategory.delete(category.record_id);
+      }
+
+      return null;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-categories'] });
       queryClient.invalidateQueries({ queryKey: ['store-categories-admin'] });
@@ -165,16 +195,15 @@ export default function AdminCategories() {
                     <Pencil className="ml-2 h-4 w-4" />
                     עריכה
                   </Button>
-                  {cat.record_id && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => deleteMutation.mutate(cat)}
-                      className="border-rose-200 text-rose-700 hover:bg-rose-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => deleteMutation.mutate(cat)}
+                    disabled={deleteMutation.isPending}
+                    className="border-rose-200 text-rose-700 hover:bg-rose-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>
