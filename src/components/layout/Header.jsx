@@ -102,7 +102,7 @@ export default function Header() {
             <img 
               src={STORE_LOGO_URL}
               alt={settings.store_name} 
-              className="h-24 w-auto object-contain mix-blend-multiply contrast-125 saturate-110 md:h-28"
+              className="h-24 w-auto bg-transparent object-contain md:h-28"
             />
           </Link>
 
