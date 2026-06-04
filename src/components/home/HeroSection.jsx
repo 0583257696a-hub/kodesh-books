@@ -29,7 +29,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.12 }}
-              className="pointer-events-none h-[220px] w-auto object-contain drop-shadow-2xl lg:h-[238px] xl:h-[250px]"
+              className="pointer-events-none h-[250px] w-auto object-contain object-center drop-shadow-2xl lg:h-[270px] xl:h-[285px]"
             />
           </div>
           <motion.div
