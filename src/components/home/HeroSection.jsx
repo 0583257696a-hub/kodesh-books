@@ -19,15 +19,6 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-l from-walnut/90 via-walnut/70 to-walnut/40" />
       </div>
 
-      <motion.img
-        src={STORE_LOGO_URL}
-        alt={settings.store_name}
-        initial={{ opacity: 0, scale: 0.92 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
-        className="pointer-events-none absolute left-[12%] top-1/2 z-10 hidden w-[300px] -translate-y-1/2 bg-transparent object-contain md:block lg:left-[16%] lg:w-[380px] xl:left-[18%] xl:w-[430px]"
-      />
-
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-20">
         <motion.div
@@ -40,6 +31,11 @@ export default function HeroSection() {
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px flex-1 bg-gold/40" />
             <span className="text-gold text-sm font-body tracking-widest">ברוכים הבאים</span>
+            <img
+              src={STORE_LOGO_URL}
+              alt={settings.store_name}
+              className="h-24 w-auto object-contain mix-blend-multiply contrast-125 saturate-110 md:h-28"
+            />
           </div>
 
           <h1 className="font-heading text-5xl md:text-7xl font-bold text-cream leading-tight mb-4">
