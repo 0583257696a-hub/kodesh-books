@@ -7,6 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
+import { STORE_LOGO_URL } from '@/lib/branding';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ export default function Header() {
 
       {/* Main header */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-24">
           {/* Mobile menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
@@ -99,9 +100,9 @@ export default function Header() {
           {/* Logo center */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2">
             <img 
-              src="https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/2fdbeca5e_WhatsAppImage2026-05-29at170557.jpeg" 
+              src={STORE_LOGO_URL}
               alt={settings.store_name} 
-              className="h-16 md:h-20 object-contain drop-shadow-lg"
+              className="h-24 w-auto object-contain mix-blend-multiply contrast-125 saturate-110 md:h-28"
             />
           </Link>
 

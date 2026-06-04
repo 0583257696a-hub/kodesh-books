@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BookOpen, MessageCircle } from 'lucide-react';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
+import { STORE_LOGO_URL } from '@/lib/branding';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f511806de_generated_bffda8a3.png';
 
@@ -30,6 +31,11 @@ export default function HeroSection() {
           <div className="flex items-center gap-3 mb-6">
             <div className="h-px flex-1 bg-gold/40" />
             <span className="text-gold text-sm font-body tracking-widest">ברוכים הבאים</span>
+            <img
+              src={STORE_LOGO_URL}
+              alt={settings.store_name}
+              className="h-24 w-auto object-contain mix-blend-multiply contrast-125 saturate-110 md:h-28"
+            />
           </div>
 
           <h1 className="font-heading text-5xl md:text-7xl font-bold text-cream leading-tight mb-4">

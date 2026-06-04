@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, Clock, MessageCircle, Instagram, Facebook } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { STORE_LOGO_URL } from '@/lib/branding';
 
 export default function Footer() {
   const { settings } = useSiteSettings();
@@ -18,9 +19,9 @@ export default function Footer() {
           {/* Logo & About */}
           <div className="space-y-4">
             <img 
-              src="https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/2fdbeca5e_WhatsAppImage2026-05-29at170557.jpeg" 
+              src={STORE_LOGO_URL}
               alt={settings.store_name} 
-              className="h-12 object-contain"
+              className="h-24 w-auto object-contain mix-blend-multiply contrast-125 saturate-110"
             />
             <p className="text-cream/70 text-sm font-body leading-relaxed">
               {settings.seo_description}
