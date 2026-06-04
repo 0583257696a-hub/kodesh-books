@@ -52,8 +52,9 @@ export default function Header() {
 
       {/* Main header */}
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex h-16 items-center justify-between md:h-28">
+        <div className="relative flex h-16 items-center justify-between md:h-28">
           {/* Mobile menu */}
+          <div className="flex items-center">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden" aria-label="פתיחת תפריט ניווט">
@@ -75,9 +76,10 @@ export default function Header() {
               </nav>
             </SheetContent>
           </Sheet>
+          </div>
 
           {/* Icons right */}
-          <div className="flex items-center gap-3">
+          <div className="absolute left-1/2 top-1/2 z-20 flex w-44 -translate-x-1/2 -translate-y-1/2 items-center justify-between md:static md:z-auto md:w-auto md:translate-x-0 md:translate-y-0 md:gap-3">
             <Button
               variant="ghost"
               size="icon"
@@ -98,7 +100,7 @@ export default function Header() {
           </div>
 
           {/* Logo center */}
-          <Link to="/" className="absolute left-1/2 -translate-x-1/2">
+          <Link to="/" className="absolute left-1/2 z-10 -translate-x-1/2 md:static md:z-auto md:translate-x-0">
             <img 
               src={STORE_LOGO_URL}
               alt={settings.store_name} 
