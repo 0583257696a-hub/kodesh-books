@@ -25,7 +25,7 @@ export default function HeroSection() {
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: 'easeOut', delay: 0.15 }}
-        className="pointer-events-none absolute left-[12%] top-1/2 z-10 hidden w-[300px] -translate-y-1/2 bg-transparent object-contain md:block lg:left-[16%] lg:w-[380px] xl:left-[18%] xl:w-[430px]"
+        className="pointer-events-none absolute left-[10%] top-[31%] z-10 hidden h-[155px] w-auto bg-transparent object-contain md:block lg:left-[13%] lg:h-[170px] xl:left-[15%] xl:h-[185px]"
       />
 
       {/* Content */}
