@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, BookOpen, ArrowRight, Minus, Plus, X, ZoomIn } from 'lucide-react';
@@ -14,8 +14,7 @@ import AlsoBought from '@/components/product/AlsoBought';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 
 export default function ProductDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const productId = window.location.pathname.split('/product/')[1];
+  const { id: productId } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [imageOpen, setImageOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
