@@ -60,9 +60,22 @@ export async function sendManagedEmail(settings, payload) {
 
   try {
     if (base44.functions?.invoke) {
-      return await base44.functions.invoke('sendOrderEmail', payload);
+      const result = await base44.functions.invoke('sendOrderEmail', payload);
+      return { sent: true, result };
     }
-  } catch {}
+  } catch (error) {
+    try {
+      if (base44.entities.EmailNotification?.create) {
+        await base44.entities.EmailNotification.create({
+          ...emailRecord,
+          status: 'failed',
+          provider: 'sendOrderEmail',
+          error: error.message || 'Email function failed',
+        });
+      }
+    } catch {}
+    return { queued: true, error: error.message || 'Email function failed' };
+  }
 
   return { queued: true };
 }

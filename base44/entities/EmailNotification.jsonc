@@ -1,0 +1,46 @@
+{
+  "name": "EmailNotification",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "סוג התראת האימייל"
+    },
+    "to": {
+      "type": "string",
+      "description": "נמען"
+    },
+    "subject": {
+      "type": "string",
+      "description": "נושא"
+    },
+    "body": {
+      "type": "string",
+      "description": "תוכן ההודעה"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "sent", "failed"],
+      "default": "queued"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "related_id": {
+      "type": "string"
+    },
+    "error": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": ["type", "to", "subject"],
+  "rls": {
+    "create": {},
+    "read": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
