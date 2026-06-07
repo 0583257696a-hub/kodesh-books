@@ -9,7 +9,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
-import { buildCustomerOrderEmail, buildOrderAdminEmail, buildOrderPrintHtml, reserveStockForItems, restoreReservedStock, sendManagedEmail } from '@/lib/orderWorkflow';
+import { buildCustomerOrderEmail, buildOrderAdminEmail, reserveStockForItems, restoreReservedStock, sendManagedEmail } from '@/lib/orderWorkflow';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
@@ -76,9 +76,7 @@ export default function Checkout() {
         enabledKey: 'enable_order_emails',
         to: settings.admin_email || settings.email,
         subject: 'התקבלה הזמנה חדשה באתר אוצר הקדושה',
-        body: buildOrderAdminEmail(order),
-        printHtml: buildOrderPrintHtml(order, settings),
-        printFileName: `order-${order.order_number || order.id}.html`,
+        body: buildOrderAdminEmail(order, settings),
         order_id: order.id,
       });
 
@@ -88,8 +86,6 @@ export default function Checkout() {
         to: order.customer_email,
         subject: `הזמנתך התקבלה באתר ${settings.store_name || 'אוצר הקדושה'}`,
         body: buildCustomerOrderEmail(order, settings),
-        printHtml: buildOrderPrintHtml(order, settings),
-        printFileName: `סיכום-הזמנה-${order.order_number || order.id}.html`,
         order_id: order.id,
       });
 

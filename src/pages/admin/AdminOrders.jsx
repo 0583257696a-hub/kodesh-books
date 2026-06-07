@@ -60,7 +60,7 @@ export default function AdminOrders() {
         enabledKey: 'enable_approval_emails',
         to: order.customer_email,
         subject: 'הזמנתך אושרה - אוצר הקדושה',
-        body: buildCustomerApprovalEmail({ ...order, status }),
+        body: buildCustomerApprovalEmail({ ...order, status }, settings),
         order_id: order.id,
       });
     }
@@ -72,7 +72,7 @@ export default function AdminOrders() {
         enabledKey: 'enable_delivery_emails',
         to: order.customer_email,
         subject: 'הזמנתך נמסרה בהצלחה',
-        body: buildCustomerDeliveryEmail({ ...order, status }),
+        body: buildCustomerDeliveryEmail({ ...order, status }, settings),
         order_id: order.id,
       });
     }
