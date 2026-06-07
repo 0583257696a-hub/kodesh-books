@@ -9,7 +9,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
-import { buildOrderAdminEmail, reserveStockForItems, restoreReservedStock, sendManagedEmail } from '@/lib/orderWorkflow';
+import { buildOrderAdminEmail, buildOrderPrintHtml, reserveStockForItems, restoreReservedStock, sendManagedEmail } from '@/lib/orderWorkflow';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
@@ -77,6 +77,8 @@ export default function Checkout() {
         to: settings.admin_email || settings.email,
         subject: 'התקבלה הזמנה חדשה באתר אוצר הקדושה',
         body: buildOrderAdminEmail(order),
+        printHtml: buildOrderPrintHtml(order),
+        printFileName: `order-${order.order_number || order.id}.html`,
         order_id: order.id,
       });
 

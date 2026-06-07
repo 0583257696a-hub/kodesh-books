@@ -47,7 +47,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing email recipient, subject or body' }, { status: 400 });
     }
 
-    await base44.asServiceRole.integrations.Core.SendEmail({ to, subject, body });
+    const emailPayload: Record<string, any> = { to, subject, body };
+    if (payload?.printHtml) {
+      emailPayload.attachments = [{
+        filename: payload.printFileName || `order-${payload.order_id || Date.now()}.html`,
+        content: payload.printHtml,
+        contentType: 'text/html; charset=utf-8',
+      }];
+    }
+
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail(emailPayload);
+    } catch (attachmentError) {
+      await base44.asServiceRole.integrations.Core.SendEmail({ to, subject, body });
+    }
 
     if (payload?.order_id && base44.asServiceRole.entities.EmailNotification?.create) {
       await base44.asServiceRole.entities.EmailNotification.create({
