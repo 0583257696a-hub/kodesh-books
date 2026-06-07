@@ -9,13 +9,15 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
+import { buildOrderAdminEmail, reserveStockForItems, restoreReservedStock, sendManagedEmail } from '@/lib/orderWorkflow';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
-  const [form, setForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', shipping_address: '', notes: '' });
+  const [form, setForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', city: '', shipping_address: '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const shipping = getShippingCost(settings, totalPrice);
   const total = totalPrice + shipping;
@@ -23,23 +25,60 @@ export default function Checkout() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await base44.entities.Order.create({
-      ...form,
-      items: items.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price })),
-      subtotal: totalPrice,
-      shipping_cost: shipping,
-      total,
-      status: 'pending',
-    });
-    await trackEcommerceEvent({
-      event_type: 'purchase',
-      customer_email: form.customer_email,
-      value: total,
-      metadata: { item_count: items.length, status: 'pending' },
-    });
-    clearCart();
-    setOrderPlaced(true);
-    setIsSubmitting(false);
+    setSubmitError('');
+
+    let reserved = [];
+    try {
+      const orderItems = items.map(i => ({
+        product_id: i.product_id,
+        product_name: i.product_name,
+        quantity: i.quantity,
+        price: i.price,
+      }));
+      const reservation = await reserveStockForItems(orderItems);
+      reserved = reservation.reserved;
+
+      const order = await base44.entities.Order.create({
+        ...form,
+        order_number: `OK-${Date.now()}`,
+        items: reservation.enrichedItems,
+        subtotal: totalPrice,
+        shipping_cost: shipping,
+        shipping_method: 'home_delivery',
+        total,
+        status: 'new',
+        payment_status: 'manual_pending',
+        payment_method: 'manual',
+        stock_reserved: true,
+        stock_reservations: reserved,
+        internal_notes: '',
+      });
+
+      await sendManagedEmail(settings, {
+        type: 'admin_new_order',
+        enabledKey: 'enable_order_emails',
+        to: settings.admin_email || settings.email,
+        subject: 'התקבלה הזמנה חדשה באתר אוצר הקדושה',
+        body: buildOrderAdminEmail(order),
+        order_id: order.id,
+      });
+
+      await trackEcommerceEvent({
+        event_type: 'purchase',
+        customer_email: form.customer_email,
+        value: total,
+        metadata: { item_count: items.length, status: 'new', manual_payment: true },
+      });
+      clearCart();
+      setOrderPlaced(true);
+    } catch (error) {
+      if (reserved.length) {
+        await restoreReservedStock({ stock_reservations: reserved });
+      }
+      setSubmitError(error.message || 'שליחת ההזמנה נכשלה. נסו שוב או צרו קשר עם החנות.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   React.useEffect(() => {
@@ -57,7 +96,7 @@ export default function Checkout() {
         <div className="text-center max-w-md">
           <CheckCircle2 className="h-20 w-20 text-gold mx-auto mb-6" />
           <h1 className="font-heading text-3xl font-bold text-foreground mb-3">ההזמנה התקבלה!</h1>
-          <p className="font-body text-muted-foreground mb-8">תודה רבה על הזמנתך. ניצור איתך קשר בהקדם לאישור ותיאום המשלוח.</p>
+          <p className="font-body text-muted-foreground mb-8">תודה רבה על הזמנתך. ההזמנה התקבלה לבדיקה ידנית. ניצור איתך קשר לאחר בדיקת מלאי ותיאום תשלום.</p>
           <Button asChild className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">
             <Link to="/">חזרה לעמוד הראשי</Link>
           </Button>
@@ -104,13 +143,18 @@ export default function Checkout() {
                 <Input id="checkout-phone" required type="tel" value={form.customer_phone} onChange={e => setForm({ ...form, customer_phone: e.target.value })} className="font-body border-gold/20" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="checkout-email" className="font-body">אימייל</Label>
-                <Input id="checkout-email" type="email" value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} className="font-body border-gold/20" />
+                <Label htmlFor="checkout-email" className="font-body">אימייל *</Label>
+                <Input id="checkout-email" required type="email" value={form.customer_email} onChange={e => setForm({ ...form, customer_email: e.target.value })} className="font-body border-gold/20" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="checkout-address" className="font-body">כתובת למשלוח *</Label>
+              <Label htmlFor="checkout-city" className="font-body">עיר *</Label>
+              <Input id="checkout-city" required value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} className="font-body border-gold/20" />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="checkout-address" className="font-body">כתובת *</Label>
               <Input id="checkout-address" required value={form.shipping_address} onChange={e => setForm({ ...form, shipping_address: e.target.value })} className="font-body border-gold/20" />
             </div>
 
@@ -119,8 +163,10 @@ export default function Checkout() {
               <Textarea id="checkout-notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="font-body border-gold/20" rows={3} />
             </div>
 
+            {submitError && <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</p>}
+
             <Button type="submit" disabled={isSubmitting} className="w-full bg-gold text-walnut hover:bg-gold/90 font-body py-5 text-base rounded-lg">
-              {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'אישור הזמנה'}
+              {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'שליחת הזמנה לאישור'}
             </Button>
           </form>
 

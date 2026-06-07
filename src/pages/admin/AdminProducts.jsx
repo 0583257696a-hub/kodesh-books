@@ -16,6 +16,8 @@ const EMPTY = {
   description: '',
   price: 0,
   sale_price: 0,
+  cost_price: 0,
+  stock_quantity: 0,
   category: 'chumashim',
   image_url: '',
   author: '',
@@ -211,7 +213,7 @@ export default function AdminProducts() {
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${product.in_stock ? tagClass.stock : tagClass.out}`}>
-                      {product.in_stock ? 'במלאי' : 'אזל'}
+                      {product.in_stock ? `במלאי${product.stock_quantity !== undefined ? ` (${product.stock_quantity})` : ''}` : 'אזל'}
                     </span>
                   </td>
                   <td className="px-5 py-4">
@@ -299,7 +301,7 @@ export default function AdminProducts() {
                 <p className="text-xs text-slate-500">הפרד תגיות בפסיקים. הספרן הדיגיטלי יחפש וימליץ גם לפי תגיות אלו.</p>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <div className="space-y-1.5">
                   <Label className="text-sm text-slate-700">מחיר ₪ *</Label>
                   <Input type="number" value={editItem.price} onChange={(event) => setEditItem((current) => ({ ...current, price: Number(event.target.value) }))} className="border-slate-200 bg-white text-slate-950" />
@@ -308,6 +310,17 @@ export default function AdminProducts() {
                   <Label className="text-sm text-slate-700">מחיר מבצע ₪</Label>
                   <Input type="number" value={editItem.sale_price || ''} onChange={(event) => setEditItem((current) => ({ ...current, sale_price: Number(event.target.value) || 0 }))} className="border-slate-200 bg-white text-slate-950" />
                 </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm text-slate-700">עלות מוצר ₪</Label>
+                  <Input type="number" value={editItem.cost_price || ''} onChange={(event) => setEditItem((current) => ({ ...current, cost_price: Number(event.target.value) || 0 }))} className="border-slate-200 bg-white text-slate-950" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm text-slate-700">כמות מלאי</Label>
+                  <Input type="number" value={editItem.stock_quantity ?? ''} onChange={(event) => setEditItem((current) => ({ ...current, stock_quantity: Number(event.target.value) || 0, in_stock: Number(event.target.value) > 0 }))} className="border-slate-200 bg-white text-slate-950" />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label className="text-sm text-slate-700">קטגוריה</Label>
                   <Select value={editItem.category} onValueChange={(value) => setEditItem((current) => ({ ...current, category: value }))}>

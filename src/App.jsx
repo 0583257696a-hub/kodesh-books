@@ -34,6 +34,7 @@ import BusinessManagement from '@/pages/admin/BusinessManagement';
 import EcommerceAnalytics from '@/pages/admin/EcommerceAnalytics';
 import BulkBookImport from '@/pages/admin/BulkBookImport';
 import AIChatSettings from '@/pages/admin/AIChatSettings';
+import AbandonedCarts from '@/pages/admin/AbandonedCarts';
 
 // Public store pages
 import AppLayout from '@/components/layout/AppLayout';
@@ -95,6 +96,7 @@ const AuthenticatedApp = () => {
         <Route path="book-import" element={<BulkBookImport />} />
         <Route path="ai-chat" element={<AIChatSettings />} />
         <Route path="chat-intelligence" element={<AIChatSettings />} />
+        <Route path="abandoned-carts" element={<AbandonedCarts />} />
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="content" element={<AdminContent />} />

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound, Truck } from 'lucide-react';
+import { Bell, Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound, Truck } from 'lucide-react';
 
 const STORE_FIELDS = [
   { key: 'store_name', label: 'שם החנות', placeholder: 'אוצר הקדושה', icon: Store },
@@ -24,7 +24,15 @@ const SHIPPING_FIELDS = [
   { key: 'free_shipping_threshold', label: 'משלוח חינם מעל סכום', placeholder: '0', icon: Truck, type: 'number' },
 ];
 
-const FIELDS = [...STORE_FIELDS, ...SHIPPING_FIELDS];
+const NOTIFICATION_FIELDS = [
+  { key: 'admin_email', label: 'אימייל מנהל לקבלת הזמנות', placeholder: 'admin@example.com', icon: Bell, type: 'email' },
+  { key: 'enable_order_emails', label: 'שליחת מייל הזמנה חדשה למנהל', type: 'boolean' },
+  { key: 'enable_approval_emails', label: 'שליחת מייל אישור הזמנה ללקוח', type: 'boolean' },
+  { key: 'enable_delivery_emails', label: 'שליחת מייל מסירה ללקוח', type: 'boolean' },
+  { key: 'enable_abandoned_cart_emails', label: 'שליחת מייל עגלה נטושה', type: 'boolean' },
+];
+
+const FIELDS = [...STORE_FIELDS, ...SHIPPING_FIELDS, ...NOTIFICATION_FIELDS];
 
 const EMPTY_USER = {
   full_name: '',
@@ -291,6 +299,48 @@ export default function AdminSettings() {
                   disabled={savingKey === field.key}
                   variant="outline"
                   className="h-10 border-slate-200 bg-white px-3 text-xs text-slate-700 hover:bg-slate-50"
+                >
+                  {savingKey === field.key ? <Loader2 className="h-4 w-4 animate-spin" /> : 'שמור'}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
+          <Bell className="h-5 w-5 text-blue-600" /> התראות ואימיילים
+        </h2>
+        <p className="mb-6 text-sm text-slate-600">הכנה מלאה לשליחת אימיילים בתהליך הזמנה ידני. אם אין חיבור אימייל פעיל, המערכת תשמור את ההתראה בתור לשליחה עתידית.</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {NOTIFICATION_FIELDS.map((field) => (
+            <div key={field.key} className="space-y-1.5">
+              <Label className="text-sm text-slate-700">{field.label}</Label>
+              <div className="flex gap-2">
+                {field.type === 'boolean' ? (
+                  <Select value={values[field.key] || 'true'} onValueChange={(value) => setValues((current) => ({ ...current, [field.key]: value }))}>
+                    <SelectTrigger className="flex-1 border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="true">פעיל</SelectItem>
+                      <SelectItem value="false">כבוי</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={values[field.key] || ''}
+                    onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                    placeholder={field.placeholder}
+                    type={field.type || 'text'}
+                    className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
+                  />
+                )}
+                <Button
+                  type="button"
+                  onClick={() => saveSetting(field.key)}
+                  disabled={savingKey === field.key}
+                  variant="outline"
+                  className="h-10 border-slate-200 px-3 text-xs text-slate-700 hover:bg-slate-50"
                 >
                   {savingKey === field.key ? <Loader2 className="h-4 w-4 animate-spin" /> : 'שמור'}
                 </Button>

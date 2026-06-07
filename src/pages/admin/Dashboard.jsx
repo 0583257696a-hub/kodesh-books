@@ -6,6 +6,7 @@ import { format, isToday, startOfMonth, subDays } from 'date-fns';
 import { AlertCircle, Bell, CheckCircle2, Package, ShoppingBag, TrendingUp, Users } from 'lucide-react';
 import { buildAnalytics, buildExpenseRows, buildLeads, businessKpis, currency, safeDate } from '@/lib/businessCenterData';
 import { getLocalAnalyticsEvents } from '@/lib/ecommerceTracking';
+import { calculateOrderProfit, normalizeOrderStatus } from '@/lib/orderWorkflow';
 
 const q = async (entity, fallback = []) => {
   try {
@@ -57,8 +58,9 @@ export default function Dashboard() {
   const expenses = buildExpenseRows(data.expenses || []);
   const kpis = businessKpis({ orders, users, leads, expenses });
   const monthStart = startOfMonth(new Date());
-  const monthlyOrders = orders.filter((order) => order.status !== 'cancelled' && safeDate(order.created_date) >= monthStart);
-  const pendingPayments = orders.filter((order) => order.status === 'pending');
+  const monthlyOrders = orders.filter((order) => !['cancelled'].includes(normalizeOrderStatus(order.status)) && safeDate(order.created_date) >= monthStart);
+  const ordersAwaitingApproval = orders.filter((order) => ['new', 'pending_approval'].includes(normalizeOrderStatus(order.status)));
+  const monthlyProfit = monthlyOrders.reduce((sum, order) => sum + calculateOrderProfit(order).profit, 0);
   const bestSeller = [...analytics.productStats].sort((a, b) => b.purchases - a.purchases)[0];
   const outOfStockBooks = products.filter((product) => !product.in_stock || Number(product.stock_quantity || 0) === 0).length;
   const lowStockBooks = products.filter((product) => product.in_stock && Number(product.stock_quantity || 0) > 0 && Number(product.stock_quantity || 0) <= 5).length;
@@ -88,13 +90,14 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
           <Bell className="h-4 w-4" />
-          <span className="text-sm font-semibold">{pendingPayments.length + kpis.abandonedCarts} התראות פעילות</span>
+          <span className="text-sm font-semibold">{ordersAwaitingApproval.length + kpis.abandonedCarts} התראות פעילות</span>
         </div>
       </div>
 
       <div className="mb-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard icon={TrendingUp} label="הכנסות החודש" value={currency(kpis.monthlyRevenue)} sub={`${monthlyOrders.length} הזמנות החודש`} tone="green" />
-        <StatCard icon={ShoppingBag} label="הזמנות" value={orders.length} sub={`${pendingPayments.length} ממתינות לתשלום`} tone="blue" />
+        <StatCard icon={CheckCircle2} label="רווח חודשי" value={currency(monthlyProfit)} sub="לפי עלות מוצר שהוגדרה" tone="green" />
+        <StatCard icon={ShoppingBag} label="הזמנות" value={orders.length} sub={`${ordersAwaitingApproval.length} ממתינות לאישור`} tone="blue" />
         <StatCard icon={Users} label="לקוחות חדשים" value={analytics.customers.new} sub={`${users.length} לקוחות סה״כ`} tone="slate" />
         <StatCard icon={AlertCircle} label="עגלות נטושות" value={kpis.abandonedCarts} sub={`${kpis.conversionRate}% המרת לידים`} tone="rose" />
         <StatCard icon={CheckCircle2} label="יחס המרה" value={`${Math.round((analytics.funnel.at(-1).value / Math.max(analytics.funnel[0].value, 1)) * 100)}%`} tone="green" />
@@ -151,9 +154,9 @@ export default function Dashboard() {
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-5">
-          <h2 className="mb-4 font-semibold text-slate-950">תשלומים ממתינים</h2>
+          <h2 className="mb-4 font-semibold text-slate-950">הזמנות ממתינות לאישור</h2>
           <div className="space-y-3">
-            {pendingPayments.slice(0, 6).map((order) => (
+            {ordersAwaitingApproval.slice(0, 6).map((order) => (
               <div key={order.id} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-3">
                 <div>
                   <p className="font-semibold text-slate-900">{order.customer_name || 'לקוח'}</p>
@@ -162,7 +165,7 @@ export default function Dashboard() {
                 <p className="font-bold text-amber-700">{currency(order.total)}</p>
               </div>
             ))}
-            {!pendingPayments.length && <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">אין תשלומים ממתינים.</p>}
+            {!ordersAwaitingApproval.length && <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">אין הזמנות ממתינות לאישור.</p>}
           </div>
         </div>
 
