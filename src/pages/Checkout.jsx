@@ -26,6 +26,8 @@ export default function Checkout() {
     await base44.entities.Order.create({
       ...form,
       items: items.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price })),
+      subtotal: totalPrice,
+      shipping_cost: shipping,
       total,
       status: 'pending',
     });

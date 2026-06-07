@@ -47,6 +47,8 @@ export default function AdminOrders() {
         <tr><th>מוצר</th><th>כמות</th><th>מחיר</th></tr>
         ${order.items?.map((item) => `<tr><td>${item.product_name}</td><td>${item.quantity}</td><td>₪${item.price}</td></tr>`).join('')}
       </table>
+      <p><b>סכום מוצרים:</b> ₪${order.subtotal ?? (Number(order.total || 0) - Number(order.shipping_cost || 0))}</p>
+      <p><b>משלוח:</b> ₪${order.shipping_cost ?? 0}</p>
       <p><b>סה"כ: ₪${order.total}</b></p>
     </body></html>`);
     w.print();
@@ -156,7 +158,15 @@ export default function AdminOrders() {
                     <span className="font-semibold text-blue-700">₪{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
-                <div className="mt-1 flex justify-between pt-2">
+                <div className="mt-2 flex justify-between border-t border-slate-100 pt-2 text-slate-600">
+                  <span>סכום מוצרים</span>
+                  <span>₪{selectedOrder.subtotal ?? (Number(selectedOrder.total || 0) - Number(selectedOrder.shipping_cost || 0))}</span>
+                </div>
+                <div className="mt-1 flex justify-between text-slate-600">
+                  <span>משלוח</span>
+                  <span>₪{selectedOrder.shipping_cost ?? 0}</span>
+                </div>
+                <div className="mt-1 flex justify-between border-t border-slate-100 pt-2">
                   <span className="font-bold text-slate-950">סה״כ</span>
                   <span className="font-bold text-blue-700">₪{selectedOrder.total}</span>
                 </div>

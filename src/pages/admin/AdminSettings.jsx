@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound, Truck } from 'lucide-react';
 
-const FIELDS = [
+const STORE_FIELDS = [
   { key: 'store_name', label: 'שם החנות', placeholder: 'אוצר הקדושה', icon: Store },
   { key: 'phone', label: 'טלפון', placeholder: '03-1234567', icon: Phone },
   { key: 'whatsapp', label: 'וואטסאפ', placeholder: '972501234567', icon: Phone },
@@ -17,9 +17,14 @@ const FIELDS = [
   { key: 'seo_description', label: 'תיאור SEO', placeholder: 'החנות המובילה לספרי קודש...', icon: Globe },
   { key: 'facebook', label: 'קישור פייסבוק', placeholder: 'https://facebook.com/...', icon: Share2 },
   { key: 'instagram', label: 'קישור אינסטגרם', placeholder: 'https://instagram.com/...', icon: Share2 },
-  { key: 'shipping_cost', label: 'עלות משלוח', placeholder: '30', icon: Truck, type: 'number' },
-  { key: 'free_shipping_threshold', label: 'משלוח חינם מעל סכום', placeholder: '200', icon: Truck, type: 'number' },
 ];
+
+const SHIPPING_FIELDS = [
+  { key: 'shipping_cost', label: 'עלות משלוח', placeholder: '30', icon: Truck, type: 'number' },
+  { key: 'free_shipping_threshold', label: 'משלוח חינם מעל סכום', placeholder: '0', icon: Truck, type: 'number' },
+];
+
+const FIELDS = [...STORE_FIELDS, ...SHIPPING_FIELDS];
 
 const EMPTY_USER = {
   full_name: '',
@@ -260,11 +265,46 @@ export default function AdminSettings() {
         {users.length === 0 && <div className="py-16 text-center text-sm text-slate-500">אין משתמשים להצגה</div>}
       </div>
 
+      <div className="rounded-lg border border-blue-100 bg-blue-50 p-6 shadow-sm">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
+          <Truck className="h-5 w-5 text-blue-600" /> הגדרות משלוח
+        </h2>
+        <p className="mb-6 text-sm text-slate-600">
+          העלות שתוזן כאן תופיע אוטומטית בעגלה, בסרגל העגלה ובצ׳ק אאוט. אם אין משלוח חינם, הזן 0 בשדה "משלוח חינם מעל סכום".
+        </p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {SHIPPING_FIELDS.map((field) => (
+            <div key={field.key} className="space-y-1.5">
+              <Label className="text-sm text-slate-700">{field.label}</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={values[field.key] || ''}
+                  onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                  placeholder={field.placeholder}
+                  type={field.type || 'text'}
+                  min="0"
+                  className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
+                />
+                <Button
+                  type="button"
+                  onClick={() => saveSetting(field.key)}
+                  disabled={savingKey === field.key}
+                  variant="outline"
+                  className="h-10 border-slate-200 bg-white px-3 text-xs text-slate-700 hover:bg-slate-50"
+                >
+                  {savingKey === field.key ? <Loader2 className="h-4 w-4 animate-spin" /> : 'שמור'}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-6 font-bold text-slate-950">הגדרות חנות</h2>
         {settingsMessage && <p className="mb-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">{settingsMessage}</p>}
         <div className="grid gap-5 sm:grid-cols-2">
-          {FIELDS.map((field) => (
+          {STORE_FIELDS.map((field) => (
             <div key={field.key} className="space-y-1.5">
               <Label className="text-sm text-slate-700">{field.label}</Label>
               <div className="flex gap-2">

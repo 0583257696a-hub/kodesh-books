@@ -11,9 +11,9 @@ export const DEFAULT_SITE_SETTINGS = {
   seo_description: 'החנות המובילה לספרי קודש, תשמישי קדושה ומתנות יהודיות.',
   facebook: '',
   instagram: '',
-  top_banner: 'משלוח חינם בהזמנה מעל ₪200',
+  top_banner: 'משלוחים לכל הארץ',
   shipping_cost: '30',
-  free_shipping_threshold: '200',
+  free_shipping_threshold: '0',
 };
 
 export function settingsArrayToMap(settings = []) {
