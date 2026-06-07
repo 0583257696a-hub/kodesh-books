@@ -16,6 +16,7 @@ export const DEFAULT_SITE_SETTINGS = {
   free_shipping_threshold: '0',
   admin_email: 'info@otzar-hakodesh.co.il',
   enable_order_emails: 'true',
+  enable_customer_order_emails: 'true',
   enable_approval_emails: 'true',
   enable_delivery_emails: 'true',
   enable_abandoned_cart_emails: 'false',

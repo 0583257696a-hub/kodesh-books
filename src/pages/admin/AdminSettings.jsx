@@ -28,6 +28,7 @@ const SHIPPING_FIELDS = [
 const NOTIFICATION_FIELDS = [
   { key: 'admin_email', label: 'אימייל מנהל לקבלת הזמנות', placeholder: 'admin@example.com', icon: Bell, type: 'email' },
   { key: 'enable_order_emails', label: 'שליחת מייל הזמנה חדשה למנהל', type: 'boolean' },
+  { key: 'enable_customer_order_emails', label: 'שליחת מייל אישור קבלת הזמנה ללקוח', type: 'boolean' },
   { key: 'enable_approval_emails', label: 'שליחת מייל אישור הזמנה ללקוח', type: 'boolean' },
   { key: 'enable_delivery_emails', label: 'שליחת מייל מסירה ללקוח', type: 'boolean' },
   { key: 'enable_abandoned_cart_emails', label: 'שליחת מייל עגלה נטושה', type: 'boolean' },

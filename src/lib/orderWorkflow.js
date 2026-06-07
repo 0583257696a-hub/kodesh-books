@@ -103,7 +103,13 @@ export async function sendManagedEmail(settings, payload) {
   return { queued: true };
 }
 
-export function buildOrderPrintHtml(order) {
+export function buildOrderPrintHtml(order, settings = {}) {
+  const storeName = settings.store_name || 'אוצר הקדושה';
+  const storePhone = settings.phone || '';
+  const storeWhatsapp = settings.whatsapp || '';
+  const storeEmail = settings.email || '';
+  const storeAddress = settings.address || '';
+
   return `<!doctype html>
 <html lang="he" dir="rtl">
 <head>
@@ -117,10 +123,11 @@ export function buildOrderPrintHtml(order) {
     th, td { border: 1px solid #222; padding: 8px; text-align: right; }
     th { background: #f3f4f6; }
     .summary { margin-top: 16px; line-height: 2; font-weight: 700; }
+    .contact { margin-top: 22px; padding-top: 14px; border-top: 1px solid #999; line-height: 1.8; }
   </style>
 </head>
 <body>
-  <h1>הזמנה - אוצר הקדושה</h1>
+  <h1>הזמנה - ${escapeHtml(storeName)}</h1>
   <div class="details">
     <div><strong>מספר הזמנה:</strong> ${escapeHtml(orderNumber(order))}</div>
     <div><strong>לקוח:</strong> ${escapeHtml(order.customer_name)}</div>
@@ -140,6 +147,114 @@ export function buildOrderPrintHtml(order) {
     <div>סכום מוצרים: ${currency(order.subtotal)}</div>
     <div>משלוח: ${currency(order.shipping_cost)}</div>
     <div>סה״כ: ${currency(order.total)}</div>
+  </div>
+  <div class="contact">
+    <strong>פרטי התקשרות:</strong>
+    ${storePhone ? `<div>טלפון: ${escapeHtml(storePhone)}</div>` : ''}
+    ${storeWhatsapp ? `<div>וואטסאפ: ${escapeHtml(storeWhatsapp)}</div>` : ''}
+    ${storeEmail ? `<div>דוא״ל: ${escapeHtml(storeEmail)}</div>` : ''}
+    ${storeAddress ? `<div>כתובת: ${escapeHtml(storeAddress)}</div>` : ''}
+  </div>
+</body>
+</html>`;
+}
+
+export function buildCustomerOrderEmail(order, settings = {}) {
+  const storeName = settings.store_name || 'אוצר הקדושה';
+  const storePhone = settings.phone || '';
+  const storeWhatsapp = settings.whatsapp || '';
+  const storeEmail = settings.email || '';
+  const storeAddress = settings.address || '';
+  const orderDate = new Date(order.created_at || order.created_date || Date.now()).toLocaleString('he-IL');
+
+  return `<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { margin:0; padding:0; direction:rtl; background:#f7f2e8; font-family:Arial, sans-serif; color:#2b1a0f; }
+    .wrap { max-width:720px; margin:0 auto; padding:24px; }
+    .card { background:#fff; border:1px solid #e8d9b2; border-radius:16px; overflow:hidden; box-shadow:0 12px 30px rgba(43,26,15,.08); }
+    .header { background:#2b1a0f; color:#fff; padding:26px; text-align:right; }
+    .header h1 { margin:0; font-size:25px; line-height:1.35; }
+    .header p { margin:10px 0 0; color:#ead7a3; font-size:15px; }
+    .section { padding:24px 26px; border-bottom:1px solid #f0e6d0; }
+    .section h2 { margin:0 0 14px; font-size:18px; color:#9a6a00; }
+    .intro { font-size:16px; line-height:1.9; margin:0; color:#3a2a1e; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .field { background:#fbf8f0; border:1px solid #eee3cb; border-radius:10px; padding:11px; }
+    .label { display:block; font-size:12px; color:#7b6b55; margin-bottom:5px; }
+    .value { font-weight:700; color:#20140c; }
+    table { width:100%; border-collapse:collapse; direction:rtl; }
+    th { background:#f7efd9; color:#2b1a0f; padding:10px; border:1px solid #e3d2aa; text-align:right; }
+    td { padding:10px; border:1px solid #e3d2aa; text-align:right; }
+    .summary-row { display:flex; justify-content:space-between; gap:16px; padding:8px 0; }
+    .total { font-size:20px; font-weight:800; color:#9a6a00; border-top:2px solid #e3d2aa; margin-top:8px; padding-top:12px; }
+    .contact { background:#2b1a0f; color:#fff; padding:22px 26px; }
+    .contact h2 { color:#d4af37; margin:0 0 12px; font-size:18px; }
+    .contact p { margin:6px 0; color:#f4ead1; }
+    .note { margin-top:14px; padding:14px; border-radius:10px; background:#fff8e6; border:1px solid #e4c567; color:#5b4316; font-size:14px; }
+    @media (max-width:560px) {
+      .wrap { padding:12px; }
+      .grid { grid-template-columns:1fr; }
+      .section, .header, .contact { padding:18px; }
+      table { font-size:13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <h1>תודה רבה, הזמנתך התקבלה בהצלחה</h1>
+        <p>${escapeHtml(storeName)} | מספר הזמנה: ${escapeHtml(orderNumber(order))}</p>
+      </div>
+
+      <div class="section">
+        <p class="intro">
+          שלום ${escapeHtml(order.customer_name || 'לקוח יקר')},<br />
+          קיבלנו את הזמנתך באתר ${escapeHtml(storeName)}. צוות החנות יטפל בהזמנה בהקדם וייצור קשר במידת הצורך.
+          מצורף למייל זה קובץ סיכום הזמנה לשמירה או הדפסה.
+        </p>
+        <div class="note">שימו לב: זמני האספקה תלויים בזמינות המלאי ובשיטת המשלוח שנבחרה.</div>
+      </div>
+
+      <div class="section">
+        <h2>פרטי ההזמנה</h2>
+        <div class="grid">
+          <div class="field"><span class="label">מספר הזמנה</span><span class="value">${escapeHtml(orderNumber(order))}</span></div>
+          <div class="field"><span class="label">תאריך</span><span class="value">${escapeHtml(orderDate)}</span></div>
+          <div class="field"><span class="label">שם</span><span class="value">${escapeHtml(order.customer_name)}</span></div>
+          <div class="field"><span class="label">טלפון</span><span class="value">${escapeHtml(order.customer_phone)}</span></div>
+          <div class="field"><span class="label">עיר</span><span class="value">${escapeHtml(order.city)}</span></div>
+          <div class="field"><span class="label">אימייל</span><span class="value">${escapeHtml(order.customer_email)}</span></div>
+          <div class="field" style="grid-column:1 / -1;"><span class="label">כתובת למשלוח</span><span class="value">${escapeHtml(order.shipping_address)}</span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>מוצרים שהוזמנו</h2>
+        <table>
+          <thead><tr><th>מוצר</th><th>כמות</th><th>מחיר יחידה</th><th>סה״כ</th></tr></thead>
+          <tbody>${orderItemsRows(order)}</tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>סיכום לתשלום</h2>
+        <div class="summary-row"><span>סכום מוצרים</span><strong>${currency(order.subtotal)}</strong></div>
+        <div class="summary-row"><span>משלוח</span><strong>${currency(order.shipping_cost)}</strong></div>
+        <div class="summary-row total"><span>סה״כ</span><span>${currency(order.total)}</span></div>
+      </div>
+
+      <div class="contact">
+        <h2>פרטי התקשרות עם החנות</h2>
+        ${storePhone ? `<p><strong>טלפון:</strong> ${escapeHtml(storePhone)}</p>` : ''}
+        ${storeWhatsapp ? `<p><strong>וואטסאפ:</strong> ${escapeHtml(storeWhatsapp)}</p>` : ''}
+        ${storeEmail ? `<p><strong>דוא״ל:</strong> ${escapeHtml(storeEmail)}</p>` : ''}
+        ${storeAddress ? `<p><strong>כתובת:</strong> ${escapeHtml(storeAddress)}</p>` : ''}
+      </div>
+    </div>
   </div>
 </body>
 </html>`;

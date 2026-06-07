@@ -27,6 +27,12 @@ Deno.serve(async (req) => {
       }
       to = settings.admin_email || settings.email || DEFAULT_ADMIN_EMAIL;
       subject = subject || 'התקבלה הזמנה חדשה באתר אוצר הקדושה';
+    } else if (type === 'customer_order_received') {
+      if (settings.enable_customer_order_emails === 'false') {
+        return Response.json({ success: true, skipped: true });
+      }
+      to = payload?.to || '';
+      subject = subject || 'הזמנתך התקבלה באתר אוצר הקדושה';
     } else {
       const user = await base44.auth.me();
       if (user?.role !== 'admin') {
