@@ -29,6 +29,20 @@ export default function Checkout() {
 
     let reserved = [];
     try {
+      const cleanedForm = {
+        ...form,
+        customer_name: form.customer_name.trim(),
+        customer_phone: form.customer_phone.trim(),
+        customer_email: form.customer_email.trim(),
+        city: form.city.trim(),
+        shipping_address: form.shipping_address.trim(),
+        notes: form.notes.trim(),
+      };
+
+      if (!cleanedForm.customer_name || !cleanedForm.customer_phone || !cleanedForm.customer_email || !cleanedForm.city || !cleanedForm.shipping_address) {
+        throw new Error('יש למלא שם מלא, טלפון, אימייל, עיר וכתובת למשלוח.');
+      }
+
       const enforceStock = settings.enforce_stock_limit === 'true';
       const orderItems = items.map(i => ({
         product_id: i.product_id,
@@ -42,7 +56,7 @@ export default function Checkout() {
       reserved = reservation.reserved;
 
       const order = await base44.entities.Order.create({
-        ...form,
+        ...cleanedForm,
         order_number: `OK-${Date.now()}`,
         items: reservation.enrichedItems,
         subtotal: totalPrice,
