@@ -130,7 +130,8 @@ export function buildCustomerDeliveryEmail(order) {
   ].join('\n');
 }
 
-export async function reserveStockForItems(items) {
+export async function reserveStockForItems(items, options = {}) {
+  const enforceStock = options.enforceStock === true;
   const reserved = [];
   const enrichedItems = [];
 
@@ -142,11 +143,11 @@ export async function reserveStockForItems(items) {
     const hasStockCount = product.stock_quantity !== undefined && product.stock_quantity !== null && product.stock_quantity !== '';
     const currentStock = Number(product.stock_quantity || 0);
 
-    if (product.in_stock === false || (hasStockCount && currentStock < quantity)) {
+    if (enforceStock && (product.in_stock === false || (hasStockCount && currentStock < quantity))) {
       throw new Error(`אין מספיק מלאי עבור ${product.name}.`);
     }
 
-    if (hasStockCount) {
+    if (enforceStock && hasStockCount) {
       const nextStock = Math.max(0, currentStock - quantity);
       await base44.entities.Product.update(product.id, {
         stock_quantity: nextStock,

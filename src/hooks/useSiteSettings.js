@@ -19,6 +19,7 @@ export const DEFAULT_SITE_SETTINGS = {
   enable_approval_emails: 'true',
   enable_delivery_emails: 'true',
   enable_abandoned_cart_emails: 'false',
+  enforce_stock_limit: 'false',
 };
 
 export function settingsArrayToMap(settings = []) {

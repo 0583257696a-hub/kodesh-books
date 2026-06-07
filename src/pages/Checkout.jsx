@@ -29,13 +29,16 @@ export default function Checkout() {
 
     let reserved = [];
     try {
+      const enforceStock = settings.enforce_stock_limit === 'true';
       const orderItems = items.map(i => ({
         product_id: i.product_id,
         product_name: i.product_name,
         quantity: i.quantity,
         price: i.price,
       }));
-      const reservation = await reserveStockForItems(orderItems);
+      const reservation = await reserveStockForItems(orderItems, {
+        enforceStock,
+      });
       reserved = reservation.reserved;
 
       const order = await base44.entities.Order.create({
@@ -49,7 +52,7 @@ export default function Checkout() {
         status: 'new',
         payment_status: 'manual_pending',
         payment_method: 'manual',
-        stock_reserved: true,
+        stock_reserved: enforceStock && reserved.length > 0,
         stock_reservations: reserved,
         internal_notes: '',
       });

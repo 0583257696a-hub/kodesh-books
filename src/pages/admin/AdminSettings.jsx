@@ -22,6 +22,7 @@ const STORE_FIELDS = [
 const SHIPPING_FIELDS = [
   { key: 'shipping_cost', label: 'עלות משלוח', placeholder: '30', icon: Truck, type: 'number' },
   { key: 'free_shipping_threshold', label: 'משלוח חינם מעל סכום', placeholder: '0', icon: Truck, type: 'number' },
+  { key: 'enforce_stock_limit', label: 'הגבלת רכישה לפי מלאי', type: 'boolean' },
 ];
 
 const NOTIFICATION_FIELDS = [
@@ -279,20 +280,31 @@ export default function AdminSettings() {
         </h2>
         <p className="mb-6 text-sm text-slate-600">
           העלות שתוזן כאן תופיע אוטומטית בעגלה, בסרגל העגלה ובצ׳ק אאוט. אם אין משלוח חינם, הזן 0 בשדה "משלוח חינם מעל סכום".
+          ניתן גם להפעיל או לכבות הגבלת רכישה לפי מלאי.
         </p>
         <div className="grid gap-5 sm:grid-cols-2">
           {SHIPPING_FIELDS.map((field) => (
             <div key={field.key} className="space-y-1.5">
               <Label className="text-sm text-slate-700">{field.label}</Label>
               <div className="flex gap-2">
-                <Input
-                  value={values[field.key] || ''}
-                  onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
-                  placeholder={field.placeholder}
-                  type={field.type || 'text'}
-                  min="0"
-                  className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
-                />
+                {field.type === 'boolean' ? (
+                  <Select value={values[field.key] || 'false'} onValueChange={(value) => setValues((current) => ({ ...current, [field.key]: value }))}>
+                    <SelectTrigger className="flex-1 border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="false">כבוי</SelectItem>
+                      <SelectItem value="true">פעיל</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={values[field.key] || ''}
+                    onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                    placeholder={field.placeholder}
+                    type={field.type || 'text'}
+                    min="0"
+                    className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
+                  />
+                )}
                 <Button
                   type="button"
                   onClick={() => saveSetting(field.key)}
