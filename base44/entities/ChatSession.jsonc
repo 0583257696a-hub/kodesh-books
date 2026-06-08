@@ -2,17 +2,47 @@
   "name": "ChatSession",
   "type": "object",
   "properties": {
-    "visitor_id": { "type": "string" },
-    "started_at": { "type": "string", "format": "date-time" },
-    "ended_at": { "type": "string", "format": "date-time" },
-    "lead_created": { "type": "boolean", "default": false },
-    "searches_count": { "type": "number", "default": 0 }
+    "visitor_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "lead_created": {
+      "type": "boolean",
+      "default": false
+    },
+    "searches_count": {
+      "type": "number",
+      "default": 0
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05e1\u05e9\u05df",
+      "maxLength": 1000
+    }
   },
-  "required": ["visitor_id", "started_at"],
+  "required": [
+    "visitor_id",
+    "started_at"
+  ],
   "rls": {
     "create": {},
-    "read": { "user_condition": { "role": "admin" } },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "update": {},
-    "delete": { "user_condition": { "role": "admin" } }
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
   }
 }

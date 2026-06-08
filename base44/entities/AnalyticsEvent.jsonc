@@ -4,19 +4,56 @@
   "properties": {
     "event_type": {
       "type": "string",
-      "enum": ["visit", "product_view", "cart_add", "checkout_start", "purchase", "search"]
+      "enum": [
+        "visit",
+        "product_view",
+        "cart_add",
+        "checkout_start",
+        "purchase",
+        "search"
+      ]
     },
-    "product_id": { "type": "string" },
-    "product_name": { "type": "string" },
-    "customer_email": { "type": "string" },
-    "value": { "type": "number", "default": 0 },
-    "metadata": { "type": "object" }
+    "product_id": {
+      "type": "string"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "customer_email": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number",
+      "default": 0
+    },
+    "metadata": {
+      "type": "object"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2",
+      "maxLength": 1000
+    }
   },
-  "required": ["event_type"],
+  "required": [
+    "event_type"
+  ],
   "rls": {
     "create": {},
-    "read": { "user_condition": { "role": "admin" } },
-    "update": { "user_condition": { "role": "admin" } },
-    "delete": { "user_condition": { "role": "admin" } }
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
   }
 }

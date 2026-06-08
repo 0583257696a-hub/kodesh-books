@@ -10,6 +10,11 @@
       "type": "number",
       "default": 1,
       "description": "\u05db\u05de\u05d5\u05ea"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8",
+      "maxLength": 1000
     }
   },
   "required": [
