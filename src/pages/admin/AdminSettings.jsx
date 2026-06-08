@@ -15,6 +15,7 @@ const STORE_FIELDS = [
   { key: 'address', label: 'כתובת', placeholder: 'רחוב הרב קוק 12, ירושלים', icon: Store },
   { key: 'seo_title', label: 'כותרת SEO', placeholder: 'אוצר הקדושה | ספרי קודש', icon: Globe },
   { key: 'seo_description', label: 'תיאור SEO', placeholder: 'החנות המובילה לספרי קודש...', icon: Globe },
+  { key: 'google_analytics_id', label: 'Google Analytics Measurement ID', placeholder: 'G-XXXXXXXXXX', icon: Globe },
   { key: 'facebook', label: 'קישור פייסבוק', placeholder: 'https://facebook.com/...', icon: Share2 },
   { key: 'instagram', label: 'קישור אינסטגרם', placeholder: 'https://instagram.com/...', icon: Share2 },
 ];

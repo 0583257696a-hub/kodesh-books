@@ -9,6 +9,7 @@ export const DEFAULT_SITE_SETTINGS = {
   address: 'רחוב הרב קוק 12, ירושלים',
   seo_title: 'אוצר הקדושה | ספרי קודש',
   seo_description: 'החנות המובילה לספרי קודש, תשמישי קדושה ומתנות יהודיות.',
+  google_analytics_id: '',
   facebook: '',
   instagram: '',
   top_banner: 'משלוחים לכל הארץ',

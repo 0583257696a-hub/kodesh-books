@@ -17,7 +17,7 @@ export default function PromoBanner() {
           className="relative rounded-2xl overflow-hidden min-h-[320px] flex items-center"
         >
           {/* Background */}
-          <img src={PROMO_IMAGE} alt="מבצעים" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={PROMO_IMAGE} alt="מבצעי החודש על ספרי קודש באוצר הקדושה" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-l from-walnut/95 via-walnut/80 to-walnut/50" />
 
           {/* Gold border accent */}

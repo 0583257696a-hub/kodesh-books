@@ -15,7 +15,7 @@ export default function HeroSection() {
     <section className="relative min-h-[85vh] flex items-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
-        <img src={HERO_IMAGE} alt="ספריית קודש" className="w-full h-full object-cover" />
+        <img src={HERO_IMAGE} alt="ספריית ספרי קודש של אוצר הקדושה" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-l from-walnut/90 via-walnut/70 to-walnut/40" />
       </div>
 
@@ -25,7 +25,7 @@ export default function HeroSection() {
           <div className="hidden justify-self-center md:block">
             <motion.img
               src={STORE_LOGO_URL}
-              alt={settings.store_name}
+              alt={`לוגו ${settings.store_name || 'אוצר הקדושה'}`}
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.12 }}
