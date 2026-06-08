@@ -34,8 +34,8 @@ const NAV = [
   { label: 'יבוא ספרים', icon: UploadCloud, path: '/secret-admin/book-import' },
   { label: 'Chat Intelligence', icon: Bot, path: '/secret-admin/chat-intelligence' },
   { label: 'קופונים', icon: Ticket, path: '/secret-admin/coupons' },
-  { label: 'ניהול תוכן', icon: Megaphone, path: '/secret-admin/content' },
-  { label: 'ניהול הרשאות', icon: Settings, path: '/secret-admin/settings' },
+  { label: 'הגדרות תוכן', icon: Megaphone, path: '/secret-admin/content' },
+  { label: 'הגדרות והרשאות', icon: Settings, path: '/secret-admin/settings' },
 ];
 
 export default function AdminSidebar({ collapsed, setCollapsed }) {
@@ -45,7 +45,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
   return (
     <aside className={cn(
       'fixed top-0 right-0 z-40 flex h-full flex-col border-l border-slate-200 bg-white shadow-sm transition-all duration-300',
-      collapsed ? 'w-16' : 'w-60'
+      collapsed ? 'w-16' : 'w-56 md:w-60'
     )}>
       <div className={cn('flex h-16 items-center gap-3 border-b border-slate-200 px-4', collapsed && 'justify-center px-2')}>
         {!collapsed && (
@@ -79,7 +79,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
               title={collapsed ? item.label : undefined}
             >
               <item.icon className={cn('flex-shrink-0', active ? 'h-5 w-5' : 'h-4 w-4')} />
-              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
               {active && !collapsed && <span className="mr-auto h-1.5 w-1.5 rounded-full bg-blue-600" />}
             </Link>
           );
