@@ -107,7 +107,17 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-gold/20 py-6">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-cream/50 text-xs font-body">© {new Date().getFullYear()} {settings.store_name}. כל הזכויות שמורות.</p>
+          <div className="text-center font-body text-xs text-cream/50 md:text-right">
+            <p>© {new Date().getFullYear()} {settings.store_name}. כל הזכויות שמורות.</p>
+            <a
+              href="https://abd-digital.website/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block transition-colors hover:text-gold"
+            >
+              עוצב ונבנה על ידי ABD Digital
+            </a>
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-cream/50 font-body md:justify-start">
             <Link to="/terms" className="transition-colors hover:text-gold">תקנון ותנאי שימוש</Link>
             <span className="text-gold">•</span>
