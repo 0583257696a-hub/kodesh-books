@@ -147,42 +147,49 @@ export async function sendManagedEmail(settings, payload) {
   const enabledKey = payload.enabledKey;
   if (enabledKey && settings?.[enabledKey] === 'false') return { skipped: true };
 
-  const emailRecord = {
-    type: payload.type,
-    to: payload.to,
-    subject: payload.subject,
-    body: payload.body,
-    status: 'queued',
-    provider: 'future_email_integration',
-    created_at: new Date().toISOString(),
-  };
-
-  try {
-    if (base44.entities.EmailNotification?.create) {
-      await base44.entities.EmailNotification.create(emailRecord);
-    }
-  } catch {}
-
   try {
     if (base44.functions?.invoke) {
       const result = await base44.functions.invoke('sendOrderEmail', payload);
+      const data = result?.data || result;
+      if (data?.skipped) return { skipped: true, result };
       return { sent: true, result };
     }
   } catch (error) {
     try {
       if (base44.entities.EmailNotification?.create) {
         await base44.entities.EmailNotification.create({
-          ...emailRecord,
+          type: payload.type,
+          to: payload.to,
+          subject: payload.subject,
+          body: payload.body,
           status: 'failed',
           provider: 'sendOrderEmail',
+          related_id: payload.order_id,
           error: error.message || 'Email function failed',
+          created_at: new Date().toISOString(),
         });
       }
     } catch {}
-    return { queued: true, error: error.message || 'Email function failed' };
+    return { failed: true, error: error.message || 'Email function failed' };
   }
 
-  return { queued: true };
+  try {
+    if (base44.entities.EmailNotification?.create) {
+      await base44.entities.EmailNotification.create({
+        type: payload.type,
+        to: payload.to,
+        subject: payload.subject,
+        body: payload.body,
+        status: 'failed',
+        provider: 'sendOrderEmail',
+        related_id: payload.order_id,
+        error: 'Email function is unavailable',
+        created_at: new Date().toISOString(),
+      });
+    }
+  } catch {}
+
+  return { failed: true, error: 'Email function is unavailable' };
 }
 
 export function buildOrderPrintHtml(order, settings = {}) {

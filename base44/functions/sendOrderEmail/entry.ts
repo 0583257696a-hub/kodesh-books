@@ -10,16 +10,35 @@ async function getSettingsMap(base44: any) {
   }, {});
 }
 
-Deno.serve(async (req) => {
+async function createEmailNotification(base44: any, data: Record<string, any>) {
   try {
-    const base44 = createClientFromRequest(req);
-    const payload = await req.json();
-    const settings = await getSettingsMap(base44);
-    const type = payload?.type || '';
+    if (base44.asServiceRole.entities.EmailNotification?.create) {
+      await base44.asServiceRole.entities.EmailNotification.create({
+        ...data,
+        created_at: data.created_at || new Date().toISOString(),
+      });
+    }
+  } catch {
+    // Email notification logging must never block the order flow.
+  }
+}
 
-    let to = '';
-    let subject = payload?.subject || '';
-    let body = payload?.body || '';
+Deno.serve(async (req) => {
+  let base44: any;
+  let payload: any = {};
+  let type = '';
+  let to = '';
+  let subject = '';
+  let body = '';
+
+  try {
+    base44 = createClientFromRequest(req);
+    payload = await req.json();
+    const settings = await getSettingsMap(base44);
+    type = payload?.type || '';
+
+    subject = payload?.subject || '';
+    body = payload?.body || '';
 
     if (type === 'admin_new_order') {
       if (settings.enable_order_emails === 'false') {
@@ -60,8 +79,8 @@ Deno.serve(async (req) => {
       from_name: 'אוצר הקדושה',
     });
 
-    if (payload?.order_id && base44.asServiceRole.entities.EmailNotification?.create) {
-      await base44.asServiceRole.entities.EmailNotification.create({
+    if (payload?.order_id) {
+      await createEmailNotification(base44, {
         type,
         to,
         subject,
@@ -69,12 +88,23 @@ Deno.serve(async (req) => {
         status: 'sent',
         provider: 'base44_core',
         related_id: payload.order_id,
-        created_at: new Date().toISOString(),
       });
     }
 
     return Response.json({ success: true, to });
   } catch (error) {
+    if (base44 && payload?.order_id) {
+      await createEmailNotification(base44, {
+        type: type || payload?.type || 'unknown',
+        to: to || payload?.to || '',
+        subject: subject || payload?.subject || '',
+        body: body || payload?.body || '',
+        status: 'failed',
+        provider: 'base44_core',
+        related_id: payload.order_id,
+        error: error.message || 'Email send failed',
+      });
+    }
     return Response.json({ error: error.message || 'Email send failed' }, { status: 500 });
   }
 });
