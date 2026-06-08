@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, ShoppingCart, Menu, X, Phone, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -18,20 +18,13 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const navItems = [
     { label: 'ראשי', path: '/' },
     { label: 'כל הספרים', path: '/catalog' },
     ...categories
-      .filter((c) => c.show_in_nav)
-      .map((c) => ({ label: c.name, path: `/catalog?category=${c.slug}` })),
+      .filter((category) => category.show_in_nav)
+      .map((category) => ({ label: category.name, path: `/catalog?category=${category.slug}` })),
     { label: 'מבצעים', path: '/catalog?sale=true' },
     { label: 'צור קשר', path: '/contact' },
   ];
@@ -45,17 +38,40 @@ export default function Header() {
     }
   };
 
-  const isActive = (path) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname + location.search === path || location.pathname === path;
+  const handleMobileNavigation = (path) => {
+    setMobileMenuOpen(false);
+    setSearchOpen(false);
+    navigate(path);
+  };
+
+  const isActiveNavItem = (item) => {
+    const [itemPath, itemQuery = ''] = item.path.split('?');
+    if (location.pathname !== itemPath) return false;
+    if (item.path === '/') return location.pathname === '/';
+
+    const currentParams = new URLSearchParams(location.search);
+    const itemParams = new URLSearchParams(itemQuery);
+
+    if (item.path === '/catalog') {
+      return !currentParams.has('category') && !currentParams.has('sale') && !currentParams.has('search');
+    }
+
+    if (itemParams.has('category')) {
+      return currentParams.get('category') === itemParams.get('category');
+    }
+
+    if (itemParams.has('sale')) {
+      return currentParams.get('sale') === itemParams.get('sale');
+    }
+
+    return location.search === itemQuery;
   };
 
   return (
-    <header className="sticky top-0 z-50 shadow-sm" dir="rtl">
+    <header className="relative z-40 shadow-sm" dir="rtl">
       {/* Top announcement bar */}
       <div className="bg-[#1F1008] px-3 py-2 text-center">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs font-body">
-          {/* Phone */}
           {settings.phone && (
             <a
               href={buildPhoneUrl(settings.phone)}
@@ -66,13 +82,11 @@ export default function Header() {
               <span>{settings.phone}</span>
             </a>
           )}
-          {/* Center message */}
           <p className="flex-1 text-center text-cream/70">
             <span className="text-gold ml-1">✦</span>
             {settings.top_banner || 'משלוח חינם בקנייה מעל ₪299 | משלוחים עד הבית 2–5 ימי עסקים'}
             <span className="text-gold mr-1">✦</span>
           </p>
-          {/* WhatsApp */}
           {settings.whatsapp && (
             <a
               href={buildWhatsappUrl(settings.whatsapp, 'שלום, אשמח לקבל עזרה')}
@@ -89,13 +103,11 @@ export default function Header() {
       </div>
 
       {/* Main header */}
-      <div className={`bg-[#FCFAF5]/97 backdrop-blur-md border-b transition-all duration-300 ${scrolled ? 'border-[#E7D8B8] shadow-md' : 'border-[#E7D8B8]/60'}`}>
+      <div className="bg-[#FCFAF5]/97 backdrop-blur-md border-b border-[#E7D8B8]/60 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4">
           <div className="relative flex h-16 md:h-24 items-center justify-between">
-
             {/* Right side: Mobile menu + Search + User */}
             <div className="flex items-center gap-1">
-              {/* Mobile menu */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="lg:hidden text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors" aria-label="פתח תפריט ניווט" aria-expanded={mobileMenuOpen}>
@@ -107,19 +119,21 @@ export default function Header() {
                     <img src={STORE_LOGO_URL} alt="לוגו אוצר הקדושה" className="h-12 w-auto object-contain" />
                   </div>
                   <nav className="flex flex-col overflow-y-auto" aria-label="תפריט ניווט לנייד">
-                    {navItems.map(item => (
-                      <button
-                        key={item.path + item.label}
-                        type="button"
-                        onClick={() => { setMobileMenuOpen(false); navigate(item.path); }}
-                        className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${isActive(item.path) ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
-                      >
-                        {isActive(item.path) && <span className="w-1 h-4 rounded-full bg-gold flex-shrink-0" aria-hidden="true" />}
-                        {item.label}
-                      </button>
-                    ))}
+                    {navItems.map((item) => {
+                      const active = isActiveNavItem(item);
+                      return (
+                        <button
+                          key={item.path + item.label}
+                          type="button"
+                          onClick={() => handleMobileNavigation(item.path)}
+                          className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${active ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
+                        >
+                          {active && <span className="w-1 h-4 rounded-full bg-gold flex-shrink-0" aria-hidden="true" />}
+                          {item.label}
+                        </button>
+                      );
+                    })}
                   </nav>
-                  {/* Mobile contact */}
                   <div className="p-4 mt-2 space-y-2">
                     {settings.phone && (
                       <a href={buildPhoneUrl(settings.phone)} className="flex items-center gap-3 text-sm text-[#6B5A45] hover:text-gold font-body transition-colors">
@@ -137,7 +151,6 @@ export default function Header() {
                 </SheetContent>
               </Sheet>
 
-              {/* Search */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -149,7 +162,6 @@ export default function Header() {
                 <Search className="h-5 w-5" aria-hidden="true" />
               </Button>
 
-              {/* User */}
               <Button asChild variant="ghost" size="icon" className="text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors">
                 <Link to="/login" aria-label="כניסה לחשבון">
                   <User className="h-5 w-5" aria-hidden="true" />
@@ -196,23 +208,23 @@ export default function Header() {
       <nav className="hidden lg:block bg-[#FCFAF5] border-b border-[#E7D8B8]/80" aria-label="ניווט ראשי" dir="rtl">
         <div className="max-w-7xl mx-auto px-4">
           <ul className="flex flex-wrap items-center justify-center gap-x-1 py-2">
-            {navItems.map(item => (
-              <li key={item.path + item.label}>
-                <Link
-                  to={item.path}
-                  className={`font-body text-sm px-4 py-2 rounded-md transition-all duration-200 relative group ${
-                    isActive(item.path)
-                      ? 'text-[#1F160F] font-semibold bg-gold/10'
-                      : 'text-[#3A2415] hover:text-gold hover:bg-gold/6'
-                  }`}
-                >
-                  {item.label}
-                  {isActive(item.path) && (
-                    <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-gold rounded-full" aria-hidden="true" />
-                  )}
-                </Link>
-              </li>
-            ))}
+            {navItems.map((item) => {
+              const active = isActiveNavItem(item);
+              return (
+                <li key={item.path + item.label}>
+                  <Link
+                    to={item.path}
+                    className={`font-body text-sm px-4 py-2 rounded-md transition-all duration-200 relative group ${
+                      active ? 'text-[#1F160F] font-semibold bg-gold/10' : 'text-[#3A2415] hover:text-gold hover:bg-gold/6'
+                    }`}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    {item.label}
+                    <span className={`absolute bottom-0 left-3 right-3 h-0.5 bg-gold rounded-full transition-opacity ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} aria-hidden="true" />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </nav>
