@@ -31,115 +31,99 @@ export default function CartDrawer() {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={handleOpenChange}>
-      <SheetContent side="left" className="flex w-[min(92vw,420px)] flex-col bg-cream p-0" dir="rtl">
-        <SheetHeader className="border-b border-gold/20 px-5 py-5 text-right">
-          <SheetTitle className="font-heading text-2xl text-walnut">עגלת קניות</SheetTitle>
-          <p className="font-body text-sm text-muted-foreground">{totalItems} מוצרים בעגלה</p>
-        </SheetHeader>
+      <SheetContent side="left" className="flex w-[min(92vw,420px)] flex-col p-0" style={{ background: '#FCFAF5' }} dir="rtl">
+       <SheetHeader className="border-b border-[#E7D8B8] px-5 py-4 text-right bg-white">
+         <SheetTitle className="font-heading text-xl text-[#1F160F]">עגלת קניות</SheetTitle>
+         <p className="font-body text-xs text-[#6B5A45]">{totalItems} מוצרים בעגלה</p>
+       </SheetHeader>
 
-        {items.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-            <ShoppingCart className="mb-5 h-16 w-16 text-gold/30" aria-hidden="true" />
-            <h3 className="font-heading text-2xl font-bold text-walnut">העגלה ריקה</h3>
-            <p className="mt-2 font-body text-muted-foreground">אפשר להתחיל לבחור ספרים מהקטלוג.</p>
-            <Button asChild onClick={closeCart} className="mt-6 bg-gold text-walnut hover:bg-gold/90">
-              <Link to="/catalog">לקטלוג הספרים</Link>
-            </Button>
-          </div>
-        ) : (
-          <>
-            <div className="flex-1 space-y-3 overflow-y-auto px-4 py-5">
-              {items.map((item) => (
-                <article key={item.product_id} className="rounded-xl border border-gold/15 bg-white p-3 shadow-sm">
-                  <div className="flex gap-3">
-                    <Link
-                      to={`/product/${item.product_id}`}
-                      onClick={closeCart}
-                      className="h-24 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-secondary"
-                      aria-label={`פתח את ${item.product_name}`}
-                    >
-                      {item.image_url ? (
-                        <img src={item.image_url} alt={item.product_name} className="h-full w-full object-cover" />
-                      ) : (
-                        <span className="flex h-full w-full items-center justify-center">
-                          <BookOpen className="h-8 w-8 text-gold/25" aria-hidden="true" />
-                        </span>
-                      )}
-                    </Link>
+       {items.length === 0 ? (
+         <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
+           <ShoppingCart className="mb-5 h-14 w-14 text-gold/25" aria-hidden="true" />
+           <h3 className="font-heading text-xl font-bold text-[#1F160F]">העגלה ריקה</h3>
+           <p className="mt-2 font-body text-sm text-[#6B5A45]">אפשר להתחיל לבחור ספרים מהקטלוג.</p>
+           <Button asChild onClick={closeCart} className="mt-6 font-body rounded-lg" style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}>
+             <Link to="/catalog">לקטלוג הספרים</Link>
+           </Button>
+         </div>
+       ) : (
+         <>
+           <div className="flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
+             {items.map((item) => (
+               <article key={item.product_id} className="rounded-xl border border-[#E7D8B8] bg-white p-3 hover:border-gold/30 transition-colors">
+                 <div className="flex gap-3">
+                   <Link
+                     to={`/product/${item.product_id}`}
+                     onClick={closeCart}
+                     className="h-20 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-[#F8F3E8] border border-[#E7D8B8]"
+                     aria-label={`פתח את ${item.product_name}`}
+                   >
+                     {item.image_url ? (
+                       <img src={item.image_url} alt={item.product_name} className="h-full w-full object-cover" />
+                     ) : (
+                       <span className="flex h-full w-full items-center justify-center">
+                         <BookOpen className="h-6 w-6 text-gold/25" aria-hidden="true" />
+                       </span>
+                     )}
+                   </Link>
 
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        to={`/product/${item.product_id}`}
-                        onClick={closeCart}
-                        className="line-clamp-2 font-heading text-base font-bold text-foreground hover:text-gold"
-                      >
-                        {item.product_name}
-                      </Link>
-                      <p className="mt-1 font-body text-sm font-semibold text-gold">₪{Number(item.price || 0).toFixed(2)}</p>
+                   <div className="min-w-0 flex-1">
+                     <Link
+                       to={`/product/${item.product_id}`}
+                       onClick={closeCart}
+                       className="line-clamp-2 font-heading text-sm font-bold text-[#1F160F] hover:text-gold transition-colors leading-snug"
+                     >
+                       {item.product_name}
+                     </Link>
+                     <p className="mt-1 font-body text-sm font-semibold text-gold">₪{Number(item.price || 0).toFixed(2)}</p>
 
-                      <div className="mt-3 flex items-center justify-between gap-2">
-                        <div className="flex items-center overflow-hidden rounded-lg border border-gold/20">
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
-                            className="p-2 transition hover:bg-secondary"
-                            aria-label={`הפחת כמות עבור ${item.product_name}`}
-                          >
-                            <Minus className="h-3 w-3" aria-hidden="true" />
-                          </button>
-                          <span className="min-w-8 px-2 text-center font-body text-sm font-bold">{item.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
-                            className="p-2 transition hover:bg-secondary"
-                            aria-label={`הוסף כמות עבור ${item.product_name}`}
-                          >
-                            <Plus className="h-3 w-3" aria-hidden="true" />
-                          </button>
-                        </div>
+                     <div className="mt-2.5 flex items-center justify-between gap-2">
+                       <div className="flex items-center overflow-hidden rounded-lg border border-[#E7D8B8]">
+                         <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="p-1.5 hover:bg-[#F8F3E8] transition-colors" aria-label={`הפחת כמות עבור ${item.product_name}`}>
+                           <Minus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
+                         </button>
+                         <span className="min-w-7 px-1.5 text-center font-body text-sm font-bold text-[#1F160F]">{item.quantity}</span>
+                         <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="p-1.5 hover:bg-[#F8F3E8] transition-colors" aria-label={`הוסף כמות עבור ${item.product_name}`}>
+                           <Plus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
+                         </button>
+                       </div>
+                       <button type="button" onClick={() => removeItem(item.product_id)} className="rounded-md p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors" aria-label={`הסר את ${item.product_name} מהעגלה`}>
+                         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+               </article>
+             ))}
+           </div>
 
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.product_id)}
-                          className="rounded-md p-2 text-destructive transition hover:bg-destructive/10"
-                          aria-label={`הסר את ${item.product_name} מהעגלה`}
-                        >
-                          <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+           <div className="border-t border-[#E7D8B8] bg-white px-5 py-5">
+             <div className="space-y-2 font-body text-sm">
+               <div className="flex justify-between text-[#3A2415]">
+                 <span className="text-[#6B5A45]">סכום ביניים</span>
+                 <span>₪{totalPrice.toFixed(2)}</span>
+               </div>
+               <div className="flex justify-between">
+                 <span className="text-[#6B5A45]">משלוח</span>
+                 <span className="text-gold font-semibold">{shipping === 0 ? 'חינם' : `₪${shipping.toFixed(2)}`}</span>
+               </div>
+               <div className="flex justify-between border-t border-[#E7D8B8] pt-3 font-heading text-lg font-bold">
+                 <span className="text-[#1F160F]">סה"כ</span>
+                 <span className="text-gold">₪{orderTotal.toFixed(2)}</span>
+               </div>
+             </div>
 
-            <div className="border-t border-gold/20 bg-white px-5 py-5 shadow-[0_-8px_20px_rgba(0,0,0,0.04)]">
-              <div className="space-y-2 font-body text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">סכום ביניים</span>
-                  <span>₪{totalPrice.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">משלוח</span>
-                  <span className="text-gold">{shipping === 0 ? 'חינם' : `₪${shipping.toFixed(2)}`}</span>
-                </div>
-                <div className="flex justify-between border-t border-gold/10 pt-3 font-heading text-lg font-bold">
-                  <span>סה"כ</span>
-                  <span className="text-gold">₪{orderTotal.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-2">
-                <Button asChild onClick={closeCart} className="bg-gold py-5 text-walnut hover:bg-gold/90">
-                  <Link to="/checkout">מעבר לתשלום</Link>
-                </Button>
-                <Button asChild onClick={closeCart} variant="outline" className="border-gold/30 py-5 text-walnut hover:bg-gold/10">
-                  <Link to="/cart">צפייה בעגלה מלאה</Link>
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
+             <div className="mt-4 grid gap-2">
+               <Button asChild onClick={closeCart} className="py-5 font-body rounded-lg" style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}>
+                 <Link to="/checkout">מעבר לתשלום</Link>
+               </Button>
+               <Button asChild onClick={closeCart} variant="outline" className="border-[#E7D8B8] py-4 text-[#3A2415] hover:border-gold/50 hover:text-gold font-body">
+                 <Link to="/cart">צפייה בעגלה המלאה</Link>
+               </Button>
+             </div>
+           </div>
+         </>
+       )}
       </SheetContent>
     </Sheet>
   );

@@ -2,85 +2,141 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { BookOpen, MessageCircle } from 'lucide-react';
+import { BookOpen, MessageCircle, Truck, ShieldCheck, Users, Star, Tag } from 'lucide-react';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import { STORE_LOGO_URL } from '@/lib/branding';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f511806de_generated_bffda8a3.png';
 
+const TRUST_BADGES = [
+  { icon: Truck, label: 'משלוחים מהירים', sub: 'עד 5 ימי עסקים' },
+  { icon: BookOpen, label: 'מבחר ספרי קודש', sub: 'אלפי כותרים' },
+  { icon: ShieldCheck, label: 'רכישה מאובטחת', sub: 'תשלום בטוח ומוצפן' },
+  { icon: Users, label: 'שירות אישי', sub: 'ליווי מקצועי' },
+  { icon: Tag, label: 'מחירים אטרקטיביים', sub: 'מבצעים שוטפים' },
+];
+
 export default function HeroSection() {
   const { settings } = useSiteSettings();
 
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0">
-        <img src={HERO_IMAGE} alt="ספריית ספרי קודש של אוצר הקדושה" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-l from-walnut/90 via-walnut/70 to-walnut/40" />
-      </div>
+    <>
+      <section className="relative min-h-[88vh] flex items-center overflow-hidden" aria-label="ברוכים הבאים לאוצר הקדושה">
+        {/* Background */}
+        <div className="absolute inset-0">
+          <img src={HERO_IMAGE} alt="" role="presentation" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-l from-[#1a0e05]/96 via-[#2A160B]/80 to-[#1a0e05]/55" />
+          {/* Subtle gold vignette bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a0e05]/80 to-transparent" />
+        </div>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 w-full py-20">
-        <div className="grid items-start gap-10 md:grid-cols-[minmax(0,1fr)_minmax(260px,430px)]" dir="ltr">
-          <div className="hidden justify-self-center md:block">
-            <motion.img
-              src={STORE_LOGO_URL}
-              alt={`לוגו ${settings.store_name || 'אוצר הקדושה'}`}
-              initial={{ opacity: 0, scale: 0.94 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.12 }}
-              className="pointer-events-none h-[250px] w-auto object-contain object-center drop-shadow-2xl lg:h-[270px] xl:h-[285px]"
-            />
+        {/* Decorative gold lines */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 w-full py-20">
+          <div className="grid items-center gap-12 md:grid-cols-[1fr_1.1fr]" dir="ltr">
+            
+            {/* Logo side */}
+            <div className="hidden justify-self-center md:flex flex-col items-center gap-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.88 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, ease: 'easeOut', delay: 0.1 }}
+                className="relative"
+              >
+                {/* Glow ring behind logo */}
+                <div className="absolute inset-0 rounded-full bg-gold/10 blur-3xl scale-125" />
+                <img
+                  src={STORE_LOGO_URL}
+                  alt={`לוגו ${settings.store_name || 'אוצר הקדושה'}`}
+                  className="pointer-events-none relative z-10 h-[260px] lg:h-[290px] xl:h-[310px] w-auto object-contain drop-shadow-2xl"
+                />
+              </motion.div>
+            </div>
+
+            {/* Text side */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, ease: 'easeOut', delay: 0.15 }}
+              className="text-right"
+              dir="rtl"
+            >
+              {/* Overline */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px flex-1 bg-gradient-to-l from-gold/50 to-transparent max-w-[80px]" />
+                <span className="text-gold font-body text-xs tracking-[0.25em] uppercase">ברוכים הבאים</span>
+              </div>
+
+              {/* Heading */}
+              <h1 className="font-heading font-bold leading-tight text-cream mb-5">
+                <span className="block text-4xl md:text-6xl lg:text-7xl">אוצר</span>
+                <span className="block text-5xl md:text-7xl lg:text-8xl text-gold" style={{ textShadow: '0 0 40px rgba(212,175,55,0.25)' }}>הקדושה</span>
+              </h1>
+
+              <p className="font-body text-base md:text-xl text-cream/75 mb-10 leading-relaxed max-w-md">
+                ספרי קודש <span className="text-gold/80 mx-1">·</span> תשמישי קדושה <span className="text-gold/80 mx-1">·</span> הכל לבית היהודי
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-4">
+                <Link to="/catalog">
+                  <Button
+                    className="font-body text-base px-8 py-6 rounded-lg transition-all duration-300 shadow-lg"
+                    style={{ background: 'linear-gradient(135deg, #D4AF37 0%, #C99722 50%, #D4AF37 100%)', color: '#1F1008', backgroundSize: '200% auto' }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundPosition = 'right center'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundPosition = 'left center'}
+                  >
+                    <BookOpen className="h-5 w-5 ml-2" />
+                    לקטלוג הספרים
+                  </Button>
+                </Link>
+                <Link to="/catalog?sale=true">
+                  <Button
+                    variant="outline"
+                    className="border-gold/60 text-gold hover:bg-gold/10 hover:border-gold font-body text-base px-8 py-6 rounded-lg transition-all duration-300"
+                  >
+                    <Tag className="h-5 w-5 ml-2" />
+                    למבצעים חמים
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
           </div>
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="max-w-xl justify-self-end text-right"
-            dir="rtl"
-          >
-            {/* Decorative line */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-px flex-1 bg-gold/40" />
-              <span className="text-gold text-sm font-body tracking-widest">ברוכים הבאים</span>
-            </div>
+        </div>
 
-            <h1 className="font-heading text-5xl md:text-7xl font-bold text-cream leading-tight mb-4">
-              אוצר <span className="text-gold">הקדושה</span>
-            </h1>
+        {/* Scroll indicator */}
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 2.5 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+          aria-hidden="true"
+        >
+          <div className="w-6 h-10 border-2 border-gold/30 rounded-full flex justify-center pt-2">
+            <div className="w-1 h-3 bg-gold/50 rounded-full" />
+          </div>
+        </motion.div>
+      </section>
 
-            <p className="font-body text-lg md:text-xl text-cream/80 mb-8 leading-relaxed">
-              ספרי קודש <span className="text-gold">•</span> תשמישי קדושה <span className="text-gold">•</span> הכל לבית היהודי
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <Link to="/catalog">
-                <Button className="bg-gold text-walnut hover:bg-gold/90 font-body text-base px-8 py-6 rounded-lg gold-glow gold-glow-hover transition-all">
-                  <BookOpen className="h-5 w-5 ml-2" />
-                  לקטלוג הספרים
-                </Button>
-              </Link>
-              <a href={buildWhatsappUrl(settings.whatsapp, 'שלום, אני רוצה לבצע הזמנה מאתר אוצר הקדושה')} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="border-gold/50 text-gold hover:bg-gold/10 font-body text-base px-8 py-6 rounded-lg transition-all">
-                  <MessageCircle className="h-5 w-5 ml-2" />
-                  וואצאפ להזמנות
-                </Button>
-              </a>
-            </div>
-          </motion.div>
+      {/* Trust Badges Bar */}
+      <div className="bg-[#F8F3E8] border-y border-[#E7D8B8]">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-x-reverse divide-[#E7D8B8]">
+            {TRUST_BADGES.map(({ icon: Icon, label, sub }) => (
+              <div key={label} className="flex items-center gap-3 py-4 px-4 md:px-6 justify-center md:justify-start">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
+                  <Icon className="h-5 w-5 text-gold" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="font-body font-semibold text-[#1F160F] text-sm leading-tight">{label}</p>
+                  <p className="font-body text-[#6B5A45] text-xs mt-0.5">{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <div className="w-6 h-10 border-2 border-gold/40 rounded-full flex justify-center pt-2">
-          <div className="w-1.5 h-3 bg-gold/60 rounded-full" />
-        </div>
-      </motion.div>
-    </section>
+    </>
   );
 }

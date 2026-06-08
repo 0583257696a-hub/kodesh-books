@@ -4,8 +4,9 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import ProductCard from '@/components/shared/ProductCard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
 
 export default function FeaturedProducts() {
   const { data: products = [], isLoading } = useQuery({
@@ -14,38 +15,59 @@ export default function FeaturedProducts() {
   });
 
   return (
-    <section className="py-20 px-4 bg-white/50">
+    <section className="py-20 px-4 bg-[#FCFAF5]">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-end justify-between mb-14">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex items-end justify-between mb-14"
+        >
           <div>
-            <span className="text-gold font-body text-sm tracking-widest">הנבחרים שלנו</span>
-            <h2 className="font-heading text-4xl md:text-5xl font-bold mt-3 text-foreground">מוצרים מובילים</h2>
-            <div className="w-20 h-0.5 bg-gold mt-4" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-px w-12 bg-gold/50" />
+              <span className="text-gold font-body text-xs tracking-[0.2em]">הנבחרים שלנו</span>
+            </div>
+            <h2 className="font-heading text-4xl md:text-5xl font-bold text-[#1F160F]">מוצרים מובילים</h2>
+            <div className="flex items-center gap-2 mt-4">
+              <div className="h-px w-8 bg-gold/40" />
+              <div className="w-2 h-2 rounded-full bg-gold" />
+              <div className="h-px w-8 bg-gold/40" />
+            </div>
           </div>
-          <Link to="/catalog">
-            <Button variant="ghost" className="text-gold hover:text-gold/80 font-body hidden md:flex">
+          <Link to="/catalog" className="hidden md:block">
+            <Button variant="ghost" className="text-[#6B5A45] hover:text-gold font-body gap-1 group transition-colors">
               לכל המוצרים
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             </Button>
           </Link>
-        </div>
+        </motion.div>
 
         {/* Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {Array(8).fill(0).map((_, i) => (
               <div key={i} className="space-y-3">
                 <Skeleton className="aspect-[3/4] w-full rounded-xl" />
                 <Skeleton className="h-4 w-2/3" />
-                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-5 w-1/3" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map(product => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {products.map((product, i) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06, duration: 0.45 }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
             ))}
           </div>
         )}
@@ -53,7 +75,10 @@ export default function FeaturedProducts() {
         {/* Mobile CTA */}
         <div className="text-center mt-10 md:hidden">
           <Link to="/catalog">
-            <Button className="bg-gold text-walnut hover:bg-gold/90 font-body px-8 py-3">
+            <Button
+              className="font-body px-8 py-3 rounded-lg"
+              style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}
+            >
               לכל המוצרים
               <ArrowLeft className="h-4 w-4 mr-2" />
             </Button>

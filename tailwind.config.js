@@ -17,8 +17,9 @@ module.exports = {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
         gold: '#D4AF37',
-        walnut: '#2A1B0E',
-        cream: '#FDFBF7',
+        walnut: '#1F1008',
+        cream: '#FCFAF5',
+        parchment: '#F8F3E8',
         amber_glow: 'rgba(255, 184, 0, 0.1)',
   			card: {
   				DEFAULT: 'hsl(var(--card))',

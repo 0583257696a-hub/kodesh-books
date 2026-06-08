@@ -1,29 +1,37 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Search, User, ShoppingCart, Menu, X, Phone, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { buildWhatsappUrl, buildPhoneUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { STORE_LOGO_URL } from '@/lib/branding';
 
 export default function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { totalItems, openCart } = useCart();
   const { settings } = useSiteSettings();
   const { categories } = useStoreCategories();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navItems = [
     { label: 'ראשי', path: '/' },
     { label: 'כל הספרים', path: '/catalog' },
     ...categories
-      .filter((category) => category.show_in_nav)
-      .map((category) => ({ label: category.name, path: `/catalog?category=${category.slug}` })),
+      .filter((c) => c.show_in_nav)
+      .map((c) => ({ label: c.name, path: `/catalog?category=${c.slug}` })),
     { label: 'מבצעים', path: '/catalog?sale=true' },
     { label: 'צור קשר', path: '/contact' },
   ];
@@ -37,105 +45,171 @@ export default function Header() {
     }
   };
 
-  const handleMobileNavigation = (path) => {
-    setMobileMenuOpen(false);
-    setSearchOpen(false);
-    navigate(path);
+  const isActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname + location.search === path || location.pathname === path;
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-md border-b border-gold/20">
-      {/* Top bar */}
-      <div className="bg-walnut px-3 py-1 text-center font-body text-xs leading-snug text-cream md:py-2 md:text-sm">
-        <span className="text-gold">✦</span> {settings.top_banner} <span className="text-gold">✦</span>
+    <header className="sticky top-0 z-50 shadow-sm" dir="rtl">
+      {/* Top announcement bar */}
+      <div className="bg-[#1F1008] px-3 py-2 text-center">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 text-xs font-body">
+          {/* Phone */}
+          {settings.phone && (
+            <a
+              href={buildPhoneUrl(settings.phone)}
+              className="hidden md:flex items-center gap-1.5 text-cream/60 hover:text-gold transition-colors"
+              aria-label={`טלפון: ${settings.phone}`}
+            >
+              <Phone className="h-3 w-3 text-gold/60" aria-hidden="true" />
+              <span>{settings.phone}</span>
+            </a>
+          )}
+          {/* Center message */}
+          <p className="flex-1 text-center text-cream/70">
+            <span className="text-gold ml-1">✦</span>
+            {settings.top_banner || 'משלוח חינם בקנייה מעל ₪299 | משלוחים עד הבית 2–5 ימי עסקים'}
+            <span className="text-gold mr-1">✦</span>
+          </p>
+          {/* WhatsApp */}
+          {settings.whatsapp && (
+            <a
+              href={buildWhatsappUrl(settings.whatsapp, 'שלום, אשמח לקבל עזרה')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-1.5 text-cream/60 hover:text-gold transition-colors"
+              aria-label="שירות לקוחות בוואטסאפ"
+            >
+              <MessageCircle className="h-3 w-3 text-gold/60" aria-hidden="true" />
+              <span>שירות לקוחות</span>
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Main header */}
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="relative flex h-16 items-center justify-between md:h-28">
-          {/* Mobile menu */}
-          <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center lg:static lg:translate-y-0">
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="פתיחת תפריט ניווט">
-                <Menu className="h-6 w-6" aria-hidden="true" />
+      <div className={`bg-[#FCFAF5]/97 backdrop-blur-md border-b transition-all duration-300 ${scrolled ? 'border-[#E7D8B8] shadow-md' : 'border-[#E7D8B8]/60'}`}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="relative flex h-16 md:h-24 items-center justify-between">
+
+            {/* Right side: Mobile menu + Search + User */}
+            <div className="flex items-center gap-1">
+              {/* Mobile menu */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="lg:hidden text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors" aria-label="פתח תפריט ניווט" aria-expanded={mobileMenuOpen}>
+                    <Menu className="h-5 w-5" aria-hidden="true" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="bg-[#FCFAF5] w-80 border-l border-[#E7D8B8] p-0" dir="rtl">
+                  <div className="flex items-center justify-between p-4 border-b border-[#E7D8B8]">
+                    <img src={STORE_LOGO_URL} alt="לוגו אוצר הקדושה" className="h-12 w-auto object-contain" />
+                  </div>
+                  <nav className="flex flex-col overflow-y-auto" aria-label="תפריט ניווט לנייד">
+                    {navItems.map(item => (
+                      <button
+                        key={item.path + item.label}
+                        type="button"
+                        onClick={() => { setMobileMenuOpen(false); navigate(item.path); }}
+                        className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${isActive(item.path) ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
+                      >
+                        {isActive(item.path) && <span className="w-1 h-4 rounded-full bg-gold flex-shrink-0" aria-hidden="true" />}
+                        {item.label}
+                      </button>
+                    ))}
+                  </nav>
+                  {/* Mobile contact */}
+                  <div className="p-4 mt-2 space-y-2">
+                    {settings.phone && (
+                      <a href={buildPhoneUrl(settings.phone)} className="flex items-center gap-3 text-sm text-[#6B5A45] hover:text-gold font-body transition-colors">
+                        <Phone className="h-4 w-4 text-gold/60" />
+                        {settings.phone}
+                      </a>
+                    )}
+                    {settings.whatsapp && (
+                      <a href={buildWhatsappUrl(settings.whatsapp, 'שלום, אשמח לקבל עזרה')} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-[#6B5A45] hover:text-gold font-body transition-colors">
+                        <MessageCircle className="h-4 w-4 text-gold/60" />
+                        {settings.whatsapp}
+                      </a>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              {/* Search */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchOpen(!searchOpen)}
+                className="text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors"
+                aria-label={searchOpen ? 'סגור חיפוש' : 'פתח חיפוש'}
+                aria-expanded={searchOpen}
+              >
+                <Search className="h-5 w-5" aria-hidden="true" />
               </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="bg-cream w-80">
-              <nav className="mt-8 flex max-h-[calc(100vh-5rem)] flex-col gap-3 overflow-y-auto pr-1" aria-label="תפריט ניווט לנייד">
-                {navItems.map(item => (
-                  <button
-                    type="button"
-                    key={item.path + item.label}
-                    onClick={() => handleMobileNavigation(item.path)}
-                    className="border-b border-border py-2 text-right font-heading text-lg text-foreground transition-colors hover:text-gold"
+
+              {/* User */}
+              <Button asChild variant="ghost" size="icon" className="text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors">
+                <Link to="/login" aria-label="כניסה לחשבון">
+                  <User className="h-5 w-5" aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
+
+            {/* Center: Logo */}
+            <Link to="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex-shrink-0" aria-label="לדף הבית של אוצר הקדושה">
+              <img
+                src={STORE_LOGO_URL}
+                alt={settings.store_name || 'אוצר הקדושה'}
+                className="h-12 md:h-20 w-auto object-contain transition-all duration-300"
+              />
+            </Link>
+
+            {/* Left side: Cart */}
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={openCart}
+                className="relative text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors"
+                aria-label={`עגלת קניות, ${totalItems} מוצרים`}
+              >
+                <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+                {totalItems > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center h-5 w-5 rounded-full text-xs font-bold font-body"
+                    style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}
+                    aria-hidden="true"
                   >
-                    {item.label}
-                  </button>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+            </div>
           </div>
-
-          {/* Icons right */}
-          <div className="absolute left-1/2 top-1/2 z-20 flex w-44 -translate-x-1/2 -translate-y-1/2 items-center justify-between lg:static lg:z-auto lg:w-auto lg:translate-x-0 lg:translate-y-0 lg:gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="hover:text-gold transition-colors"
-              aria-label={searchOpen ? 'סגירת חיפוש' : 'פתיחת חיפוש'}
-              aria-expanded={searchOpen}
-              aria-controls="site-search"
-            >
-              <Search className="h-5 w-5" aria-hidden="true" />
-            </Button>
-            <Button asChild variant="ghost" size="icon" className="hover:text-gold transition-colors">
-              <Link to="/login" aria-label="כניסה לחשבון">
-                <User className="h-5 w-5" aria-hidden="true" />
-              </Link>
-            </Button>
-
-          </div>
-
-          {/* Logo center */}
-          <Link to="/" className="absolute left-1/2 z-10 -translate-x-1/2">
-            <img 
-              src={STORE_LOGO_URL}
-              alt={settings.store_name} 
-              className="h-16 w-auto object-contain md:h-32"
-            />
-          </Link>
-
-          {/* Cart */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={openCart}
-            className="absolute left-3 top-1/2 -translate-y-1/2 hover:text-gold transition-colors lg:static lg:translate-y-0"
-            aria-label={`עגלת קניות, ${totalItems} מוצרים`}
-          >
-            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gold text-walnut text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" aria-hidden="true">
-                {totalItems}
-              </span>
-            )}
-          </Button>
         </div>
       </div>
 
       {/* Desktop navigation */}
-      <nav className="hidden lg:block border-t border-gold/10 bg-cream" aria-label="ניווט ראשי">
+      <nav className="hidden lg:block bg-[#FCFAF5] border-b border-[#E7D8B8]/80" aria-label="ניווט ראשי" dir="rtl">
         <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3">
+          <ul className="flex flex-wrap items-center justify-center gap-x-1 py-2">
             {navItems.map(item => (
               <li key={item.path + item.label}>
-                <Link to={item.path} className="font-body text-sm text-foreground hover:text-gold transition-colors relative group">
+                <Link
+                  to={item.path}
+                  className={`font-body text-sm px-4 py-2 rounded-md transition-all duration-200 relative group ${
+                    isActive(item.path)
+                      ? 'text-[#1F160F] font-semibold bg-gold/10'
+                      : 'text-[#3A2415] hover:text-gold hover:bg-gold/6'
+                  }`}
+                >
                   {item.label}
-                  <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-gold transition-all group-hover:w-full" />
+                  {isActive(item.path) && (
+                    <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-gold rounded-full" aria-hidden="true" />
+                  )}
                 </Link>
               </li>
             ))}
@@ -148,24 +222,42 @@ export default function Header() {
         {searchOpen && (
           <motion.div
             id="site-search"
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 bg-cream border-b border-gold/20 p-4 shadow-lg z-50"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-full left-0 right-0 bg-[#FCFAF5] border-b border-[#E7D8B8] shadow-lg z-50 p-4"
+            dir="rtl"
           >
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex gap-3">
+            <form onSubmit={handleSearch} className="max-w-2xl mx-auto flex gap-3" role="search">
               <label htmlFor="site-search-input" className="sr-only">חיפוש באתר</label>
-              <input
-                id="site-search-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="חפש ספרים, מחברים..."
-                className="flex-1 px-4 py-3 rounded-lg border border-gold/30 bg-white font-body"
-                autoFocus
-              />
-              <Button type="submit" className="bg-gold text-walnut hover:bg-gold/90 font-body">חיפוש</Button>
-              <Button type="button" variant="ghost" size="icon" onClick={() => setSearchOpen(false)} aria-label="סגירת חיפוש">
+              <div className="relative flex-1">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B5A45]" aria-hidden="true" />
+                <input
+                  id="site-search-input"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="חפש ספרים, מחברים, נושאים..."
+                  className="w-full pr-10 pl-4 py-3 rounded-lg border border-[#E7D8B8] bg-white font-body text-[#1F160F] placeholder:text-[#6B5A45]/60 focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-gold/40 transition-all"
+                  autoFocus
+                />
+              </div>
+              <Button
+                type="submit"
+                className="font-body px-6 rounded-lg"
+                style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}
+              >
+                חיפוש
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchOpen(false)}
+                className="text-[#6B5A45] hover:text-gold"
+                aria-label="סגור חיפוש"
+              >
                 <X className="h-5 w-5" aria-hidden="true" />
               </Button>
             </form>
