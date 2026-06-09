@@ -2,19 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, Clock, MessageCircle, Instagram, Facebook, ShieldCheck, CreditCard } from 'lucide-react';
 import { buildMailUrl, buildPhoneUrl, buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { STORE_LOGO_URL } from '@/lib/branding';
-
-const POPULAR_CATEGORIES = [
-  { label: 'חסידות וקבלה', slug: 'chassidut' },
-  { label: 'הלכה', slug: 'halacha' },
-  { label: 'גמרא ומשניות', slug: 'gemarot' },
-  { label: 'מוסר ומחשבה', slug: 'musar' },
-  { label: 'ספרי ילדים ונוער', slug: 'children' },
-  { label: 'תשמישי קדושה', slug: 'tashmishim' },
-];
 
 export default function Footer() {
   const { settings } = useSiteSettings();
+  const { categories } = useStoreCategories();
+  const popularCategories = categories.filter((category) => category.show_in_nav).slice(0, 8);
   const socialLinks = [
     { key: 'facebook', label: 'פייסבוק', href: settings.facebook, icon: Facebook },
     { key: 'instagram', label: 'אינסטגרם', href: settings.instagram, icon: Instagram },
@@ -138,13 +132,14 @@ export default function Footer() {
             <div className="pt-2">
               <h5 className="font-body text-xs text-gold/60 tracking-wide mb-2.5">קטגוריות פופולריות</h5>
               <div className="flex flex-wrap gap-1.5">
-                {POPULAR_CATEGORIES.map(cat => (
+                {popularCategories.map(cat => (
                   <Link
                     key={cat.slug}
                     to={`/catalog?category=${cat.slug}`}
                     className="text-xs font-body text-cream/50 hover:text-gold px-2 py-0.5 rounded border border-cream/10 hover:border-gold/30 transition-all duration-200"
+                    aria-label={`מעבר לקטגוריה ${cat.name}`}
                   >
-                    {cat.label}
+                    {cat.name}
                   </Link>
                 ))}
               </div>
@@ -172,7 +167,14 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="text-center font-body text-xs text-cream/35 md:text-right">
             <p>© {new Date().getFullYear()} {settings.store_name || 'אוצר הקדושה'}. כל הזכויות שמורות.</p>
-            <a href="https://abd-digital.website/" target="_blank" rel="noopener noreferrer" className="hover:text-gold/60 transition-colors mt-0.5 inline-block">
+            <a
+              href="https://abd-digital.website/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative z-20 mt-1 inline-flex min-h-8 items-center rounded-md px-2 py-1 transition-colors hover:text-gold/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+              style={{ touchAction: 'manipulation' }}
+              aria-label="עוצב ונבנה על ידי ABD Digital - פתיחת האתר"
+            >
               עוצב ונבנה על ידי ABD Digital
             </a>
           </div>
