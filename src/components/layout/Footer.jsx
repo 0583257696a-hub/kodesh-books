@@ -65,6 +65,8 @@ export default function Footer() {
               {[
                 { label: 'ראשי', path: '/' },
                 { label: 'כל הספרים', path: '/catalog' },
+                { label: 'מבצעים חמים', path: '/catalog?sale=true' },
+                { label: 'מוצרים חדשים', path: '/catalog?new=true' },
                 { label: 'צור קשר', path: '/contact' },
               ].map(item => (
                 <li key={item.label}>
