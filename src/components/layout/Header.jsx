@@ -25,7 +25,6 @@ export default function Header() {
     ...categories
       .filter((category) => category.show_in_nav)
       .map((category) => ({ label: category.name, path: `/catalog?category=${category.slug}` })),
-    { label: 'מבצעים', path: '/catalog?sale=true' },
     { label: 'צור קשר', path: '/contact' },
   ];
 
@@ -58,10 +57,6 @@ export default function Header() {
 
     if (itemParams.has('category')) {
       return currentParams.get('category') === itemParams.get('category');
-    }
-
-    if (itemParams.has('sale')) {
-      return currentParams.get('sale') === itemParams.get('sale');
     }
 
     return location.search === itemQuery;

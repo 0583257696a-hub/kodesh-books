@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { CATEGORIES, CATEGORY_MAP, CATEGORY_NAME_TO_ID } from '@/lib/categories';
 
 export const CATEGORY_IMAGES = {
   chumashim: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/c7956dabc_generated_58adb81d.png',
@@ -13,8 +12,6 @@ export const CATEGORY_IMAGES = {
   tashmishei_kedusha: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/583d0969f_generated_5e782f7b.png',
   gifts: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/0d11dfa5e_generated_df9cd4ac.png',
 };
-
-const DEFAULT_CATEGORY_IDS = new Set(CATEGORIES.map((category) => category.id));
 
 const normalizeCategory = (category, index = 0) => {
   const slug = category.slug || category.id;
@@ -29,7 +26,7 @@ const normalizeCategory = (category, index = 0) => {
   show_in_home: category.show_in_home !== false,
   show_in_nav: category.show_in_nav !== false,
   active: category.active !== false,
-  system: DEFAULT_CATEGORY_IDS.has(slug),
+  system: false,
   record_id: category.id && category.slug ? category.id : '',
 });
 };
@@ -37,12 +34,8 @@ const normalizeCategory = (category, index = 0) => {
 export function buildCategoryCollections(dynamicCategories = []) {
   const merged = new Map();
 
-  CATEGORIES.forEach((category, index) => {
-    merged.set(category.id, normalizeCategory({ ...category, display_order: index }, index));
-  });
-
   dynamicCategories.forEach((category, index) => {
-    const normalized = normalizeCategory(category, 100 + index);
+    const normalized = normalizeCategory(category, index);
     if (normalized.slug && normalized.name) {
       merged.set(normalized.slug, normalized);
     }
@@ -56,12 +49,12 @@ export function buildCategoryCollections(dynamicCategories = []) {
     acc[category.id] = category.name;
     acc[category.slug] = category.name;
     return acc;
-  }, { ...CATEGORY_MAP });
+  }, {});
 
   const categoryNameToId = categories.reduce((acc, category) => {
     acc[category.name] = category.slug;
     return acc;
-  }, { ...CATEGORY_NAME_TO_ID });
+  }, {});
 
   return { categories, categoryMap, categoryNameToId };
 }
