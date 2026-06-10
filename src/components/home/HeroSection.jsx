@@ -8,16 +8,18 @@ import { STORE_LOGO_URL } from '@/lib/branding';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f511806de_generated_bffda8a3.png';
 
-const TRUST_BADGES = [
-  { icon: Truck, label: 'משלוחים מהירים', sub: 'עד 5 ימי עסקים' },
-  { icon: BookOpen, label: 'מבחר ספרי קודש', sub: 'אלפי כותרים' },
-  { icon: ShieldCheck, label: 'רכישה מאובטחת', sub: 'תשלום בטוח ומוצפן' },
-  { icon: Users, label: 'שירות אישי', sub: 'ליווי מקצועי' },
-  { icon: Tag, label: 'מחירים אטרקטיביים', sub: 'מבצעים שוטפים' },
-];
+const TRUST_BADGE_ICONS = [Truck, BookOpen, ShieldCheck, Users, Tag];
 
 export default function HeroSection() {
   const { settings } = useSiteSettings();
+  const trustBadges = TRUST_BADGE_ICONS.map((Icon, index) => {
+    const position = index + 1;
+    return {
+      icon: Icon,
+      label: settings[`trust_badge_${position}_title`],
+      sub: settings[`trust_badge_${position}_subtitle`],
+    };
+  }).filter((badge) => badge.label);
 
   return (
     <>
@@ -26,6 +28,7 @@ export default function HeroSection() {
         <div className="absolute inset-0">
           <img src={HERO_IMAGE} alt="" role="presentation" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-l from-[#1a0e05]/96 via-[#2A160B]/80 to-[#1a0e05]/55" />
+          <div className="absolute inset-0 bg-[#1a0e05]/35 md:hidden" />
           {/* Subtle gold vignette bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a0e05]/80 to-transparent" />
         </div>
@@ -60,27 +63,34 @@ export default function HeroSection() {
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.9, ease: 'easeOut', delay: 0.15 }}
-              className="text-right"
+              className="text-center md:text-right"
               dir="rtl"
             >
               {/* Overline */}
-              <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-5">
                 <div className="h-px flex-1 bg-gradient-to-l from-gold/50 to-transparent max-w-[80px]" />
-                <span className="text-gold font-body text-xs tracking-[0.25em] uppercase">ברוכים הבאים</span>
+                <span className="text-gold font-body text-xs tracking-[0.25em] uppercase">{settings.hero_overline}</span>
               </div>
 
               {/* Heading */}
-              <h1 className="font-heading font-bold leading-tight text-cream mb-5">
-                <span className="block text-4xl md:text-6xl lg:text-7xl">אוצר</span>
-                <span className="block text-5xl md:text-7xl lg:text-8xl text-gold" style={{ textShadow: '0 0 40px rgba(212,175,55,0.25)' }}>הקדושה</span>
+              <h1 className="font-heading font-bold leading-tight text-cream mb-5 max-w-full overflow-visible">
+                <span
+                  className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
+                  style={{ textShadow: '0 3px 24px rgba(0,0,0,0.85)' }}
+                >
+                  {settings.hero_title_first}
+                </span>
+                <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-gold" style={{ textShadow: '0 3px 28px rgba(0,0,0,0.75), 0 0 40px rgba(212,175,55,0.25)' }}>
+                  {settings.hero_title_second}
+                </span>
               </h1>
 
-              <p className="font-body text-base md:text-xl text-cream/75 mb-10 leading-relaxed max-w-md">
-                ספרי קודש <span className="text-gold/80 mx-1">·</span> תשמישי קדושה <span className="text-gold/80 mx-1">·</span> הכל לבית היהודי
+              <p className="font-body text-base md:text-xl text-cream/75 mb-10 leading-relaxed max-w-md mx-auto md:mx-0">
+                {settings.hero_subtitle}
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap justify-center md:justify-start gap-4">
                 <Link to="/catalog">
                   <Button
                     className="font-body text-base px-8 py-6 rounded-lg transition-all duration-300 shadow-lg"
@@ -89,7 +99,7 @@ export default function HeroSection() {
                     onMouseLeave={e => e.currentTarget.style.backgroundPosition = 'left center'}
                   >
                     <BookOpen className="h-5 w-5 ml-2" />
-                    לקטלוג הספרים
+                    {settings.hero_primary_cta}
                   </Button>
                 </Link>
                 <Link to="/catalog?sale=true">
@@ -98,7 +108,7 @@ export default function HeroSection() {
                     className="border-gold/60 text-gold hover:bg-gold/10 hover:border-gold font-body text-base px-8 py-6 rounded-lg transition-all duration-300"
                   >
                     <Tag className="h-5 w-5 ml-2" />
-                    למבצעים חמים
+                    {settings.hero_secondary_cta}
                   </Button>
                 </Link>
               </div>
@@ -123,7 +133,7 @@ export default function HeroSection() {
       <div className="bg-[#F8F3E8] border-y border-[#E7D8B8]">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-x-reverse divide-[#E7D8B8]">
-            {TRUST_BADGES.map(({ icon: Icon, label, sub }) => (
+            {trustBadges.map(({ icon: Icon, label, sub }) => (
               <div key={label} className="flex items-center gap-3 py-4 px-4 md:px-6 justify-center md:justify-start">
                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
                   <Icon className="h-5 w-5 text-gold" aria-hidden="true" />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -8,15 +8,54 @@ import { Textarea } from '@/components/ui/textarea';
 import { Megaphone, Plus, Trash2, Loader2, Image } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+const HERO_CONTENT_FIELDS = [
+  { key: 'hero_overline', label: 'טקסט עליון', placeholder: 'ברוכים הבאים' },
+  { key: 'hero_title_first', label: 'כותרת ראשונה', placeholder: 'אוצר' },
+  { key: 'hero_title_second', label: 'כותרת שנייה', placeholder: 'הקדושה' },
+  { key: 'hero_subtitle', label: 'תיאור מתחת לכותרת', placeholder: 'ספרי קודש · תשמישי קדושה · הכל לבית היהודי' },
+  { key: 'hero_primary_cta', label: 'כפתור ראשי', placeholder: 'לקטלוג הספרים' },
+  { key: 'hero_secondary_cta', label: 'כפתור משני', placeholder: 'למבצעים חמים' },
+];
+
+const TRUST_BADGE_FIELDS = [
+  ['trust_badge_1_title', 'יתרון 1 - כותרת', 'משלוחים מהירים'],
+  ['trust_badge_1_subtitle', 'יתרון 1 - תיאור', 'עד 5 ימי עסקים'],
+  ['trust_badge_2_title', 'יתרון 2 - כותרת', 'מבחר ספרי קודש'],
+  ['trust_badge_2_subtitle', 'יתרון 2 - תיאור', 'אלפי כותרים'],
+  ['trust_badge_3_title', 'יתרון 3 - כותרת', 'רכישה מאובטחת'],
+  ['trust_badge_3_subtitle', 'יתרון 3 - תיאור', 'תשלום בטוח ומוצפן'],
+  ['trust_badge_4_title', 'יתרון 4 - כותרת', 'שירות אישי'],
+  ['trust_badge_4_subtitle', 'יתרון 4 - תיאור', 'ליווי מקצועי'],
+  ['trust_badge_5_title', 'יתרון 5 - כותרת', 'מחירים אטרקטיביים'],
+  ['trust_badge_5_subtitle', 'יתרון 5 - תיאור', 'מבצעים שוטפים'],
+].map(([key, label, placeholder]) => ({ key, label, placeholder }));
+
 export default function AdminContent() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: '', subtitle: '', cta_text: 'למבצעים', image_url: '', is_active: true });
   const [uploading, setUploading] = useState(false);
+  const [contentValues, setContentValues] = useState({});
+  const [savingKey, setSavingKey] = useState('');
+  const [contentMessage, setContentMessage] = useState('');
 
   const { data: settings = [] } = useQuery({ queryKey: ['site-settings'], queryFn: () => base44.entities.SiteSettings.list() });
+  const settingsMap = useMemo(() => settings.reduce((map, setting) => {
+    if (setting?.key) map[setting.key] = setting;
+    return map;
+  }, {}), [settings]);
 
   const banners = settings.filter((setting) => setting.key?.startsWith('banner_'));
+
+  useEffect(() => {
+    const fields = [...HERO_CONTENT_FIELDS, ...TRUST_BADGE_FIELDS];
+    setContentValues(
+      fields.reduce((next, field) => {
+        next[field.key] = settingsMap[field.key]?.value ?? field.placeholder ?? '';
+        return next;
+      }, {})
+    );
+  }, [settingsMap]);
 
   const createM = useMutation({
     mutationFn: (data) => base44.entities.SiteSettings.create(data),
@@ -57,6 +96,55 @@ export default function AdminContent() {
   const topBannerSetting = settings.find((setting) => setting.key === 'top_banner');
   const [topBannerText, setTopBannerText] = useState(topBannerSetting?.value || 'משלוח חינם בהזמנה מעל ₪200');
 
+  useEffect(() => {
+    if (topBannerSetting?.value !== undefined) {
+      setTopBannerText(topBannerSetting.value);
+    }
+  }, [topBannerSetting?.value]);
+
+  const saveContentSetting = async (field) => {
+    setSavingKey(field.key);
+    setContentMessage('');
+    try {
+      const existing = settingsMap[field.key];
+      const value = contentValues[field.key] ?? '';
+      if (existing?.id) {
+        await base44.entities.SiteSettings.update(existing.id, { value });
+      } else {
+        await base44.entities.SiteSettings.create({ key: field.key, value, label: field.label });
+      }
+      setContentMessage('השדה נשמר בהצלחה.');
+      await queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+    } catch (error) {
+      setContentMessage(error.message || 'שמירת השדה נכשלה.');
+    } finally {
+      setSavingKey('');
+    }
+  };
+
+  const renderEditableField = (field) => (
+    <div key={field.key} className="space-y-1.5">
+      <Label className="text-sm text-slate-700">{field.label}</Label>
+      <div className="flex gap-2">
+        <Input
+          value={contentValues[field.key] ?? ''}
+          onChange={(event) => setContentValues((current) => ({ ...current, [field.key]: event.target.value }))}
+          className="flex-1 border-slate-200 bg-white text-slate-950"
+          placeholder={field.placeholder}
+        />
+        <Button
+          type="button"
+          onClick={() => saveContentSetting(field)}
+          disabled={savingKey === field.key}
+          variant="outline"
+          className="h-10 border-slate-200 px-3 text-xs text-slate-700 hover:bg-slate-50"
+        >
+          {savingKey === field.key ? <Loader2 className="h-4 w-4 animate-spin" /> : 'שמור'}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen space-y-8 bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div>
@@ -78,6 +166,27 @@ export default function AdminContent() {
           <Button onClick={() => saveTopBanner(topBannerText)} className="whitespace-nowrap bg-blue-600 text-white hover:bg-blue-700">
             שמירה
           </Button>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
+          <Megaphone className="h-5 w-5 text-blue-600" /> טקסטים במסך הבית
+        </h2>
+        <p className="mb-5 text-sm text-slate-500">עריכת הכותרת הראשית, התיאור וכפתורי הפעולה שמופיעים בראש האתר.</p>
+        {contentMessage && <p className="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-700">{contentMessage}</p>}
+        <div className="grid gap-5 sm:grid-cols-2">
+          {HERO_CONTENT_FIELDS.map(renderEditableField)}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
+          <Image className="h-5 w-5 text-blue-600" /> יתרונות מתחת למסך הבית
+        </h2>
+        <p className="mb-5 text-sm text-slate-500">עריכת הכותרות והתיאורים של חמשת היתרונות המופיעים מתחת לתמונת הפתיחה.</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {TRUST_BADGE_FIELDS.map(renderEditableField)}
         </div>
       </div>
 
