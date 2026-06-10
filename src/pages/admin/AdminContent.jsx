@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Megaphone, Plus, Trash2, Loader2, Image } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ImageCropUpload from '@/components/admin/ImageCropUpload';
 
 const HERO_CONTENT_FIELDS = [
   { key: 'hero_overline', label: 'טקסט עליון', placeholder: 'ברוכים הבאים' },
@@ -34,7 +35,6 @@ export default function AdminContent() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: '', subtitle: '', cta_text: 'למבצעים', image_url: '', is_active: true });
-  const [uploading, setUploading] = useState(false);
   const [contentValues, setContentValues] = useState({});
   const [savingKey, setSavingKey] = useState('');
   const [contentMessage, setContentMessage] = useState('');
@@ -69,15 +69,6 @@ export default function AdminContent() {
     mutationFn: (id) => base44.entities.SiteSettings.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['site-settings'] }),
   });
-
-  const handleUploadBanner = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setForm((current) => ({ ...current, image_url: file_url }));
-    setUploading(false);
-  };
 
   const saveBanner = () => {
     const key = `banner_${Date.now()}`;
@@ -241,10 +232,14 @@ export default function AdminContent() {
               <Textarea value={form.subtitle} onChange={(event) => setForm((current) => ({ ...current, subtitle: event.target.value }))} className="border-slate-200 bg-white text-slate-950" rows={2} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-sm text-slate-700">תמונת רקע</Label>
-              <Input type="file" accept="image/*" onChange={handleUploadBanner} className="border-slate-200 bg-white text-slate-950" />
-              {uploading && <p className="text-sm text-blue-700">מעלה...</p>}
-              {form.image_url && <img src={form.image_url} alt="" className="mt-2 h-24 w-full rounded-lg object-cover" />}
+              <ImageCropUpload
+                label="תמונת רקע"
+                value={form.image_url}
+                onChange={(url) => setForm((current) => ({ ...current, image_url: url }))}
+                aspectRatio={16 / 9}
+                previewClassName="mt-2 h-24 w-full rounded-lg border border-slate-200 object-cover"
+                buttonText="העלאת תמונת רקע"
+              />
             </div>
             <Button onClick={saveBanner} disabled={createM.isPending || !form.title} className="h-11 w-full bg-blue-600 font-semibold text-white hover:bg-blue-700">
               {createM.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'שמירת באנר'}

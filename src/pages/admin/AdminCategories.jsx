@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { CATEGORY_IMAGES, buildCategoryCollections } from '@/hooks/useStoreCategories';
-import { Boxes, FolderOpen, Loader2, Pencil, Plus, Trash2, UploadCloud } from 'lucide-react';
+import { Boxes, FolderOpen, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import ImageCropUpload from '@/components/admin/ImageCropUpload';
 
 const EMPTY_CATEGORY = {
   name: '',
@@ -33,7 +34,6 @@ export default function AdminCategories() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [uploading, setUploading] = useState(false);
 
   const { data: storedCategories = [], isLoading } = useQuery({
     queryKey: ['store-categories-admin'],
@@ -114,18 +114,6 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ['store-categories-admin'] });
     },
   });
-
-  const handleImageUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setEditItem((current) => ({ ...current, image_url: file_url }));
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const openEditor = (category = EMPTY_CATEGORY) => {
     setEditItem({
@@ -251,19 +239,14 @@ export default function AdminCategories() {
                 />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-                <div className="space-y-1.5">
-                  <Label>תמונת קטגוריה</Label>
-                  <Input value={editItem.image_url || ''} onChange={(event) => setEditItem((current) => ({ ...current, image_url: event.target.value }))} />
-                </div>
-                <label className="mt-6 inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-slate-200 px-4 text-sm font-semibold hover:bg-slate-50">
-                  {uploading ? <Loader2 className="ml-2 h-4 w-4 animate-spin" /> : <UploadCloud className="ml-2 h-4 w-4" />}
-                  העלאה
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                </label>
-              </div>
-
-              {editItem.image_url && <img src={editItem.image_url} alt={editItem.name || 'תמונת קטגוריה'} className="h-28 w-44 rounded-lg border border-slate-200 object-cover" />}
+              <ImageCropUpload
+                label="תמונת קטגוריה"
+                value={editItem.image_url || ''}
+                onChange={(url) => setEditItem((current) => ({ ...current, image_url: url }))}
+                aspectRatio={16 / 9}
+                previewClassName="h-28 w-44 rounded-lg border border-slate-200 object-cover"
+                buttonText="העלאת תמונת קטגוריה"
+              />
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
