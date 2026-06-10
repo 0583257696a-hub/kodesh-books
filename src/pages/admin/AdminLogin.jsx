@@ -77,7 +77,7 @@ export default function AdminLogin() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-gold text-walnut hover:bg-gold/90 font-body font-semibold text-base mt-2"
+              className="w-full h-12 bg-gold text-white hover:bg-gold/90 font-body font-semibold text-base mt-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'כניסה לפאנל'}
             </Button>

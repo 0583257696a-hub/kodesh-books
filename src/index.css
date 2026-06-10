@@ -102,31 +102,21 @@
     box-shadow: 0 0 25px rgba(212, 175, 55, 0.4), 0 0 50px rgba(212, 175, 55, 0.15);
   }
   .text-gold {
-    color: #8A5A00;
+    color: #C99722;
   }
   .bg-walnut .text-gold,
-  .bg-\[\#1F1008\] .text-gold,
-  .bg-\[\#2A160B\] .text-gold,
   footer .text-gold,
   header .text-gold {
     color: #D4AF37;
   }
   .bg-gold {
     background-color: #D4AF37;
-    color: #1F1008;
   }
   .fill-gold {
     fill: #D4AF37;
   }
   .bg-walnut {
     background-color: #1F1008;
-    color: #FCFAF5;
-  }
-  .bg-\[\#1F1008\] {
-    color: #FCFAF5;
-  }
-  .bg-\[\#2A160B\] {
-    color: #FCFAF5;
   }
   .bg-cream {
     background-color: #FCFAF5;

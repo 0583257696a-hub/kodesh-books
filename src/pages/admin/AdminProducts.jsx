@@ -10,7 +10,6 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Loader2, Search, Package } from 'lucide-react';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
-import ImageCropUpload from '@/components/admin/ImageCropUpload';
 
 const EMPTY = {
   name: '',
@@ -43,6 +42,7 @@ export default function AdminProducts() {
   const queryClient = useQueryClient();
   const [editItem, setEditItem] = useState(null);
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const { categories, categoryMap } = useStoreCategories();
 
@@ -78,6 +78,35 @@ export default function AdminProducts() {
       updateM.mutate({ id, data });
     } else {
       createM.mutate(data);
+    }
+  };
+
+  const handleImage = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setEditItem((current) => ({ ...current, image_url: file_url }));
+    setUploading(false);
+  };
+
+  const handleGalleryImages = async (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    try {
+      const uploaded = [];
+      for (const file of files) {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        uploaded.push(file_url);
+      }
+      setEditItem((current) => ({
+        ...current,
+        gallery_urls: [...(current.gallery_urls || []), ...uploaded],
+      }));
+    } finally {
+      setUploading(false);
+      event.target.value = '';
     }
   };
 
@@ -305,27 +334,17 @@ export default function AdminProducts() {
                 </div>
               </div>
 
-              <ImageCropUpload
-                label="תמונת מוצר"
-                value={editItem.image_url || ''}
-                onChange={(url) => setEditItem((current) => ({ ...current, image_url: url }))}
-                aspectRatio={1}
-                previewClassName="mt-2 h-24 w-24 rounded-lg border border-slate-200 object-cover"
-                buttonText="העלאת תמונת מוצר"
-              />
+              <div className="space-y-1.5">
+                <Label className="text-sm text-slate-700">תמונת מוצר</Label>
+                <Input type="file" accept="image/*" onChange={handleImage} className="border-slate-200 bg-white text-slate-950" />
+                {uploading && <p className="text-sm text-blue-700">מעלה תמונה...</p>}
+                {editItem.image_url && <img src={editItem.image_url} alt="תמונת מוצר" className="mt-2 h-24 w-24 rounded-lg border border-slate-200 object-cover" />}
+              </div>
 
               <div className="space-y-1.5">
-                <ImageCropUpload
-                  label="תמונות נוספות לספר"
-                  multiple
-                  onChange={(url) => setEditItem((current) => ({
-                    ...current,
-                    gallery_urls: [...(current.gallery_urls || []), url],
-                  }))}
-                  aspectRatio={1}
-                  buttonText="העלאת תמונות לגלריה"
-                  helperText="אפשר לבחור כמה תמונות יחד. חלון החיתוך ייפתח לכל תמונה לפי הסדר."
-                />
+                <Label className="text-sm text-slate-700">תמונות נוספות לספר</Label>
+                <Input type="file" accept="image/*" multiple onChange={handleGalleryImages} className="border-slate-200 bg-white text-slate-950" />
+                <p className="text-xs text-slate-500">אפשר לבחור כמה תמונות יחד. הן יוצגו בגלריה בדף המוצר.</p>
                 {(editItem.gallery_urls || []).length > 0 && (
                   <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-5">
                     {(editItem.gallery_urls || []).map((url) => (

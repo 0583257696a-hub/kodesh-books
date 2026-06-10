@@ -36,7 +36,7 @@ export default function PromoBanner() {
               {/* Badge */}
               <div className="inline-flex items-center gap-2 bg-gold/20 backdrop-blur-sm border border-gold/30 px-4 py-2 rounded-full mb-6">
                 <Sparkles className="h-3.5 w-3.5 text-gold" aria-hidden="true" />
-                <span className="text-cream font-body text-xs font-medium tracking-wide">מבצע מיוחד • זמן מוגבל</span>
+                <span className="text-gold font-body text-xs font-medium tracking-wide">מבצע מיוחד • זמן מוגבל</span>
               </div>
 
               {/* Discount badge */}
@@ -47,8 +47,8 @@ export default function PromoBanner() {
                   </h2>
                 </div>
                 <div className="flex-shrink-0 w-20 h-20 rounded-full border-2 border-gold/60 bg-gold/15 backdrop-blur-sm flex flex-col items-center justify-center mt-1">
-                  <span className="text-cream font-heading font-bold text-lg leading-none">40%</span>
-                  <span className="text-cream font-body text-xs mt-0.5">הנחה</span>
+                  <span className="text-gold font-heading font-bold text-lg leading-none">40%</span>
+                  <span className="text-cream/80 font-body text-xs mt-0.5">הנחה</span>
                 </div>
               </div>
 
