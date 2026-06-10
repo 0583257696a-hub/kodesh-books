@@ -2,16 +2,23 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { BookOpen, MessageCircle, Truck, ShieldCheck, Users, Star, Tag } from 'lucide-react';
-import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
+import { BookOpen, Truck, ShieldCheck, Users, Tag } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { STORE_LOGO_URL } from '@/lib/branding';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f511806de_generated_bffda8a3.png';
 
 const TRUST_BADGE_ICONS = [Truck, BookOpen, ShieldCheck, Users, Tag];
 
+const normalizeCategoryText = (value = '') => String(value)
+  .replace(/^ל/, '')
+  .replace(/\s+/g, ' ')
+  .trim();
+
 export default function HeroSection() {
   const { settings } = useSiteSettings();
+  const { categories } = useStoreCategories();
   const trustBadges = TRUST_BADGE_ICONS.map((Icon, index) => {
     const position = index + 1;
     return {
@@ -20,6 +27,12 @@ export default function HeroSection() {
       sub: settings[`trust_badge_${position}_subtitle`],
     };
   }).filter((badge) => badge.label);
+  const secondaryLabel = normalizeCategoryText(settings.hero_secondary_cta);
+  const secondaryCategory = categories.find((category) => {
+    const categoryName = normalizeCategoryText(category.name);
+    return categoryName === secondaryLabel || categoryName.includes('מבצע') && secondaryLabel.includes('מבצע');
+  });
+  const secondaryCtaPath = secondaryCategory ? `/catalog?category=${secondaryCategory.slug}` : '/catalog';
 
   return (
     <>
@@ -102,7 +115,7 @@ export default function HeroSection() {
                     {settings.hero_primary_cta}
                   </Button>
                 </Link>
-                <Link to="/catalog?sale=true">
+                <Link to={secondaryCtaPath}>
                   <Button
                     variant="outline"
                     className="border-gold/60 text-gold hover:bg-gold/10 hover:border-gold font-body text-base px-8 py-6 rounded-lg transition-all duration-300"
