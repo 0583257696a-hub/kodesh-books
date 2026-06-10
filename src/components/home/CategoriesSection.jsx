@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Baby, BookHeart, BookOpen, Boxes, Flame, FolderOpen, Gift, Library, Scale, Sparkles } from 'lucide-react';
@@ -9,7 +9,14 @@ const ICON_MAP = { Baby, BookHeart, BookOpen, Boxes, Flame, FolderOpen, Gift, Li
 
 export default function CategoriesSection() {
   const { categories } = useStoreCategories();
+  const [showAll, setShowAll] = useState(false);
   const homeCategories = categories.filter((category) => category.show_in_home);
+  const initialVisibleCount = 6;
+  const visibleCategories = useMemo(
+    () => (showAll ? homeCategories : homeCategories.slice(0, initialVisibleCount)),
+    [homeCategories, showAll]
+  );
+  const hasHiddenCategories = homeCategories.length > initialVisibleCount;
 
   return (
     <section className="py-20 px-4" style={{ background: 'linear-gradient(180deg, #FCFAF5 0%, #F8F3E8 100%)' }}>
@@ -36,7 +43,7 @@ export default function CategoriesSection() {
 
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-          {homeCategories.map((cat, i) => {
+          {visibleCategories.map((cat, i) => {
             const Icon = ICON_MAP[cat.icon] || FolderOpen;
             return (
               <motion.div
@@ -87,21 +94,24 @@ export default function CategoriesSection() {
         </div>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mt-10"
-        >
-          <Link to="/catalog">
+        {hasHiddenCategories && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-10"
+          >
             <Button
+              type="button"
               variant="outline"
+              onClick={() => setShowAll((current) => !current)}
               className="border-gold/50 text-[#6B5A45] hover:bg-gold/8 hover:border-gold hover:text-[#1F160F] font-body px-10 py-3 rounded-lg transition-all duration-300"
+              aria-expanded={showAll}
             >
-              לכל הקטגוריות
+              {showAll ? 'הצג פחות קטגוריות' : 'לכל הקטגוריות'}
             </Button>
-          </Link>
-        </motion.div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
