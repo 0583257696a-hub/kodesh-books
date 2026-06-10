@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import ProductCard from '@/components/shared/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,8 +21,9 @@ const SORT_OPTIONS = [
 
 export default function Catalog() {
   const location = useLocation();
+  const navigate = useNavigate();
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
-  const initialCategory = urlParams.get('category') || '';
+  const initialCategory = urlParams.get('category') === 'children' ? 'kids' : (urlParams.get('category') || '');
   const initialSearch = urlParams.get('search') || '';
   const isSale = urlParams.get('sale') === 'true';
 
@@ -35,6 +36,14 @@ export default function Catalog() {
     setSelectedCategory(initialCategory);
     setSearchQuery(initialSearch);
   }, [initialCategory, initialSearch]);
+
+  useEffect(() => {
+    if (urlParams.get('category') === 'children') {
+      const nextParams = new URLSearchParams(location.search);
+      nextParams.set('category', 'kids');
+      navigate(`/catalog?${nextParams.toString()}`, { replace: true });
+    }
+  }, [location.search, navigate, urlParams]);
 
   const { data: allProducts = [], isLoading } = useQuery({
     queryKey: ['all-products'],
@@ -80,6 +89,32 @@ export default function Catalog() {
 
   const pageTitle = isSale ? 'מבצעים חמים' : selectedCategory ? (categoryMap[selectedCategory] || selectedCategory) : 'קטלוג ספרים';
 
+  const updateCategoryFilter = (categoryId) => {
+    const nextParams = new URLSearchParams(location.search);
+    nextParams.delete('sale');
+
+    if (categoryId) {
+      nextParams.set('category', categoryId);
+    } else {
+      nextParams.delete('category');
+    }
+
+    if (searchQuery.trim()) {
+      nextParams.set('search', searchQuery.trim());
+    } else {
+      nextParams.delete('search');
+    }
+
+    const nextQuery = nextParams.toString();
+    navigate(nextQuery ? `/catalog?${nextQuery}` : '/catalog');
+  };
+
+  const clearFilters = () => {
+    setSelectedCategory('');
+    setSearchQuery('');
+    navigate('/catalog');
+  };
+
   const FilterSidebar = () => (
     <div className="space-y-7">
       {/* Categories */}
@@ -91,7 +126,7 @@ export default function Catalog() {
         <div className="space-y-1">
           <button
             className={`w-full text-right px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${!selectedCategory ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
-            onClick={() => setSelectedCategory('')}
+            onClick={() => updateCategoryFilter('')}
           >
             <span className="flex items-center justify-between">
               <span>הכל</span>
@@ -104,7 +139,7 @@ export default function Catalog() {
               <button
                 key={cat.id}
                 className={`w-full text-right px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${selectedCategory === cat.id ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
-                onClick={() => setSelectedCategory(cat.id)}
+                onClick={() => updateCategoryFilter(cat.id)}
               >
                 <span className="flex items-center justify-between">
                   <span>{cat.name}</span>
@@ -141,7 +176,7 @@ export default function Catalog() {
           variant="outline"
           size="sm"
           className="w-full border-[#E7D8B8] text-[#6B5A45] hover:border-gold/50 hover:text-gold font-body text-xs"
-          onClick={() => { setSelectedCategory(''); setSearchQuery(''); }}
+          onClick={clearFilters}
         >
           <X className="h-3 w-3 ml-1" />
           ניקוי סינון
@@ -265,7 +300,7 @@ export default function Catalog() {
                 <Button
                   variant="outline"
                   className="mt-6 border-gold/40 text-[#3A2415] hover:border-gold hover:text-gold font-body"
-                  onClick={() => { setSelectedCategory(''); setSearchQuery(''); }}
+                  onClick={clearFilters}
                 >
                   הצג את כל המוצרים
                 </Button>
