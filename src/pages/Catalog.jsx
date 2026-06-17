@@ -125,29 +125,24 @@ export default function Catalog() {
         </h3>
         <div className="space-y-1">
           <button
-            className={`w-full text-right px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${!selectedCategory ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
+            className={`w-full text-center px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${!selectedCategory ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
             onClick={() => updateCategoryFilter('')}
           >
-            <span className="flex items-center justify-between">
+            <span className="flex items-center justify-center">
               <span>הכל</span>
-              <span className={`text-xs ${!selectedCategory ? 'text-gold' : 'text-[#6B5A45]'}`}>{allProducts.length}</span>
             </span>
           </button>
-          {categories.map(cat => {
-            const count = allProducts.filter(p => p.category === cat.id).length;
-            return (
-              <button
-                key={cat.id}
-                className={`w-full text-right px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${selectedCategory === cat.id ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
-                onClick={() => updateCategoryFilter(cat.id)}
-              >
-                <span className="flex items-center justify-between">
-                  <span>{cat.name}</span>
-                  <span className={`text-xs ${selectedCategory === cat.id ? 'text-gold' : 'text-[#6B5A45]'}`}>{count}</span>
-                </span>
-              </button>
-            );
-          })}
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              className={`w-full text-center px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${selectedCategory === cat.id ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
+              onClick={() => updateCategoryFilter(cat.id)}
+            >
+              <span className="flex items-center justify-center">
+                <span>{cat.name}</span>
+              </span>
+            </button>
+          ))}
         </div>
       </div>
 
