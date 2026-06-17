@@ -12,7 +12,7 @@ const HERO_CONTENT_FIELDS = [
   { key: 'hero_overline', label: 'טקסט עליון', placeholder: 'ברוכים הבאים' },
   { key: 'hero_title_first', label: 'כותרת ראשונה', placeholder: 'אוצר' },
   { key: 'hero_title_second', label: 'כותרת שנייה', placeholder: 'הקדושה' },
-  { key: 'hero_subtitle', label: 'תיאור מתחת לכותרת', placeholder: 'ספרי קודש · תשמישי קדושה · הכל לבית היהודי' },
+  { key: 'hero_subtitle', label: 'תיאור מתחת לכותרת', placeholder: 'ספרי קודש · הכל לבית היהודי' },
   { key: 'hero_primary_cta', label: 'כפתור ראשי', placeholder: 'לקטלוג הספרים' },
   { key: 'hero_secondary_cta', label: 'כפתור משני', placeholder: 'למבצעים חמים' },
 ];

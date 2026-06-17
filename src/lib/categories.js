@@ -8,7 +8,6 @@ export const CATEGORIES = [
   { id: 'rav_ovadya_yosef', name: 'ספרי הרב עובדיה יוסף', icon: 'BookOpen' },
   { id: 'chabad', name: 'ספרי חב״ד', icon: 'Sparkles' },
   { id: 'siddurim', name: 'סידורים ומחזורים', icon: 'BookHeart' },
-  { id: 'tashmishei_kedusha', name: 'תשמישי קדושה', icon: 'Flame' },
   { id: 'gifts', name: 'מתנות יהודיות', icon: 'Gift' },
   { id: 'other', name: 'שונות', icon: 'Boxes' },
 ];

@@ -39,9 +39,9 @@ export default function HeroSection() {
       <section className="relative min-h-[88vh] flex items-center overflow-hidden" aria-label="ברוכים הבאים לאוצר הקדושה">
         {/* Background */}
         <div className="absolute inset-0">
-          <img src={HERO_IMAGE} alt="" role="presentation" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-l from-[#1a0e05]/96 via-[#2A160B]/80 to-[#1a0e05]/55" />
-          <div className="absolute inset-0 bg-[#1a0e05]/35 md:hidden" />
+          <img src={HERO_IMAGE} alt="" role="presentation" className="w-full h-full object-cover sepia-[.22] saturate-[.88] brightness-[.78] contrast-[1.08]" />
+          <div className="absolute inset-0 bg-gradient-to-l from-walnut/90 via-walnut/72 to-[#4A2A14]/48" />
+          <div className="absolute inset-0 bg-[#2A160B]/32 md:hidden" />
           {/* Subtle gold vignette bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a0e05]/80 to-transparent" />
         </div>

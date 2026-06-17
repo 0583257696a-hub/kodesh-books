@@ -32,7 +32,7 @@ export default function Footer() {
               className="h-20 w-auto object-contain"
             />
             <p className="text-cream/60 text-sm font-body leading-relaxed">
-              {settings.seo_description || 'חנות ספרי קודש, תשמישי קדושה ומוצרים לבית היהודי. מבחר עשיר, שירות אישי ומשלוחים מהירים.'}
+              {settings.seo_description || 'חנות ספרי קודש ומוצרים לבית היהודי. מבחר עשיר, שירות אישי ומשלוחים מהירים.'}
             </p>
             {/* Social */}
             {socialLinks.length > 0 && (
