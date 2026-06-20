@@ -95,23 +95,30 @@ async function getImagesByProductId(env, productIds) {
   const ids = uniqueValues(productIds).slice(0, 1000);
   if (!ids.length) return new Map();
 
-  const placeholders = ids.map(() => '?').join(', ');
-  const rows = await env.DB.prepare(`
-    SELECT *
-    FROM product_images
-    WHERE product_id IN (${placeholders})
-    ORDER BY product_id ASC,
-             CASE image_role WHEN 'main' THEN 0 ELSE 1 END ASC,
-             sort_order ASC,
-             created_at ASC
-  `).bind(...ids).all();
+  const imagesByProductId = new Map();
+  const batchSize = 50;
 
-  return (rows.results || []).reduce((acc, row) => {
-    const current = acc.get(row.product_id) || [];
-    current.push(row);
-    acc.set(row.product_id, current);
-    return acc;
-  }, new Map());
+  for (let index = 0; index < ids.length; index += batchSize) {
+    const batch = ids.slice(index, index + batchSize);
+    const placeholders = batch.map(() => '?').join(', ');
+    const rows = await env.DB.prepare(`
+      SELECT *
+      FROM product_images
+      WHERE product_id IN (${placeholders})
+      ORDER BY product_id ASC,
+               CASE image_role WHEN 'main' THEN 0 ELSE 1 END ASC,
+               sort_order ASC,
+               created_at ASC
+    `).bind(...batch).all();
+
+    for (const row of rows.results || []) {
+      const current = imagesByProductId.get(row.product_id) || [];
+      current.push(row);
+      imagesByProductId.set(row.product_id, current);
+    }
+  }
+
+  return imagesByProductId;
 }
 
 function buildProductFilters(filters = {}) {
