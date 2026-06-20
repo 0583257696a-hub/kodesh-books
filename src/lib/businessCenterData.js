@@ -24,6 +24,8 @@ export const PIPELINE_COLUMNS = [
 
 const first = (...values) => values.find(Boolean) || '';
 const money = (value) => Number(value || 0);
+const isEventType = (event, types) => types.includes(event.event_type);
+const eventDate = (event) => event.created_date || event.created_at;
 
 export function safeDate(value, fallbackOffset = 0) {
   const date = value ? new Date(value) : subDays(new Date(), fallbackOffset);
@@ -49,12 +51,12 @@ export function buildLeads({ users = [], orders = [], products = [], leads = [],
   const userLeads = users.map((user, index) => {
     const userOrders = orderByEmail.get(user.email) || orders.filter((order) => order.created_by_id === user.id);
     const latestOrder = userOrders[0];
-    const cartEvents = events.filter((event) => event.customer_email === user.email && event.event_type === 'cart_add');
+    const cartEvents = events.filter((event) => event.customer_email === user.email && isEventType(event, ['cart_add', 'add_to_cart']));
     const cartProducts = cartEvents.slice(0, 3).map((event) => first(event.product_name, productById.get(event.product_id)?.name, 'Book'));
     const purchased = userOrders.some((order) => ['delivered', 'confirmed', 'shipped'].includes(order.status));
     const pending = userOrders.some((order) => order.status === 'pending');
     const cartValue = cartEvents.reduce((sum, event) => sum + money(event.value), 0) || money(latestOrder?.total);
-    const lastActivity = safeDate(latestOrder?.created_date || cartEvents[0]?.created_date || user.updated_date || user.created_date, index);
+    const lastActivity = safeDate(latestOrder?.created_date || latestOrder?.created_at || eventDate(cartEvents[0]) || user.updated_date || user.created_date, index);
 
     let status = 'Registered';
     if (purchased) status = 'Payment Completed';
@@ -183,7 +185,7 @@ export function businessKpis({ orders = [], users = [], leads = [], expenses = [
 export function buildAnalytics({ products = [], orders = [], users = [], events = [] }) {
   const productStats = products.map((product, index) => {
     const views = events.filter((event) => event.event_type === 'product_view' && event.product_id === product.id).length || 40 - index * 2;
-    const cartAdds = events.filter((event) => event.event_type === 'cart_add' && event.product_id === product.id).length || Math.max(2, 18 - index);
+    const cartAdds = events.filter((event) => isEventType(event, ['cart_add', 'add_to_cart']) && event.product_id === product.id).length || Math.max(2, 18 - index);
     const orderItems = orders.flatMap((order) => (order.items || []).filter((item) => item.product_id === product.id || item.product_name === product.name));
     const purchases = orderItems.reduce((sum, item) => sum + money(item.quantity), 0) || Math.max(0, 12 - index * 2);
     const revenue = orderItems.reduce((sum, item) => sum + money(item.quantity) * money(item.price), 0) || purchases * money(product.sale_price || product.price);
@@ -203,7 +205,7 @@ export function buildAnalytics({ products = [], orders = [], users = [], events 
   const visits = events.filter((event) => event.event_type === 'visit').length || Math.max(120, products.length * 60);
   const productViews = productStats.reduce((sum, item) => sum + item.views, 0);
   const addToCart = productStats.reduce((sum, item) => sum + item.cartAdds, 0);
-  const checkout = events.filter((event) => event.event_type === 'checkout_start').length || Math.round(addToCart * 0.55);
+  const checkout = events.filter((event) => isEventType(event, ['checkout_start', 'checkout_started'])).length || Math.round(addToCart * 0.55);
   const purchases = orders.filter((order) => order.status !== 'cancelled').length || Math.round(checkout * 0.45);
 
   return {

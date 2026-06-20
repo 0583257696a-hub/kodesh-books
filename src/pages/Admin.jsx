@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, Package, ShoppingBag, Loader2 } from 'lucide-react';
 import { CATEGORIES, CATEGORY_MAP } from '@/lib/categories';
+import { imageKeyFromImageUrl, uploadProductImages } from '@/services/uploadService';
 
 const emptyProduct = { name: '', description: '', price: 0, sale_price: 0, category: 'chumashim', image_url: '', author: '', is_new: false, is_on_sale: false, is_featured: false, in_stock: true };
 
@@ -65,9 +66,22 @@ export default function Admin() {
     const file = e.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setEditProduct(prev => ({ ...prev, image_url: file_url }));
-    setUploading(false);
+    try {
+      const uploaded = await uploadProductImages([file], {
+        productId: editProduct?.id,
+        imageRole: 'main',
+        altText: editProduct?.name || file.name,
+        sortOrder: 0,
+        replaceImageKey: imageKeyFromImageUrl(editProduct?.image_url),
+      });
+      const image = uploaded[0];
+      if (image?.image_url) {
+        setEditProduct(prev => ({ ...prev, image_url: image.image_url }));
+      }
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
   const statusLabels = { pending: 'ממתין', confirmed: 'אושר', shipped: 'נשלח', delivered: 'נמסר', cancelled: 'בוטל' };

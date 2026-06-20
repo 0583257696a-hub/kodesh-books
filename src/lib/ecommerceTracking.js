@@ -1,6 +1,11 @@
 import { base44 } from '@/api/base44Client';
 
 const STORAGE_KEY = 'otzar_analytics_events';
+const LEGACY_BASE44_EVENT_TYPES = {
+  add_to_cart: 'cart_add',
+  checkout_started: 'checkout_start',
+  order_created: 'purchase',
+};
 
 function readLocalEvents() {
   try {
@@ -34,11 +39,28 @@ export async function trackEcommerceEvent(event) {
   writeLocalEvent({ id: crypto.randomUUID?.() || `${Date.now()}`, ...payload });
 
   try {
+    const response = await fetch('/api/analytics', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'content-type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (response.ok) {
+      return;
+    }
+  } catch {}
+
+  try {
     if (base44.entities.AnalyticsEvent?.create) {
-      await base44.entities.AnalyticsEvent.create(payload);
+      await base44.entities.AnalyticsEvent.create({
+        ...payload,
+        event_type: LEGACY_BASE44_EVENT_TYPES[payload.event_type] || payload.event_type,
+      });
     }
   } catch (error) {
     console.warn('Analytics event kept locally:', error);
   }
 }
-

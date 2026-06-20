@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, Image as ImageIcon, PackageSearch, UploadCloud } from 'lucide-react';
 import { CATEGORY_NAME_TO_ID } from '@/lib/categories';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
+import { uploadProductImages } from '@/services/uploadService';
 
 const REQUIRED_COLUMNS = ['SKU', 'BookName', 'Price'];
 const BULK_COLUMNS = [
@@ -207,17 +208,23 @@ async function readImagesZip(file) {
     const sku = baseName.replace(/-\d+$/, '');
     const blob = await entry.async('blob');
     const imageFile = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
+    const role = /-\d+$/.test(baseName) ? 'gallery' : 'main';
+    const uploaded = await uploadProductImages([imageFile], {
+      imageRole: role,
+      altText: baseName,
+      sortOrder: role === 'gallery' ? Number(baseName.match(/-(\d+)$/)?.[1] || 100) : 0,
+    });
+    const fileUrl = uploaded[0]?.image_url || '';
 
     const keys = [...imageLookupKeys(fileName), ...imageLookupKeys(baseName), ...imageLookupKeys(sku)];
     keys.forEach((key) => {
       result[key] ||= { main: '', gallery: [] };
     });
     if (/-\d+$/.test(baseName)) {
-      keys.forEach((key) => result[key].gallery.push(file_url));
+      keys.forEach((key) => result[key].gallery.push(fileUrl));
     } else {
       keys.forEach((key) => {
-        result[key].main ||= file_url;
+        result[key].main ||= fileUrl;
       });
     }
   }

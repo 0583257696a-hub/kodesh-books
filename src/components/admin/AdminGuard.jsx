@@ -1,12 +1,13 @@
 import React from 'react';
-import { useAuth } from '@/lib/AuthContext';
+import { Navigate } from 'react-router-dom';
+import { useAdminAuth } from '@/lib/AdminAuthContext';
 import Unauthorized from '@/pages/admin/Unauthorized';
 import { Loader2 } from 'lucide-react';
 
 export default function AdminGuard({ children }) {
-  const { user, isLoadingAuth, isAuthenticated } = useAuth();
+  const { adminUser, isLoadingAdminAuth, isAdminAuthenticated } = useAdminAuth();
 
-  if (isLoadingAuth) {
+  if (isLoadingAdminAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -14,12 +15,11 @@ export default function AdminGuard({ children }) {
     );
   }
 
-  if (!isAuthenticated || !user) {
-    window.location.href = '/admin-login';
-    return null;
+  if (!isAdminAuthenticated || !adminUser) {
+    return <Navigate to="/admin-login" replace />;
   }
 
-  if (user.role !== 'admin') {
+  if (adminUser.role !== 'admin') {
     return <Unauthorized />;
   }
 

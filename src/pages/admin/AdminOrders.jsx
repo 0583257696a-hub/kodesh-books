@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -8,17 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Search, Eye, Printer, Clock, AlertCircle, Truck, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
 import {
-  buildCustomerApprovalEmail,
-  buildCustomerDeliveryEmail,
   calculateOrderProfit,
   currency,
   normalizeOrderStatus,
   ORDER_STATUSES,
-  restoreReservedStock,
-  sendManagedEmail,
 } from '@/lib/orderWorkflow';
+import { getAdminOrderPrintHtml, listAdminOrders, updateAdminOrderStatus } from '@/services/orderService';
 
 const STATUS = {
   new: { ...ORDER_STATUSES.new, color: ORDER_STATUSES.new.tone, icon: Clock },
@@ -30,16 +25,15 @@ const STATUS = {
 
 export default function AdminOrders() {
   const queryClient = useQueryClient();
-  const { settings } = useSiteSettings();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [adminMessage, setAdminMessage] = useState('');
 
-  const { data: orders = [] } = useQuery({ queryKey: ['admin-orders'], queryFn: () => base44.entities.Order.list('-created_date', 500) });
+  const { data: orders = [] } = useQuery({ queryKey: ['admin-orders'], queryFn: listAdminOrders });
 
   const updateM = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Order.update(id, data),
+    mutationFn: ({ id, data }) => updateAdminOrderStatus(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-orders'] }),
   });
 
@@ -52,44 +46,31 @@ export default function AdminOrders() {
   const handleStatusChange = async (order, status) => {
     setAdminMessage('');
     const data = { status };
+    const updatedOrder = await updateM.mutateAsync({ id: order.id, data });
 
-    if (status === 'approved') {
-      data.approved_at = new Date().toISOString();
-      await sendManagedEmail(settings, {
-        type: 'customer_order_approved',
-        enabledKey: 'enable_approval_emails',
-        to: order.customer_email,
-        subject: 'הזמנתך אושרה - אוצר הקדושה',
-        body: buildCustomerApprovalEmail({ ...order, status }, settings),
-        order_id: order.id,
-      });
-    }
-
-    if (status === 'delivered') {
-      data.delivered_at = new Date().toISOString();
-      await sendManagedEmail(settings, {
-        type: 'customer_order_delivered',
-        enabledKey: 'enable_delivery_emails',
-        to: order.customer_email,
-        subject: 'הזמנתך נמסרה בהצלחה',
-        body: buildCustomerDeliveryEmail({ ...order, status }, settings),
-        order_id: order.id,
-      });
-    }
-
-    if (status === 'cancelled' && order.stock_reserved && !order.stock_restored) {
-      await restoreReservedStock(order);
-      data.stock_restored = true;
-      data.cancelled_at = new Date().toISOString();
-    }
-
-    await updateM.mutateAsync({ id: order.id, data });
-    setSelectedOrder((current) => current?.id === order.id ? { ...current, ...data } : current);
+    setSelectedOrder((current) => current?.id === order.id ? updatedOrder : current);
     setAdminMessage('סטטוס ההזמנה עודכן בהצלחה.');
   };
 
-  const handlePrint = (order) => {
-    const w = window.open('', '_blank');
+  const handlePrint = async (order) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write('<html dir="rtl"><body style="font-family:Arial;padding:20px">טוען הזמנה...</body></html>');
+
+    try {
+      const html = await getAdminOrderPrintHtml(order.id);
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    } catch (error) {
+      printWindow.document.open();
+      printWindow.document.write(`<html dir="rtl"><body style="font-family:Arial;padding:20px">${error.message || 'הדפסת ההזמנה נכשלה'}</body></html>`);
+      printWindow.document.close();
+    }
+    return;
+    /* const w = window.open('', '_blank');
     w.document.write(`<html dir="rtl"><head><title>הזמנה</title></head><body style="font-family:Arial;padding:20px">
       <h2>הזמנה - אוצר הקדושה</h2>
       <p><b>לקוח:</b> ${order.customer_name}</p>
@@ -106,7 +87,7 @@ export default function AdminOrders() {
       <p><b>משלוח:</b> ₪${order.shipping_cost ?? 0}</p>
       <p><b>סה"כ: ₪${order.total}</b></p>
     </body></html>`);
-    w.print();
+    w.print(); */
   };
 
   return (

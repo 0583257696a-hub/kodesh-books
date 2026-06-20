@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Loader2, Search, Package } from 'lucide-react';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
+import { imageKeyFromImageUrl, removeProductImage, uploadProductImages } from '@/services/uploadService';
 
 const EMPTY = {
   name: '',
@@ -85,9 +86,22 @@ export default function AdminProducts() {
     const file = event.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setEditItem((current) => ({ ...current, image_url: file_url }));
-    setUploading(false);
+    try {
+      const uploaded = await uploadProductImages([file], {
+        productId: editItem?.id,
+        imageRole: 'main',
+        altText: editItem?.name || file.name,
+        sortOrder: 0,
+        replaceImageKey: imageKeyFromImageUrl(editItem?.image_url),
+      });
+      const image = uploaded[0];
+      if (image?.image_url) {
+        setEditItem((current) => ({ ...current, image_url: image.image_url }));
+      }
+    } finally {
+      setUploading(false);
+      event.target.value = '';
+    }
   };
 
   const handleGalleryImages = async (event) => {
@@ -95,14 +109,15 @@ export default function AdminProducts() {
     if (!files.length) return;
     setUploading(true);
     try {
-      const uploaded = [];
-      for (const file of files) {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        uploaded.push(file_url);
-      }
+      const uploaded = await uploadProductImages(files, {
+        productId: editItem?.id,
+        imageRole: 'gallery',
+        altText: editItem?.name || '',
+        sortOrder: (editItem?.gallery_urls || []).length + 1,
+      });
       setEditItem((current) => ({
         ...current,
-        gallery_urls: [...(current.gallery_urls || []), ...uploaded],
+        gallery_urls: [...(current.gallery_urls || []), ...uploaded.map((image) => image.image_url).filter(Boolean)],
       }));
     } finally {
       setUploading(false);
@@ -115,6 +130,9 @@ export default function AdminProducts() {
       ...current,
       gallery_urls: (current.gallery_urls || []).filter((item) => item !== url),
     }));
+    removeProductImage({ imageUrl: url }).catch((error) => {
+      console.warn('R2 image removal failed:', error);
+    });
   };
 
   const filtered = products.filter((product) => {

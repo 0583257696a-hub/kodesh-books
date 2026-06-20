@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, ShoppingCart, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
+import { listProducts } from '@/services/catalogService';
 
 const VISIBLE = 4; // items visible on desktop
 const INTERVAL = 3500; // 3.5 seconds
@@ -18,7 +18,7 @@ export default function AlsoBought({ currentProductId, category }) {
   const { data: products = [] } = useQuery({
     queryKey: ['also-bought', category],
     queryFn: async () => {
-      const all = await base44.entities.Product.filter({ in_stock: true });
+      const all = await listProducts({ inStock: true, limit: 100 });
       return all.filter((p) => p.id !== currentProductId).slice(0, 12);
     },
     enabled: !!currentProductId,

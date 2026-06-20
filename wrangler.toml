@@ -1,0 +1,14 @@
+name = "kodesh-books"
+compatibility_date = "2026-06-20"
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kodesh-books-db"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "kodesh-books-product-images"
+

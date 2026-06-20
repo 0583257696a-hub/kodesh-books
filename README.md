@@ -32,6 +32,64 @@ Run the app: `npm run dev`
 
 Open [Base44.com](http://Base44.com) and click on Publish.
 
+## Cloudflare Pages scaffold
+
+This repository includes a Phase 2 Cloudflare scaffold only. The app still uses Base44 at runtime.
+
+- Cloudflare Pages build command: `npm run build`
+- Cloudflare Pages output directory: `dist`
+- Required D1 binding: `DB`
+- Required R2 binding: `PRODUCT_IMAGES`
+- Required admin bootstrap secrets: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD`
+- Wrangler config: `wrangler.toml`
+- D1 migrations directory: `migrations`
+
+Before deploying Cloudflare Functions that use D1, create the D1 database in Cloudflare and replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml`.
+
+Environment and binding notes are documented in `docs/cloudflare-env.md`.
+
+### Public catalog on D1
+
+Public product/category browsing now reads through internal Cloudflare Functions:
+
+- `GET /api/products`
+- `GET /api/products?category=...`
+- `GET /api/products/:slug`
+- `GET /api/categories`
+- `GET /api/search?q=...`
+
+If D1 is empty, use `docs/d1-seed-catalog.sql` for local testing after applying migrations. Do not seed production over real catalog data.
+
+### Independent admin auth
+
+Admin login uses D1 tables `admin_users` and `sessions`. Configure `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` as Cloudflare secrets before first login. Do not expose these values as `VITE_*` variables.
+
+### Order email automation
+
+Order emails are sent by Cloudflare Functions through Resend and logged in D1.
+
+Required:
+
+- Apply `migrations/0015_email_notifications.sql`.
+- Configure `RESEND_API_KEY` as a Cloudflare secret.
+- Configure a verified sender via `RESEND_FROM_EMAIL` or `site_settings.email_from`.
+- Configure the admin recipient via `site_settings.admin_email` or `site_settings.email`.
+
+The frontend does not contain email API keys and no longer sends order emails through Base44.
+
+### Product images on Cloudflare R2
+
+Product image uploads are handled by `POST /api/admin/uploads/product-image`.
+
+Required Cloudflare setup:
+
+1. Create an R2 bucket, for example `kodesh-books-product-images`.
+2. Bind it to Cloudflare Pages/Functions as `PRODUCT_IMAGES`.
+3. Apply the D1 migrations so `product_images` exists in the `DB` binding.
+4. Optional but recommended: connect a custom public image domain to the R2 bucket and set `R2_PUBLIC_BASE_URL`.
+
+If no custom image domain is configured, the app serves uploaded images through `/api/images/:key`.
+
 **Docs & Support**
 
 Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)

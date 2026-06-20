@@ -10,6 +10,7 @@ import { useCart } from '@/context/CartContext';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import { CATEGORY_MAP } from '@/lib/categories';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
+import { listProducts } from '@/services/catalogService';
 import { cn } from '@/lib/utils';
 
 const QUICK_ACTIONS = ['חפש ספר', 'רבי מכר', 'מבצעים', 'ספרי ילדים', 'סידורים ומחזורים', 'דבר עם נציג'];
@@ -237,7 +238,7 @@ export default function StoreChatBot() {
 
   const { data: products = [] } = useQuery({
     queryKey: ['chat-products'],
-    queryFn: () => base44.entities.Product.list('-created_date', 1000),
+    queryFn: () => listProducts({ limit: 1000 }),
     enabled,
   });
 

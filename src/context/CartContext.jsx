@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
+import { syncCart } from '@/services/cartService';
 
 const CartContext = createContext();
 
@@ -12,11 +13,14 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem('otzar_cart', JSON.stringify(items));
+    syncCart(items).catch((error) => {
+      console.warn('Cart sync failed:', error);
+    });
   }, [items]);
 
   const addItem = (product) => {
     trackEcommerceEvent({
-      event_type: 'cart_add',
+      event_type: 'add_to_cart',
       product_id: product.id,
       product_name: product.name,
       value: product.sale_price || product.price || 0,

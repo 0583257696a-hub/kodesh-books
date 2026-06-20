@@ -1,25 +1,36 @@
-import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAdminAuth } from '@/lib/AdminAuthContext';
 
 export default function AdminLogin() {
+  const navigate = useNavigate();
+  const { login, isAdminAuthenticated, isLoadingAdminAuth } = useAdminAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isLoadingAdminAuth && isAdminAuthenticated) {
+      navigate('/secret-admin', { replace: true });
+    }
+  }, [isAdminAuthenticated, isLoadingAdminAuth, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = '/secret-admin';
+      await login(email, password);
+      navigate('/secret-admin', { replace: true });
     } catch (err) {
-      setError('אימייל או סיסמה שגויים');
+      setError(err.message === 'Bootstrap admin is not configured'
+        ? 'משתמש מנהל ראשוני לא הוגדר בשרת'
+        : 'אימייל או סיסמה שגויים');
     } finally {
       setLoading(false);
     }
@@ -76,7 +87,7 @@ export default function AdminLogin() {
             </div>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || isLoadingAdminAuth}
               className="w-full h-12 bg-gold text-white hover:bg-gold/90 font-body font-semibold text-base mt-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'כניסה לפאנל'}

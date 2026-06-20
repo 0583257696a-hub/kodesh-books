@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { CATEGORIES, CATEGORY_MAP, CATEGORY_NAME_TO_ID } from '@/lib/categories';
+import { listCategories } from '@/services/catalogService';
 
 export const CATEGORY_IMAGES = {
   chumashim: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/c7956dabc_generated_58adb81d.png',
@@ -68,7 +68,7 @@ export function buildCategoryCollections(dynamicCategories = []) {
 export function useStoreCategories() {
   const { data = [], isLoading } = useQuery({
     queryKey: ['store-categories'],
-    queryFn: () => base44.entities.StoreCategory.list('display_order', 500),
+    queryFn: () => listCategories(),
     retry: false,
     staleTime: 60_000,
   });

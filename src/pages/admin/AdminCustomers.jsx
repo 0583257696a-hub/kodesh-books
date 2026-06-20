@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Search, ShoppingBag, Shield, Key, X, Check, Mail } from 'lucide-react';
 import { format } from 'date-fns';
+import { listAdminOrders } from '@/services/orderService';
 
 export default function AdminCustomers() {
   const [search, setSearch] = useState('');
@@ -15,10 +16,11 @@ export default function AdminCustomers() {
   const queryClient = useQueryClient();
 
   const { data: users = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list('-created_date', 500) });
-  const { data: orders = [] } = useQuery({ queryKey: ['admin-orders'], queryFn: () => base44.entities.Order.list('-created_date', 500) });
+  const { data: orders = [] } = useQuery({ queryKey: ['admin-orders'], queryFn: listAdminOrders });
 
-  const getOrderCount = (userId) => orders.filter((order) => order.created_by_id === userId).length;
-  const getTotalSpent = (userId) => orders.filter((order) => order.created_by_id === userId && order.status !== 'cancelled').reduce((sum, order) => sum + (order.total || 0), 0);
+  const getUserOrders = (user) => orders.filter((order) => order.customer_email === user.email || order.created_by_id === user.id);
+  const getOrderCount = (user) => getUserOrders(user).length;
+  const getTotalSpent = (user) => getUserOrders(user).filter((order) => order.status !== 'cancelled').reduce((sum, order) => sum + (order.total || 0), 0);
 
   const filtered = users.filter((user) => !search || user.full_name?.includes(search) || user.email?.includes(search));
 
@@ -100,10 +102,10 @@ export default function AdminCustomers() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1.5 text-slate-700">
                         <ShoppingBag className="h-4 w-4 text-slate-400" />
-                        {getOrderCount(user.id)}
+                        {getOrderCount(user)}
                       </div>
                     </td>
-                    <td className="px-5 py-4 font-bold text-blue-700">₪{getTotalSpent(user.id).toLocaleString()}</td>
+                    <td className="px-5 py-4 font-bold text-blue-700">₪{getTotalSpent(user).toLocaleString()}</td>
                     <td className="px-5 py-4 text-slate-500">{format(new Date(user.created_date), 'dd/MM/yyyy')}</td>
                     <td className="px-5 py-4">
                       <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${user.role === 'admin' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>

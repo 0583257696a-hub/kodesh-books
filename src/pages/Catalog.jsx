@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import ProductCard from '@/components/shared/ProductCard';
@@ -10,6 +9,7 @@ import { Search, SlidersHorizontal, X, ChevronLeft, BookOpen, ArrowUpDown } from
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
+import { listProducts } from '@/services/catalogService';
 import { motion } from 'framer-motion';
 
 const SORT_OPTIONS = [
@@ -47,7 +47,7 @@ export default function Catalog() {
 
   const { data: allProducts = [], isLoading } = useQuery({
     queryKey: ['all-products'],
-    queryFn: () => base44.entities.Product.list('-created_date', 200),
+    queryFn: () => listProducts({ limit: 500 }),
   });
 
   const filteredProducts = useMemo(() => {

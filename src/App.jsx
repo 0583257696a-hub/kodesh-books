@@ -1,9 +1,10 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { AdminAuthProvider } from '@/lib/AdminAuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { CartProvider } from '@/context/CartContext';
@@ -50,9 +51,19 @@ import ShippingReturns from '@/pages/ShippingReturns';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 
 const AuthenticatedApp = () => {
+  const location = useLocation();
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const isAdminPath = location.pathname === '/admin-login'
+    || location.pathname === '/admin'
+    || location.pathname.startsWith('/admin/')
+    || location.pathname === '/secret-admin'
+    || location.pathname.startsWith('/secret-admin/');
+  const isBase44AuthPath = location.pathname === '/login'
+    || location.pathname === '/register'
+    || location.pathname === '/forgot-password'
+    || location.pathname === '/reset-password';
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (isBase44AuthPath && !isAdminPath && (isLoadingPublicSettings || isLoadingAuth)) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-cream">
         <div className="text-center">
@@ -63,7 +74,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
+  if (isBase44AuthPath && !isAdminPath && authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
@@ -82,6 +93,8 @@ const AuthenticatedApp = () => {
 
       {/* Admin login — hidden URL */}
       <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/admin" element={<Navigate to="/secret-admin" replace />} />
+      <Route path="/admin/*" element={<Navigate to="/secret-admin" replace />} />
       <Route path="/403" element={<Unauthorized />} />
 
       {/* Admin panel — protected, role=admin only */}
@@ -127,10 +140,12 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <CartProvider>
-          <Router>
-            <ScrollToTop />
-            <AuthenticatedApp />
-          </Router>
+          <AdminAuthProvider>
+            <Router>
+              <ScrollToTop />
+              <AuthenticatedApp />
+            </Router>
+          </AdminAuthProvider>
           <Toaster />
         </CartProvider>
       </QueryClientProvider>

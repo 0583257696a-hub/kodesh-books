@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,8 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
-import { buildCustomerOrderEmail, buildOrderAdminEmail, reserveStockForItems, restoreReservedStock, sendManagedEmail } from '@/lib/orderWorkflow';
+import { markCheckoutStarted } from '@/services/cartService';
+import { createOrder } from '@/services/orderService';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
@@ -27,7 +27,6 @@ export default function Checkout() {
     setIsSubmitting(true);
     setSubmitError('');
 
-    let reserved = [];
     try {
       const cleanedForm = {
         ...form,
@@ -43,64 +42,32 @@ export default function Checkout() {
         throw new Error('יש למלא שם מלא, טלפון, אימייל, עיר וכתובת למשלוח.');
       }
 
-      const enforceStock = settings.enforce_stock_limit === 'true';
       const orderItems = items.map(i => ({
         product_id: i.product_id,
         product_name: i.product_name,
         quantity: i.quantity,
         price: i.price,
+        image_url: i.image_url,
       }));
-      const reservation = await reserveStockForItems(orderItems, {
-        enforceStock,
-      });
-      reserved = reservation.reserved;
 
-      const order = await base44.entities.Order.create({
-        ...cleanedForm,
-        order_number: `OK-${Date.now()}`,
-        items: reservation.enrichedItems,
+      const order = await createOrder({
+        customer: cleanedForm,
+        items: orderItems,
         subtotal: totalPrice,
         shipping_cost: shipping,
         shipping_method: 'home_delivery',
         total,
-        status: 'new',
-        payment_status: 'manual_pending',
-        payment_method: 'manual',
-        stock_reserved: enforceStock && reserved.length > 0,
-        stock_reservations: reserved,
-        internal_notes: '',
-      });
-
-      await sendManagedEmail(settings, {
-        type: 'admin_new_order',
-        enabledKey: 'enable_order_emails',
-        to: settings.admin_email || settings.email,
-        subject: 'התקבלה הזמנה חדשה באתר אוצר הקדושה',
-        body: buildOrderAdminEmail(order, settings),
-        order_id: order.id,
-      });
-
-      await sendManagedEmail(settings, {
-        type: 'customer_order_received',
-        enabledKey: 'enable_customer_order_emails',
-        to: order.customer_email,
-        subject: `הזמנתך התקבלה באתר ${settings.store_name || 'אוצר הקדושה'}`,
-        body: buildCustomerOrderEmail(order, settings),
-        order_id: order.id,
       });
 
       await trackEcommerceEvent({
-        event_type: 'purchase',
+        event_type: 'order_created',
         customer_email: form.customer_email,
         value: total,
-        metadata: { item_count: items.length, status: 'new', manual_payment: true },
+        metadata: { item_count: items.length, status: 'new', manual_payment: true, order_id: order.id, order_number: order.order_number },
       });
       clearCart();
       setOrderPlaced(true);
     } catch (error) {
-      if (reserved.length) {
-        await restoreReservedStock({ stock_reservations: reserved });
-      }
       setSubmitError(error.message || 'שליחת ההזמנה נכשלה. נסו שוב או צרו קשר עם החנות.');
     } finally {
       setIsSubmitting(false);
@@ -109,8 +76,11 @@ export default function Checkout() {
 
   React.useEffect(() => {
     if (!items.length) return;
+    markCheckoutStarted(items, total).catch((error) => {
+      console.warn('Checkout cart sync failed:', error);
+    });
     trackEcommerceEvent({
-      event_type: 'checkout_start',
+      event_type: 'checkout_started',
       value: total,
       metadata: { item_count: items.length },
     });

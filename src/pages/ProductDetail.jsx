@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import AlsoBought from '@/components/product/AlsoBought';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
+import { getProduct } from '@/services/catalogService';
 
 export default function ProductDetail() {
   const { id: productId } = useParams();
@@ -24,10 +24,7 @@ export default function ProductDetail() {
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', productId],
-    queryFn: async () => {
-      const products = await base44.entities.Product.filter({ id: productId });
-      return products[0];
-    },
+    queryFn: () => getProduct(productId),
     enabled: !!productId,
   });
 

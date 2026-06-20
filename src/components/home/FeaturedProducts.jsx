@@ -1,17 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import ProductCard from '@/components/shared/ProductCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Star } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
+import { listProducts } from '@/services/catalogService';
 
 export default function FeaturedProducts() {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['featured-products'],
-    queryFn: () => base44.entities.Product.filter({ is_featured: true }, '-created_date', 8),
+    queryFn: () => listProducts({ featured: true, limit: 8 }),
   });
 
   return (

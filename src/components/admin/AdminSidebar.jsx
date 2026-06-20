@@ -18,7 +18,7 @@ import {
   Ticket,
   Users,
 } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
+import { useAdminAuth } from '@/lib/AdminAuthContext';
 import { cn } from '@/lib/utils';
 
 const NAV = [
@@ -40,7 +40,7 @@ const NAV = [
 
 export default function AdminSidebar({ collapsed, setCollapsed }) {
   const { pathname } = useLocation();
-  const { logout } = useAuth();
+  const { logout } = useAdminAuth();
 
   return (
     <aside className={cn(
