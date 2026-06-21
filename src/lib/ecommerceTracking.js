@@ -1,7 +1,7 @@
 import { base44 } from '@/api/base44Client';
 
 const STORAGE_KEY = 'otzar_analytics_events';
-const LEGACY_BASE44_EVENT_TYPES = {
+const ANALYTICS_EVENT_TYPE_FALLBACKS = {
   add_to_cart: 'cart_add',
   checkout_started: 'checkout_start',
   order_created: 'purchase',
@@ -57,7 +57,7 @@ export async function trackEcommerceEvent(event) {
     if (base44.entities.AnalyticsEvent?.create) {
       await base44.entities.AnalyticsEvent.create({
         ...payload,
-        event_type: LEGACY_BASE44_EVENT_TYPES[payload.event_type] || payload.event_type,
+        event_type: ANALYTICS_EVENT_TYPE_FALLBACKS[payload.event_type] || payload.event_type,
       });
     }
   } catch (error) {

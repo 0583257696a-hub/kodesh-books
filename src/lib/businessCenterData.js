@@ -155,7 +155,7 @@ export function buildExpenseRows(storedExpenses = []) {
 
   return [
     { id: 'exp-1', date: subDays(new Date(), 3).toISOString(), category: 'פרסום', supplier: 'קמפיינים', amount: 1850, notes: 'קידום מכירות חודשי' },
-    { id: 'exp-2', date: subDays(new Date(), 7).toISOString(), category: 'תוכנה', supplier: 'Base44', amount: 420, notes: 'מערכת האתר' },
+    { id: 'exp-2', date: subDays(new Date(), 7).toISOString(), category: 'תוכנה', supplier: 'מערכת האתר', amount: 420, notes: 'תשתית האתר' },
     { id: 'exp-3', date: subDays(new Date(), 11).toISOString(), category: 'אחסון', supplier: 'Vercel', amount: 260, notes: 'אחסון האתר' },
     { id: 'exp-4', date: subDays(new Date(), 18).toISOString(), category: 'משרד', supplier: 'אריזות למשלוחים', amount: 690, notes: 'ציוד אריזה' },
   ];

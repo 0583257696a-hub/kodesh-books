@@ -9,7 +9,7 @@ export function asArray(value) {
   return [];
 }
 
-export async function listBase44Entity(entityName, ...args) {
+export async function listEntitySafely(entityName, ...args) {
   const entity = base44.entities?.[entityName];
   if (!entity?.list) return [];
 

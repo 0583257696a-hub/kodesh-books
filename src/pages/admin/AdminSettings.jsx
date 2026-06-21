@@ -112,6 +112,8 @@ export default function AdminSettings() {
       await base44.auth.register({
         email: newUser.email,
         password: newUser.password,
+        full_name: newUser.full_name,
+        role: newUser.role,
       });
 
       const matches = await base44.entities.User.filter({ email: newUser.email }, '-created_date', 1);

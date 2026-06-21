@@ -58,12 +58,12 @@ const AuthenticatedApp = () => {
     || location.pathname.startsWith('/admin/')
     || location.pathname === '/secret-admin'
     || location.pathname.startsWith('/secret-admin/');
-  const isBase44AuthPath = location.pathname === '/login'
+  const isPublicAuthPath = location.pathname === '/login'
     || location.pathname === '/register'
     || location.pathname === '/forgot-password'
     || location.pathname === '/reset-password';
 
-  if (isBase44AuthPath && !isAdminPath && (isLoadingPublicSettings || isLoadingAuth)) {
+  if (isPublicAuthPath && !isAdminPath && (isLoadingPublicSettings || isLoadingAuth)) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-cream">
         <div className="text-center">
@@ -74,7 +74,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (isBase44AuthPath && !isAdminPath && authError) {
+  if (isPublicAuthPath && !isAdminPath && authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {

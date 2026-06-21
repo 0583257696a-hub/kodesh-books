@@ -124,8 +124,38 @@ async function getImagesByProductId(env, productIds) {
 function buildProductFilters(filters = {}) {
   const clauses = [];
   const binds = [];
+  const id = stringValue(filters.id);
+  const slug = stringValue(filters.slug);
+  const base44Id = stringValue(filters.base44_id);
+  const sku = stringValue(filters.sku);
+  const barcode = stringValue(filters.barcode);
   const category = stringValue(filters.category);
   const query = stringValue(filters.q || filters.search);
+
+  if (id) {
+    clauses.push('(id = ? OR base44_id = ? OR slug = ?)');
+    binds.push(id, id, id);
+  }
+
+  if (slug) {
+    clauses.push('slug = ?');
+    binds.push(slug);
+  }
+
+  if (base44Id) {
+    clauses.push('base44_id = ?');
+    binds.push(base44Id);
+  }
+
+  if (sku) {
+    clauses.push('sku = ?');
+    binds.push(sku);
+  }
+
+  if (barcode) {
+    clauses.push('barcode = ?');
+    binds.push(barcode);
+  }
 
   if (category) {
     clauses.push('(category_slug = ? OR category_id = ?)');

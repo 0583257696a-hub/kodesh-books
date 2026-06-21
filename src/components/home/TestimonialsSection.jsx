@@ -2,12 +2,12 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
-import { listBase44Entity } from '@/services/base44DataService';
+import { listEntitySafely } from '@/services/entityDataService';
 
 export default function TestimonialsSection() {
   const { data: testimonials = [] } = useQuery({
     queryKey: ['testimonials'],
-    queryFn: () => listBase44Entity('Testimonial', '-created_date', 6),
+    queryFn: () => listEntitySafely('Testimonial', '-created_date', 6),
   });
 
   if (testimonials.length === 0) return null;

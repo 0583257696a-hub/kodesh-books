@@ -1,56 +1,62 @@
-**Welcome to your Base44 project** 
+# Kodesh Books
 
-**About**
+Hebrew RTL online bookstore deployed on Cloudflare Pages with Cloudflare Functions, D1 and R2.
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+## Local Development
 
-This project contains everything you need to run your app locally.
-
-**Edit the code in your local development environment**
-
-Any change pushed to the repo will also be reflected in the Base44 Builder.
-
-**Prerequisites:** 
-
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
-```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+```powershell
+npm install
+npm run dev
 ```
 
-Run the app: `npm run dev`
+Build locally:
 
-**Publish your changes**
+```powershell
+npm run build
+```
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+## Cloudflare Pages
 
-## Cloudflare Pages scaffold
-
-This repository includes a Phase 2 Cloudflare scaffold only. The app still uses Base44 at runtime.
-
-- Cloudflare Pages build command: `npm run build`
-- Cloudflare Pages output directory: `dist`
+- Build command: `npm run build`
+- Output directory: `dist`
+- Wrangler config: `wrangler.toml`
 - Required D1 binding: `DB`
 - Required R2 binding: `PRODUCT_IMAGES`
 - Current D1 database: `kodesh-books-db-v2`
 - Current R2 bucket: `kodesh-books-product-images-v2`
-- Required admin bootstrap secrets: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD`
-- Wrangler config: `wrangler.toml`
-- D1 migrations directory: `migrations`
 
-Environment and binding notes are documented in `docs/cloudflare-env.md`.
+## Required Secrets And Variables
 
-### Public catalog on D1
+Configure these in Cloudflare Pages, not in frontend code:
 
-Public product/category browsing now reads through internal Cloudflare Functions:
+- `BOOTSTRAP_ADMIN_EMAIL`: first admin email.
+- `BOOTSTRAP_ADMIN_PASSWORD`: first admin password.
+- `RESEND_API_KEY`: Resend API key for order emails.
+- `RESEND_FROM_EMAIL`: optional verified sender address.
+- `ORDER_ADMIN_EMAIL`: optional fallback recipient for new order emails.
+- `R2_PUBLIC_BASE_URL`: optional public image domain for R2.
+
+The frontend must not receive private API keys or service credentials.
+
+## D1 Migrations
+
+Migrations live in `migrations`.
+
+Apply locally:
+
+```powershell
+npx.cmd wrangler d1 migrations apply kodesh-books-db-v2 --local
+```
+
+Apply to production:
+
+```powershell
+npx.cmd wrangler d1 migrations apply kodesh-books-db-v2 --remote
+```
+
+## Internal APIs
+
+Public catalog:
 
 - `GET /api/products`
 - `GET /api/products?category=...`
@@ -58,40 +64,40 @@ Public product/category browsing now reads through internal Cloudflare Functions
 - `GET /api/categories`
 - `GET /api/search?q=...`
 
-If D1 is empty, use `docs/d1-seed-catalog.sql` for local testing after applying migrations. Do not seed production over real catalog data.
+Checkout and orders:
 
-### Independent admin auth
+- `POST /api/carts`
+- `POST /api/orders`
+- `GET /api/admin/orders`
+- `PATCH /api/admin/orders/:orderId/status`
+- `GET /api/admin/orders/:orderId/print`
 
-Admin login uses D1 tables `admin_users` and `sessions`. Configure `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` as Cloudflare secrets before first login. Do not expose these values as `VITE_*` variables.
+Admin and entities:
 
-### Order email automation
+- `POST /api/admin/auth/login`
+- `GET /api/admin/auth/me`
+- `POST /api/admin/auth/logout`
+- `GET /api/admin/entities/:entity`
+- `POST /api/admin/entities/:entity`
+- `PATCH /api/admin/entities/:entity/:id`
+- `DELETE /api/admin/entities/:entity/:id`
 
-Order emails are sent by Cloudflare Functions through Resend and logged in D1.
+## Order Email Automation
 
-Required:
+Order emails are sent server-side through Resend and logged in D1.
 
-- Apply `migrations/0015_email_notifications.sql`.
-- Configure `RESEND_API_KEY` as a Cloudflare secret.
-- Configure a verified sender via `RESEND_FROM_EMAIL` or `site_settings.email_from`.
-- Configure the admin recipient via `site_settings.admin_email` or `site_settings.email`.
+Templates exist for:
 
-The frontend does not contain email API keys and no longer sends order emails through Base44.
+- New order to admin.
+- Order confirmation to customer.
+- Order approved.
+- Order delivered.
+- Order cancelled.
 
-### Product images on Cloudflare R2
+Every attempt is logged in `email_logs` with `pending`, `sent`, `failed`, `error_message` and `sent_at`. Notifications are stored in `notifications`.
 
-Product image uploads are handled by `POST /api/admin/uploads/product-image`.
+## Product Images
 
-Required Cloudflare setup:
+Product image uploads use `POST /api/admin/uploads/product-image` and store objects in the `PRODUCT_IMAGES` R2 bucket. D1 stores image keys and public URLs only.
 
-1. Create an R2 bucket, for example `kodesh-books-product-images-v2`.
-2. Bind it to Cloudflare Pages/Functions as `PRODUCT_IMAGES`.
-3. Apply the D1 migrations so `product_images` exists in the `DB` binding.
-4. Optional but recommended: connect a custom public image domain to the R2 bucket and set `R2_PUBLIC_BASE_URL`.
-
-If no custom image domain is configured, the app serves uploaded images through `/api/images/:key`.
-
-**Docs & Support**
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+Existing imported product image URLs may still point to their original remote source until image migration is completed.

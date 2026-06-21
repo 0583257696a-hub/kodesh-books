@@ -11,7 +11,7 @@ import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import { CATEGORY_MAP } from '@/lib/categories';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { listProducts } from '@/services/catalogService';
-import { listBase44Entity } from '@/services/base44DataService';
+import { listEntitySafely } from '@/services/entityDataService';
 import { cn } from '@/lib/utils';
 
 const QUICK_ACTIONS = ['חפש ספר', 'רבי מכר', 'מבצעים', 'ספרי ילדים', 'סידורים ומחזורים', 'דבר עם נציג'];
@@ -245,19 +245,19 @@ export default function StoreChatBot() {
 
   const { data: faqs = [] } = useQuery({
     queryKey: ['chat-faq'],
-    queryFn: () => listBase44Entity('ChatFAQ', '-created_date', 200),
+    queryFn: () => listEntitySafely('ChatFAQ', '-created_date', 200),
     enabled: enabled && !!base44.entities.ChatFAQ,
   });
 
   const { data: synonyms = [] } = useQuery({
     queryKey: ['chat-synonyms'],
-    queryFn: () => listBase44Entity('SearchSynonym', '-priority', 500),
+    queryFn: () => listEntitySafely('SearchSynonym', '-priority', 500),
     enabled: enabled && !!base44.entities.SearchSynonym,
   });
 
   const { data: rules = [] } = useQuery({
     queryKey: ['chat-recommendation-rules'],
-    queryFn: () => listBase44Entity('RecommendationRule', '-priority', 200),
+    queryFn: () => listEntitySafely('RecommendationRule', '-priority', 200),
     enabled: enabled && !!base44.entities.RecommendationRule,
   });
 

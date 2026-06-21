@@ -1,16 +1,16 @@
-# Cloudflare environment and bindings
+# Cloudflare Environment And Bindings
 
-This project still uses Base44 for most runtime features. These notes document the Cloudflare scaffold and the Phase 5 product image upload path.
+The application runs on Cloudflare Pages with Cloudflare Functions, D1 and R2.
 
-## Cloudflare Pages
+## Pages Build
 
 - Build command: `npm run build`
 - Output directory: `dist`
 - Wrangler config: `wrangler.toml`
 
-## Required Cloudflare bindings
+## Required Bindings
 
-- `DB`: D1 database binding for migrated tables and product image metadata.
+- `DB`: D1 database binding.
 - `PRODUCT_IMAGES`: R2 bucket binding for product image objects.
 
 Current production resources:
@@ -19,65 +19,73 @@ Current production resources:
 - D1 database id: `587caf85-8ac5-4b12-b417-70e7b730e551`
 - R2 bucket: `kodesh-books-product-images-v2`
 
-## Admin authentication
+## Required Secrets
 
-Phase 4 replaces Base44 admin login with an internal D1-backed admin session.
+Set these in Cloudflare Pages project settings or with `wrangler secret put`.
 
-Required for first login only:
+- `BOOTSTRAP_ADMIN_EMAIL`: first admin login email.
+- `BOOTSTRAP_ADMIN_PASSWORD`: first admin login password.
+- `RESEND_API_KEY`: Resend API key for server-side order email sending.
 
-- `BOOTSTRAP_ADMIN_EMAIL`: initial admin email.
-- `BOOTSTRAP_ADMIN_PASSWORD`: initial admin password.
+Optional server-side variables:
+
+- `RESEND_FROM_EMAIL`: verified sender address in Resend.
+- `ORDER_ADMIN_EMAIL`: fallback admin recipient for new-order emails.
+- `R2_PUBLIC_BASE_URL`: public custom domain for R2 images.
+
+Do not create frontend `VITE_*` variables for secrets. Vite exposes `VITE_*` values to browser code.
+
+## D1 Schema
+
+Apply migrations before deploying features that read or write D1:
+
+```powershell
+npx.cmd wrangler d1 migrations apply kodesh-books-db-v2 --remote
+```
+
+Local development:
+
+```powershell
+npx.cmd wrangler d1 migrations apply kodesh-books-db-v2 --local
+```
+
+## Admin Authentication
+
+Admin login is D1-backed:
+
+- `admin_users`: admin login records.
+- `sessions`: HttpOnly admin sessions.
 
 Bootstrap behavior:
 
-- On the first successful `/api/admin/auth/login` attempt, if `admin_users` is empty, the function creates one admin user from these environment variables.
-- After at least one admin exists, these variables are no longer used to overwrite users.
-- Store `BOOTSTRAP_ADMIN_PASSWORD` as a Cloudflare secret, not as a `VITE_*` frontend variable.
+- If `admin_users` is empty, the first admin login attempt creates an admin from `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD`.
+- After an admin exists, bootstrap variables do not overwrite users.
+- `/api/admin/*` routes are protected by the admin session middleware.
 
-Relevant endpoints:
+## Customer Authentication
 
-- `POST /api/admin/auth/login`
-- `GET /api/admin/auth/me`
-- `POST /api/admin/auth/logout`
+Customer login is D1-backed:
 
-Admin sessions are stored in the `sessions` D1 table and sent to the browser as an HttpOnly cookie.
+- `customers`: customer profile and password hash fields.
+- `customer_sessions`: HttpOnly customer sessions.
 
-## Existing Base44 runtime variables
+Public registration always creates a regular customer. Admin-created users go through the protected admin API. If an admin-created customer has role `admin`, a matching `admin_users` record is created or re-enabled.
 
-These are still required while the app uses Base44:
+## Catalog
 
-- `VITE_BASE44_APP_ID`
-- `VITE_BASE44_APP_BASE_URL`
-- `VITE_BASE44_FUNCTIONS_VERSION` optional, only if Base44 function version pinning is needed.
-- `BASE44_LEGACY_SDK_IMPORTS` optional build-time flag used by `vite.config.js`.
+Public catalog reads use internal Functions:
 
-Do not put private API keys or service credentials in `VITE_*` variables. Vite exposes `VITE_*` values to browser code.
+- `GET /api/products`
+- `GET /api/products?category=halacha`
+- `GET /api/products/:slug`
+- `GET /api/categories`
+- `GET /api/search?q=...`
 
-## Product images on R2
+If D1 is empty in a local environment, use `docs/d1-seed-catalog.sql` for test data only. Do not seed production over real catalog data.
 
-Phase 5 stores uploaded product images in R2 and writes image metadata to D1 `product_images`.
+## Cart, Checkout And Orders
 
-Required:
-
-- Cloudflare R2 bucket bound as `PRODUCT_IMAGES`.
-- D1 database bound as `DB`.
-- Applied D1 migrations, including `migrations/0003_product_images.sql`.
-
-Optional:
-
-- `R2_PUBLIC_BASE_URL`: public custom domain for R2 product images, for example `https://images.example.com`.
-
-If `R2_PUBLIC_BASE_URL` is not set, uploaded images use the app route `/api/images/:key`, which streams the object through the Cloudflare Pages Function.
-
-The frontend should not receive R2 credentials. Browser uploads go through `POST /api/admin/uploads/product-image`, which uses the server-side `PRODUCT_IMAGES` binding.
-
-Until product CRUD is migrated to D1, `product_images.product_id` may contain the existing Base44 product id. It is intentionally not a foreign key in this phase.
-
-Security note: upload endpoints are under `/api/admin/*` and should remain protected by the independent admin session middleware.
-
-## Cart, checkout, and orders on D1
-
-Phase 6 stores carts and manual-payment orders in D1 through Cloudflare Pages Functions.
+Checkout writes to D1 and does not use a payment gateway yet.
 
 Relevant endpoints:
 
@@ -89,64 +97,33 @@ Relevant endpoints:
 - `GET /api/admin/orders/:orderId/print`
 - `POST /api/analytics`
 
-Optional `site_settings` keys in D1:
+Optional `site_settings` keys:
 
-- `enforce_stock_limit`: when `true`, checkout validates D1 product stock before creating an order.
-- `reduce_stock_on_order_confirmation`: when `true`, stock is reduced only when an admin changes the order status to `approved`.
-- `enable_order_emails`: when not `false`, sends the admin email for a new order.
-- `enable_customer_order_emails`: when not `false`, sends the customer order confirmation.
-- `enable_approval_emails`: when not `false`, sends the customer approval email.
-- `enable_delivery_emails`: when not `false`, sends the customer delivered email.
-- `enable_cancelled_emails`: when not `false`, sends the customer cancelled email.
-- `email_from` or `from_email`: optional verified sender address for Resend. If omitted, the function falls back to `settings.email`.
-- `admin_email`: recipient for new-order admin emails. If omitted, the function falls back to `settings.email`.
+- `shipping_cost`
+- `free_shipping_threshold`
+- `enforce_stock_limit`
+- `reduce_stock_on_order_confirmation`
 
-If `enforce_stock_limit` is enabled before products are migrated into D1, checkout will fail for products that do not exist in the D1 `products` table.
+## Order Email Automation
 
-## Order email automation with Resend
+Order emails are sent server-side through Resend. The browser never receives the provider API key.
 
-Order emails are sent server-side from Cloudflare Pages Functions. The browser never receives the email provider API key.
+Email behavior is controlled with these optional `site_settings` keys:
 
-Required secret:
+- `enable_order_emails`
+- `enable_customer_order_emails`
+- `enable_approval_emails`
+- `enable_delivery_emails`
+- `enable_cancelled_emails`
+- `email_from` or `from_email`
+- `admin_email`
 
-- `RESEND_API_KEY`: Resend API key, configured as a Cloudflare secret.
+Every attempt is written to `email_logs`; email-related admin notifications are written to `notifications`.
 
-Optional server-side variables:
+## Product Images
 
-- `RESEND_FROM_EMAIL`: verified sender address in Resend. This can also be set in D1 `site_settings.email_from`.
-- `ORDER_ADMIN_EMAIL`: fallback admin recipient if `site_settings.admin_email` and `site_settings.email` are empty.
+Image uploads go through `POST /api/admin/uploads/product-image`, store objects in R2 and store metadata in D1 `product_images`.
 
-Every email attempt is logged in D1 `email_logs` with:
+If `R2_PUBLIC_BASE_URL` is not set, uploaded images are served through `/api/images/:key`.
 
-- `pending`
-- `sent`
-- `failed`
-- `error_message`
-- `sent_at`
-
-The system also writes email notifications to the `notifications` table. Apply `migrations/0015_email_notifications.sql` before enabling this flow.
-
-## Public catalog on D1
-
-Phase 3 reads public product and category browsing from D1 through internal Cloudflare Functions:
-
-- `GET /api/products`
-- `GET /api/products?category=halacha`
-- `GET /api/products/:slug`
-- `GET /api/categories`
-- `GET /api/search?q=...`
-
-The public React catalog uses these APIs for product/category reads. Admin product CRUD is still Base44 in this phase.
-
-If D1 has no catalog data yet, apply the schema migrations and then optionally apply the sample seed file for local testing:
-
-```powershell
-npx.cmd wrangler d1 migrations apply kodesh-books-db --local
-npx.cmd wrangler d1 execute kodesh-books-db --local --file docs/d1-seed-catalog.sql
-```
-
-For the current production database name use `kodesh-books-db-v2`. Do not apply `docs/d1-seed-catalog.sql` to production if real catalog data already exists.
-
-## Future server-side secrets
-
-No replacement email, payment, or WhatsApp provider has been selected in this phase. Add provider secrets only after the matching Cloudflare Function is implemented, and store them as Cloudflare secrets, not frontend environment variables.
+Existing imported product image URLs can remain external until the image migration is completed.
