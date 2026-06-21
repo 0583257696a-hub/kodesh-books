@@ -41,7 +41,17 @@ export const DEFAULT_SITE_SETTINGS = {
 };
 
 export function settingsArrayToMap(settings = []) {
-  return settings.reduce((map, setting) => {
+  const settingsList = Array.isArray(settings)
+    ? settings
+    : Array.isArray(settings?.items)
+      ? settings.items
+      : Array.isArray(settings?.data)
+        ? settings.data
+        : Array.isArray(settings?.results)
+          ? settings.results
+          : [];
+
+  return settingsList.reduce((map, setting) => {
     if (setting?.key) {
       map[setting.key] = setting.value || '';
     }

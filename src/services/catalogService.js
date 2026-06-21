@@ -9,6 +9,10 @@ async function requestJson(path) {
   return data;
 }
 
+function arrayValue(value) {
+  return Array.isArray(value) ? value : [];
+}
+
 function toSearchParams(params = {}) {
   const searchParams = new URLSearchParams();
 
@@ -31,7 +35,7 @@ export async function listProducts(params = {}) {
     limit: params.limit,
   });
   const data = await requestJson(`/api/products${query ? `?${query}` : ''}`);
-  return data.products || [];
+  return arrayValue(data.products);
 }
 
 export async function getProduct(slugOrId) {
@@ -45,7 +49,7 @@ export async function listCategories(params = {}) {
     include_inactive: params.includeInactive,
   });
   const data = await requestJson(`/api/categories${query ? `?${query}` : ''}`);
-  return data.categories || [];
+  return arrayValue(data.categories);
 }
 
 export async function searchProducts(params = {}) {
@@ -55,5 +59,5 @@ export async function searchProducts(params = {}) {
     limit: params.limit,
   });
   const data = await requestJson(`/api/search${query ? `?${query}` : ''}`);
-  return data.products || [];
+  return arrayValue(data.products);
 }
