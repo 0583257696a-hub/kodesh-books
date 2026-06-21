@@ -4,10 +4,10 @@ pages_build_output_dir = "./dist"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "otzar"
-database_id = "173636cf-39cf-40cb-b869-51ffd6aea5f9"
+database_name = "kodesh-books-db-v2"
+database_id = "587caf85-8ac5-4b12-b417-70e7b730e551"
 migrations_dir = "migrations"
 
 [[r2_buckets]]
 binding = "PRODUCT_IMAGES"
-bucket_name = "kodesh-books-product-images"
+bucket_name = "kodesh-books-product-images-v2"

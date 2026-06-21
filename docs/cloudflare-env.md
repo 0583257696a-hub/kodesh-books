@@ -13,7 +13,11 @@ This project still uses Base44 for most runtime features. These notes document t
 - `DB`: D1 database binding for migrated tables and product image metadata.
 - `PRODUCT_IMAGES`: R2 bucket binding for product image objects.
 
-Before deploying Cloudflare Functions that use these bindings, replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml` with the real D1 database ID created in Cloudflare.
+Current production resources:
+
+- D1 database: `kodesh-books-db-v2`
+- D1 database id: `587caf85-8ac5-4b12-b417-70e7b730e551`
+- R2 bucket: `kodesh-books-product-images-v2`
 
 ## Admin authentication
 
@@ -69,7 +73,7 @@ The frontend should not receive R2 credentials. Browser uploads go through `POST
 
 Until product CRUD is migrated to D1, `product_images.product_id` may contain the existing Base44 product id. It is intentionally not a foreign key in this phase.
 
-Security note: Phase 5 does not implement independent admin authentication. The upload endpoint includes same-origin request checks only. Full protection belongs in Phase 4 admin auth.
+Security note: upload endpoints are under `/api/admin/*` and should remain protected by the independent admin session middleware.
 
 ## Cart, checkout, and orders on D1
 
@@ -141,7 +145,7 @@ npx.cmd wrangler d1 migrations apply kodesh-books-db --local
 npx.cmd wrangler d1 execute kodesh-books-db --local --file docs/d1-seed-catalog.sql
 ```
 
-Replace `kodesh-books-db` with the real D1 database name. Do not apply `docs/d1-seed-catalog.sql` to production if real catalog data already exists.
+For the current production database name use `kodesh-books-db-v2`. Do not apply `docs/d1-seed-catalog.sql` to production if real catalog data already exists.
 
 ## Future server-side secrets
 

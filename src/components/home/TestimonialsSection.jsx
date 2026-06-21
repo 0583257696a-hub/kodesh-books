@@ -1,13 +1,13 @@
 import React from 'react';
-import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
+import { listBase44Entity } from '@/services/base44DataService';
 
 export default function TestimonialsSection() {
   const { data: testimonials = [] } = useQuery({
     queryKey: ['testimonials'],
-    queryFn: () => base44.entities.Testimonial.list('-created_date', 6),
+    queryFn: () => listBase44Entity('Testimonial', '-created_date', 6),
   });
 
   if (testimonials.length === 0) return null;

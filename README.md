@@ -40,11 +40,11 @@ This repository includes a Phase 2 Cloudflare scaffold only. The app still uses 
 - Cloudflare Pages output directory: `dist`
 - Required D1 binding: `DB`
 - Required R2 binding: `PRODUCT_IMAGES`
+- Current D1 database: `kodesh-books-db-v2`
+- Current R2 bucket: `kodesh-books-product-images-v2`
 - Required admin bootstrap secrets: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD`
 - Wrangler config: `wrangler.toml`
 - D1 migrations directory: `migrations`
-
-Before deploying Cloudflare Functions that use D1, create the D1 database in Cloudflare and replace `REPLACE_WITH_D1_DATABASE_ID` in `wrangler.toml`.
 
 Environment and binding notes are documented in `docs/cloudflare-env.md`.
 
@@ -83,7 +83,7 @@ Product image uploads are handled by `POST /api/admin/uploads/product-image`.
 
 Required Cloudflare setup:
 
-1. Create an R2 bucket, for example `kodesh-books-product-images`.
+1. Create an R2 bucket, for example `kodesh-books-product-images-v2`.
 2. Bind it to Cloudflare Pages/Functions as `PRODUCT_IMAGES`.
 3. Apply the D1 migrations so `product_images` exists in the `DB` binding.
 4. Optional but recommended: connect a custom public image domain to the R2 bucket and set `R2_PUBLIC_BASE_URL`.
