@@ -100,4 +100,13 @@ Every attempt is logged in `email_logs` with `pending`, `sent`, `failed`, `error
 
 Product image uploads use `POST /api/admin/uploads/product-image` and store objects in the `PRODUCT_IMAGES` R2 bucket. D1 stores image keys and public URLs only.
 
-Existing imported product image URLs may still point to their original remote source until image migration is completed.
+Imported product images were migrated to R2 and are served through `/api/images/:key` when no `R2_PUBLIC_BASE_URL` is configured.
+
+The one-time migration script is:
+
+```powershell
+node scripts\migrate-product-images-to-r2.mjs --dry-run --limit=3
+node scripts\migrate-product-images-to-r2.mjs --limit=30
+```
+
+The script writes local backups to `.migration-backups/`, uploads each image to `PRODUCT_IMAGES`, updates D1 only after a successful upload, and keeps the original URL in `product_images.base44_url` for rollback/audit.
