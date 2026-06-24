@@ -7,7 +7,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { STORE_LOGO_URL } from '@/lib/branding';
 
-const HERO_IMAGE = 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f511806de_generated_bffda8a3.png';
+const HERO_IMAGE = '/assets/static/home-hero.png';
 
 const TRUST_BADGE_ICONS = [Truck, BookOpen, ShieldCheck, Users, Tag];
 

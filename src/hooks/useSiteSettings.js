@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 
 export const DEFAULT_SITE_SETTINGS = {
   store_name: 'אוצר הקדושה',
@@ -62,7 +62,7 @@ export function settingsArrayToMap(settings = []) {
 export function useSiteSettings() {
   const query = useQuery({
     queryKey: ['site-settings'],
-    queryFn: () => base44.entities.SiteSettings.list(),
+    queryFn: () => appApi.entities.SiteSettings.list(),
     staleTime: 1000 * 60 * 5,
   });
 

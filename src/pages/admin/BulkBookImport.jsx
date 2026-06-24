@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -248,12 +248,12 @@ export default function BulkBookImport() {
 
   const { data: products = [] } = useQuery({
     queryKey: ['admin-products-import'],
-    queryFn: () => base44.entities.Product.list('-created_date', 10000),
+    queryFn: () => appApi.entities.Product.list('-created_date', 10000),
   });
 
   const { data: history = [] } = useQuery({
     queryKey: ['import-history'],
-    queryFn: () => base44.entities.ImportHistory.list('-created_date', 20),
+    queryFn: () => appApi.entities.ImportHistory.list('-created_date', 20),
   });
 
   const summary = useMemo(() => sheets.map((sheet) => ({
@@ -311,13 +311,13 @@ export default function BulkBookImport() {
                 const updateProduct = { ...product };
                 delete updateProduct.is_featured;
                 delete updateProduct.is_new;
-                await base44.entities.Product.update(duplicate.id, updateProduct);
+                await appApi.entities.Product.update(duplicate.id, updateProduct);
                 counts.updated += 1;
               }
             } else if (action === 'update') {
               counts.skipped += 1;
             } else {
-              await base44.entities.Product.create(product);
+              await appApi.entities.Product.create(product);
               counts.created += 1;
             }
           }
@@ -326,7 +326,7 @@ export default function BulkBookImport() {
         }
         setProgress(Math.round(((i + 1) / rows.length) * 100));
       }
-      await base44.entities.ImportHistory.create({
+      await appApi.entities.ImportHistory.create({
         file_name: workbookFile.name,
         import_type: 'bulk_books',
         categories_imported: summary.map((item) => item.category),
@@ -362,12 +362,12 @@ export default function BulkBookImport() {
           const data = quickMode === 'prices'
             ? { price: numberValue(row.Price), sale_price: numberValue(row.SalePrice), is_on_sale: numberValue(row.SalePrice) > 0 }
             : { stock_quantity: numberValue(row.StockQuantity), in_stock: numberValue(row.StockQuantity) > 0 };
-          await base44.entities.Product.update(match.id, data);
+          await appApi.entities.Product.update(match.id, data);
           counts.updated += 1;
         }
         setProgress(Math.round(((i + 1) / rows.length) * 100));
       }
-      await base44.entities.ImportHistory.create({
+      await appApi.entities.ImportHistory.create({
         file_name: workbookFile.name,
         import_type: quickMode === 'prices' ? 'price_update' : 'inventory_update',
         categories_imported: [],

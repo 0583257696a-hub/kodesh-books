@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Mail, MessageCircle } from 'lucide-react';
 import { buildAbandonedCarts, buildLeads, currency, safeDate } from '@/lib/businessCenterData';
 
 const q = async (entity, fallback = []) => {
   try {
-    return await base44.entities[entity].list('-created_date', entity === 'Product' ? 10000 : 500);
+    return await appApi.entities[entity].list('-created_date', entity === 'Product' ? 10000 : 500);
   } catch {
     return fallback;
   }

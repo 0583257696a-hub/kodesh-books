@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery } from '@tanstack/react-query';
 import { Bar, BarChart, CartesianGrid, Cell, Funnel, FunnelChart, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Activity, Search, ShoppingCart, Target, TrendingUp, Users } from 'lucide-react';
@@ -8,7 +8,7 @@ import { getLocalAnalyticsEvents } from '@/lib/ecommerceTracking';
 
 const q = async (entity, fallback = []) => {
   try {
-    return await base44.entities[entity].list('-created_date', 500);
+    return await appApi.entities[entity].list('-created_date', 500);
   } catch {
     return fallback;
   }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,18 +16,18 @@ export default function AdminCoupons() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...EMPTY });
 
-  const { data: coupons = [] } = useQuery({ queryKey: ['admin-coupons'], queryFn: () => base44.entities.Coupon.list('-created_date', 200) });
+  const { data: coupons = [] } = useQuery({ queryKey: ['admin-coupons'], queryFn: () => appApi.entities.Coupon.list('-created_date', 200) });
 
   const createM = useMutation({
-    mutationFn: (data) => base44.entities.Coupon.create(data),
+    mutationFn: (data) => appApi.entities.Coupon.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
       setOpen(false);
       setForm({ ...EMPTY });
     },
   });
-  const deleteM = useMutation({ mutationFn: (id) => base44.entities.Coupon.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] }) });
-  const toggleM = useMutation({ mutationFn: ({ id, is_active }) => base44.entities.Coupon.update(id, { is_active }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] }) });
+  const deleteM = useMutation({ mutationFn: (id) => appApi.entities.Coupon.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] }) });
+  const toggleM = useMutation({ mutationFn: ({ id, is_active }) => appApi.entities.Coupon.update(id, { is_active }), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] }) });
 
   const generateCode = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

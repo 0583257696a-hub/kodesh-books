@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 
 const STORAGE_KEY = 'otzar_analytics_events';
 const ANALYTICS_EVENT_TYPE_FALLBACKS = {
@@ -54,8 +54,8 @@ export async function trackEcommerceEvent(event) {
   } catch {}
 
   try {
-    if (base44.entities.AnalyticsEvent?.create) {
-      await base44.entities.AnalyticsEvent.create({
+    if (appApi.entities.AnalyticsEvent?.create) {
+      await appApi.entities.AnalyticsEvent.create({
         ...payload,
         event_type: ANALYTICS_EVENT_TYPE_FALLBACKS[payload.event_type] || payload.event_type,
       });

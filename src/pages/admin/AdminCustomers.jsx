@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ export default function AdminCustomers() {
   const [successMsg, setSuccessMsg] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: users = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => base44.entities.User.list('-created_date', 500) });
+  const { data: users = [] } = useQuery({ queryKey: ['admin-users'], queryFn: () => appApi.entities.User.list('-created_date', 500) });
   const { data: orders = [] } = useQuery({ queryKey: ['admin-orders'], queryFn: listAdminOrders });
 
   const getUserOrders = (user) => orders.filter((order) => order.customer_email === user.email || order.created_by_id === user.id);
@@ -27,7 +27,7 @@ export default function AdminCustomers() {
   const handleSetRole = async (userId, newRole) => {
     setLoading(true);
     try {
-      await base44.functions.invoke('adminUserManagement', { action: 'setRole', userId, newRole });
+      await appApi.users.setRole(userId, newRole);
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setSuccessMsg(`תפקיד עודכן ל-${newRole === 'admin' ? 'מנהל' : 'לקוח'}`);
       setTimeout(() => setSuccessMsg(''), 3000);
@@ -42,7 +42,7 @@ export default function AdminCustomers() {
   const handleSendPasswordReset = async (userId, targetEmail) => {
     setLoading(true);
     try {
-      await base44.auth.resetPasswordRequest(targetEmail);
+      await appApi.auth.resetPasswordRequest(targetEmail);
       setSuccessMsg(`נשלח מייל לאיפוס סיסמה ל-${targetEmail}`);
       setEditingUser(null);
       setTimeout(() => setSuccessMsg(''), 4000);

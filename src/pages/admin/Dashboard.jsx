@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery } from '@tanstack/react-query';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { format, isToday, startOfMonth, subDays } from 'date-fns';
@@ -10,7 +10,7 @@ import { calculateOrderProfit, normalizeOrderStatus } from '@/lib/orderWorkflow'
 
 const q = async (entity, fallback = []) => {
   try {
-    return await base44.entities[entity].list('-created_date', entity === 'Product' ? 10000 : 500);
+    return await appApi.entities[entity].list('-created_date', entity === 'Product' ? 10000 : 500);
   } catch {
     return fallback;
   }

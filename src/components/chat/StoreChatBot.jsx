@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bot, BookOpen, MessageCircle, Send, ShoppingCart, UserRound, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -246,19 +246,19 @@ export default function StoreChatBot() {
   const { data: faqs = [] } = useQuery({
     queryKey: ['chat-faq'],
     queryFn: () => listEntitySafely('ChatFAQ', '-created_date', 200),
-    enabled: enabled && !!base44.entities.ChatFAQ,
+    enabled: enabled && !!appApi.entities.ChatFAQ,
   });
 
   const { data: synonyms = [] } = useQuery({
     queryKey: ['chat-synonyms'],
     queryFn: () => listEntitySafely('SearchSynonym', '-priority', 500),
-    enabled: enabled && !!base44.entities.SearchSynonym,
+    enabled: enabled && !!appApi.entities.SearchSynonym,
   });
 
   const { data: rules = [] } = useQuery({
     queryKey: ['chat-recommendation-rules'],
     queryFn: () => listEntitySafely('RecommendationRule', '-priority', 200),
-    enabled: enabled && !!base44.entities.RecommendationRule,
+    enabled: enabled && !!appApi.entities.RecommendationRule,
   });
 
   const suggestions = useMemo(() => {
@@ -273,8 +273,8 @@ export default function StoreChatBot() {
 
   const ensureSession = async () => {
     if (sessionId) return sessionId;
-    if (!base44.entities.ChatSession?.create) return null;
-    const created = await base44.entities.ChatSession.create({
+    if (!appApi.entities.ChatSession?.create) return null;
+    const created = await appApi.entities.ChatSession.create({
       visitor_id: visitorId,
       started_at: new Date().toISOString(),
       searches_count: 0,
@@ -286,8 +286,8 @@ export default function StoreChatBot() {
   const saveMessage = async (role, text, intent = 'general', matchedProducts = []) => {
     try {
       const sid = await ensureSession();
-      if (!base44.entities.ChatMessage?.create) return;
-      await base44.entities.ChatMessage.create({
+      if (!appApi.entities.ChatMessage?.create) return;
+      await appApi.entities.ChatMessage.create({
         session_id: sid,
         visitor_id: visitorId,
         role,
@@ -301,8 +301,8 @@ export default function StoreChatBot() {
 
   const saveSearchAnalytics = async (term, results, session) => {
     try {
-      if (!base44.entities.SearchAnalytics?.create) return null;
-      const created = await base44.entities.SearchAnalytics.create({
+      if (!appApi.entities.SearchAnalytics?.create) return null;
+      const created = await appApi.entities.SearchAnalytics.create({
         search_term: term,
         normalized_term: normalize(term),
         visitor_id: visitorId,
@@ -311,8 +311,8 @@ export default function StoreChatBot() {
         found_results: results.length > 0,
         created_at: new Date().toISOString(),
       });
-      if (results.length === 0 && base44.entities.MissingSearch?.create) {
-        await base44.entities.MissingSearch.create({
+      if (results.length === 0 && appApi.entities.MissingSearch?.create) {
+        await appApi.entities.MissingSearch.create({
           search_term: term,
           normalized_term: normalize(term),
           count: 1,
@@ -328,11 +328,11 @@ export default function StoreChatBot() {
 
   const trackProductAction = async (field, product) => {
     try {
-      if (lastSearchId && base44.entities.SearchAnalytics?.update) {
-        await base44.entities.SearchAnalytics.update(lastSearchId, { [field]: product.id });
-      } else if (base44.entities.SearchAnalytics?.create) {
+      if (lastSearchId && appApi.entities.SearchAnalytics?.update) {
+        await appApi.entities.SearchAnalytics.update(lastSearchId, { [field]: product.id });
+      } else if (appApi.entities.SearchAnalytics?.create) {
         const sid = await ensureSession();
-        await base44.entities.SearchAnalytics.create({
+        await appApi.entities.SearchAnalytics.create({
           search_term: field === 'clicked_product_id' ? 'product_click' : 'bot_add_to_cart',
           normalized_term: field,
           visitor_id: visitorId,
@@ -410,7 +410,7 @@ export default function StoreChatBot() {
     if (!lead.phone.trim()) return;
     try {
       const sid = await ensureSession();
-      await base44.entities.ChatLead.create({
+      await appApi.entities.ChatLead.create({
         ...lead,
         session_id: sid,
         visitor_id: visitorId,

@@ -4,13 +4,13 @@ import { CATEGORIES, CATEGORY_MAP, CATEGORY_NAME_TO_ID } from '@/lib/categories'
 import { listCategories } from '@/services/catalogService';
 
 export const CATEGORY_IMAGES = {
-  chumashim: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/c7956dabc_generated_58adb81d.png',
-  gemarot: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/522a640b6_generated_aae8d1f9.png',
-  halacha: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/492a71714_generated_ef0436d4.png',
-  chassidut: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f0982ad6d_generated_8f79bc9b.png',
-  kids: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/cd371a324_generated_686fa02d.png',
-  siddurim: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/f910326d1_generated_d7cb5ac1.png',
-  gifts: 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/0d11dfa5e_generated_df9cd4ac.png',
+  chumashim: '/assets/static/category-chumashim.png',
+  gemarot: '/assets/static/category-gemarot.png',
+  halacha: '/assets/static/category-halacha.png',
+  chassidut: '/assets/static/category-chassidut.png',
+  kids: '/assets/static/category-kids.png',
+  siddurim: '/assets/static/category-siddurim.png',
+  gifts: '/assets/static/category-gifts.png',
 };
 
 const DEFAULT_CATEGORY_IDS = new Set(CATEGORIES.map((category) => category.id));

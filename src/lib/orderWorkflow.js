@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 
 export const ORDER_STATUSES = {
   new: { label: 'חדש', tone: 'bg-amber-50 text-amber-700 border-amber-100' },
@@ -143,55 +143,6 @@ export function calculateOrderProfit(order) {
   };
 }
 
-export async function sendManagedEmail(settings, payload) {
-  const enabledKey = payload.enabledKey;
-  if (enabledKey && settings?.[enabledKey] === 'false') return { skipped: true };
-
-  try {
-    if (base44.functions?.invoke) {
-      const result = await base44.functions.invoke('sendOrderEmail', payload);
-      const data = result?.data || result;
-      if (data?.skipped) return { skipped: true, result };
-      return { sent: true, result };
-    }
-  } catch (error) {
-    try {
-      if (base44.entities.EmailNotification?.create) {
-        await base44.entities.EmailNotification.create({
-          type: payload.type,
-          to: payload.to,
-          subject: payload.subject,
-          body: payload.body,
-          status: 'failed',
-          provider: 'sendOrderEmail',
-          related_id: payload.order_id,
-          error: error.message || 'Email function failed',
-          created_at: new Date().toISOString(),
-        });
-      }
-    } catch {}
-    return { failed: true, error: error.message || 'Email function failed' };
-  }
-
-  try {
-    if (base44.entities.EmailNotification?.create) {
-      await base44.entities.EmailNotification.create({
-        type: payload.type,
-        to: payload.to,
-        subject: payload.subject,
-        body: payload.body,
-        status: 'failed',
-        provider: 'sendOrderEmail',
-        related_id: payload.order_id,
-        error: 'Email function is unavailable',
-        created_at: new Date().toISOString(),
-      });
-    }
-  } catch {}
-
-  return { failed: true, error: 'Email function is unavailable' };
-}
-
 export function buildOrderPrintHtml(order, settings = {}) {
   const storeName = settings.store_name || 'אוצר הקדושה';
   const storePhone = settings.phone || '';
@@ -331,7 +282,7 @@ export async function reserveStockForItems(items, options = {}) {
   const enrichedItems = [];
 
   for (const item of items) {
-    const product = (await base44.entities.Product.filter({ id: item.product_id }, '-created_date', 1))?.[0];
+    const product = (await appApi.entities.Product.filter({ id: item.product_id }, '-created_date', 1))?.[0];
     if (!product) throw new Error(`המוצר ${item.product_name} לא נמצא במערכת.`);
 
     const quantity = Number(item.quantity || 0);
@@ -344,7 +295,7 @@ export async function reserveStockForItems(items, options = {}) {
 
     if (enforceStock && hasStockCount) {
       const nextStock = Math.max(0, currentStock - quantity);
-      await base44.entities.Product.update(product.id, {
+      await appApi.entities.Product.update(product.id, {
         stock_quantity: nextStock,
         in_stock: nextStock > 0,
       });
@@ -366,10 +317,10 @@ export async function reserveStockForItems(items, options = {}) {
 export async function restoreReservedStock(order) {
   const reservations = order.stock_reservations || [];
   for (const reservation of reservations) {
-    const product = (await base44.entities.Product.filter({ id: reservation.product_id }, '-created_date', 1))?.[0];
+    const product = (await appApi.entities.Product.filter({ id: reservation.product_id }, '-created_date', 1))?.[0];
     if (!product) continue;
     const nextStock = Number(product.stock_quantity || 0) + Number(reservation.quantity || 0);
-    await base44.entities.Product.update(product.id, {
+    await appApi.entities.Product.update(product.id, {
       stock_quantity: nextStock,
       in_stock: nextStock > 0,
     });

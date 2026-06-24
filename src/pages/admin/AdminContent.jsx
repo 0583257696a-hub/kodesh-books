@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +39,7 @@ export default function AdminContent() {
   const [savingKey, setSavingKey] = useState('');
   const [contentMessage, setContentMessage] = useState('');
 
-  const { data: settings = [] } = useQuery({ queryKey: ['site-settings'], queryFn: () => base44.entities.SiteSettings.list() });
+  const { data: settings = [] } = useQuery({ queryKey: ['site-settings'], queryFn: () => appApi.entities.SiteSettings.list() });
   const settingsMap = useMemo(() => settings.reduce((map, setting) => {
     if (setting?.key) map[setting.key] = setting;
     return map;
@@ -58,7 +58,7 @@ export default function AdminContent() {
   }, [settingsMap]);
 
   const createM = useMutation({
-    mutationFn: (data) => base44.entities.SiteSettings.create(data),
+    mutationFn: (data) => appApi.entities.SiteSettings.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
       setOpen(false);
@@ -66,7 +66,7 @@ export default function AdminContent() {
   });
 
   const deleteM = useMutation({
-    mutationFn: (id) => base44.entities.SiteSettings.delete(id),
+    mutationFn: (id) => appApi.entities.SiteSettings.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['site-settings'] }),
   });
 
@@ -74,7 +74,7 @@ export default function AdminContent() {
     const file = event.target.files[0];
     if (!file) return;
     setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const { file_url } = await appApi.uploads.uploadFile({ file });
     setForm((current) => ({ ...current, image_url: file_url }));
     setUploading(false);
   };
@@ -87,7 +87,7 @@ export default function AdminContent() {
   const saveTopBanner = (text) => {
     const existing = settings.find((setting) => setting.key === 'top_banner');
     if (existing) {
-      base44.entities.SiteSettings.update(existing.id, { value: text }).then(() => queryClient.invalidateQueries({ queryKey: ['site-settings'] }));
+      appApi.entities.SiteSettings.update(existing.id, { value: text }).then(() => queryClient.invalidateQueries({ queryKey: ['site-settings'] }));
     } else {
       createM.mutate({ key: 'top_banner', value: text, label: 'הודעה עליונה' });
     }
@@ -109,9 +109,9 @@ export default function AdminContent() {
       const existing = settingsMap[field.key];
       const value = contentValues[field.key] ?? '';
       if (existing?.id) {
-        await base44.entities.SiteSettings.update(existing.id, { value });
+        await appApi.entities.SiteSettings.update(existing.id, { value });
       } else {
-        await base44.entities.SiteSettings.create({ key: field.key, value, label: field.label });
+        await appApi.entities.SiteSettings.create({ key: field.key, value, label: field.label });
       }
       setContentMessage('השדה נשמר בהצלחה.');
       await queryClient.invalidateQueries({ queryKey: ['site-settings'] });

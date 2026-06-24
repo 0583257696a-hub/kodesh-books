@@ -41,7 +41,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <img 
-            src="https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/2fdbeca5e_WhatsAppImage2026-05-29at170557.jpeg" 
+            src="/assets/static/admin-login-logo.jpeg" 
             alt="אוצר הקדושה" 
             className="h-20 object-contain mx-auto mb-5 drop-shadow-lg"
           />

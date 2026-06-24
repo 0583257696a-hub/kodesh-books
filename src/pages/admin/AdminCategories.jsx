@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -37,7 +37,7 @@ export default function AdminCategories() {
 
   const { data: storedCategories = [], isLoading } = useQuery({
     queryKey: ['store-categories-admin'],
-    queryFn: () => base44.entities.StoreCategory.list('display_order', 500),
+    queryFn: () => appApi.entities.StoreCategory.list('display_order', 500),
     retry: false,
   });
 
@@ -58,15 +58,15 @@ export default function AdminCategories() {
       };
 
       if (category.record_id) {
-        return base44.entities.StoreCategory.update(category.record_id, payload);
+        return appApi.entities.StoreCategory.update(category.record_id, payload);
       }
 
       const existing = storedCategories.find((item) => item.slug === payload.slug);
       if (existing) {
-        return base44.entities.StoreCategory.update(existing.id, payload);
+        return appApi.entities.StoreCategory.update(existing.id, payload);
       }
 
-      return base44.entities.StoreCategory.create(payload);
+      return appApi.entities.StoreCategory.create(payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['store-categories'] });
@@ -97,14 +97,14 @@ export default function AdminCategories() {
         };
 
         if (category.record_id) {
-          return base44.entities.StoreCategory.update(category.record_id, payload);
+          return appApi.entities.StoreCategory.update(category.record_id, payload);
         }
 
-        return base44.entities.StoreCategory.create(payload);
+        return appApi.entities.StoreCategory.create(payload);
       }
 
       if (category.record_id) {
-        return base44.entities.StoreCategory.delete(category.record_id);
+        return appApi.entities.StoreCategory.delete(category.record_id);
       }
 
       return null;
@@ -120,7 +120,7 @@ export default function AdminCategories() {
     if (!file) return;
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await appApi.uploads.uploadFile({ file });
       setEditItem((current) => ({ ...current, image_url: file_url }));
     } finally {
       setUploading(false);

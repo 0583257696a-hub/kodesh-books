@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,31 +25,31 @@ export default function Admin() {
 
   const { data: products = [], isLoading: loadingProducts } = useQuery({
     queryKey: ['admin-products'],
-    queryFn: () => base44.entities.Product.list('-created_date', 500),
+    queryFn: () => appApi.entities.Product.list('-created_date', 500),
   });
 
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
     queryKey: ['admin-orders'],
-    queryFn: () => base44.entities.Order.list('-created_date', 200),
+    queryFn: () => appApi.entities.Order.list('-created_date', 200),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Product.create(data),
+    mutationFn: (data) => appApi.entities.Product.create(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); setDialogOpen(false); setEditProduct(null); },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Product.update(id, data),
+    mutationFn: ({ id, data }) => appApi.entities.Product.update(id, data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin-products'] }); setDialogOpen(false); setEditProduct(null); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Product.delete(id),
+    mutationFn: (id) => appApi.entities.Product.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-products'] }),
   });
 
   const updateOrderMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Order.update(id, data),
+    mutationFn: ({ id, data }) => appApi.entities.Order.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-orders'] }),
   });
 

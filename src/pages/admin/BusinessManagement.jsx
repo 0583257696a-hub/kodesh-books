@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Building2, CreditCard, LineChart, Plus, ReceiptText, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
@@ -13,7 +13,7 @@ import { getLocalAnalyticsEvents } from '@/lib/ecommerceTracking';
 
 const q = async (entity, fallback = []) => {
   try {
-    return await base44.entities[entity].list('-created_date', 500);
+    return await appApi.entities[entity].list('-created_date', 500);
   } catch {
     return fallback;
   }
@@ -153,12 +153,12 @@ export default function BusinessManagement() {
   }, [data, hiddenExpenseIds, hiddenIncomeIds, manualExpenses, manualIncome]);
 
   const deleteIncomeM = useMutation({
-    mutationFn: (id) => base44.entities.BusinessIncome.delete(id),
+    mutationFn: (id) => appApi.entities.BusinessIncome.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['business-management-center'] }),
   });
 
   const deleteExpenseM = useMutation({
-    mutationFn: (id) => base44.entities.BusinessExpense.delete(id),
+    mutationFn: (id) => appApi.entities.BusinessExpense.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['business-management-center'] }),
   });
 

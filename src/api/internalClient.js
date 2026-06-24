@@ -113,22 +113,14 @@ async function uploadFile({ file }) {
   return { file_url: image?.image_url || '' };
 }
 
-export const base44 = {
+export const appApi = {
   entities,
-  integrations: {
-    Core: {
-      UploadFile: uploadFile,
-    },
+  uploads: {
+    uploadFile,
   },
-  functions: {
-    async invoke(name, payload = {}) {
-      if (name === 'adminUserManagement' && payload.action === 'setRole') {
-        return entities.User.update(payload.userId, { role: payload.newRole });
-      }
-      if (name === 'sendOrderEmail') {
-        return { ok: true, skipped: true };
-      }
-      throw new Error(`Unsupported internal function: ${name}`);
+  users: {
+    async setRole(userId, newRole) {
+      return entities.User.update(userId, { role: newRole });
     },
   },
   auth: {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,12 +57,12 @@ export default function AdminSettings() {
 
   const { data: settings = [] } = useQuery({
     queryKey: ['site-settings'],
-    queryFn: () => base44.entities.SiteSettings.list(),
+    queryFn: () => appApi.entities.SiteSettings.list(),
   });
 
   const { data: users = [] } = useQuery({
     queryKey: ['admin-users'],
-    queryFn: () => base44.entities.User.list('-created_date', 500),
+    queryFn: () => appApi.entities.User.list('-created_date', 500),
   });
 
   useEffect(() => {
@@ -81,9 +81,9 @@ export default function AdminSettings() {
     try {
       const existing = settings.find((setting) => setting.key === key);
       if (existing) {
-        await base44.entities.SiteSettings.update(existing.id, { value: values[key] || '' });
+        await appApi.entities.SiteSettings.update(existing.id, { value: values[key] || '' });
       } else {
-        await base44.entities.SiteSettings.create({
+        await appApi.entities.SiteSettings.create({
           key,
           value: values[key] || '',
           label: FIELDS.find((field) => field.key === key)?.label || key,
@@ -109,18 +109,18 @@ export default function AdminSettings() {
 
     setCreatingUser(true);
     try {
-      await base44.auth.register({
+      await appApi.auth.register({
         email: newUser.email,
         password: newUser.password,
         full_name: newUser.full_name,
         role: newUser.role,
       });
 
-      const matches = await base44.entities.User.filter({ email: newUser.email }, '-created_date', 1);
+      const matches = await appApi.entities.User.filter({ email: newUser.email }, '-created_date', 1);
       const created = matches?.[0];
 
       if (created?.id) {
-        await base44.entities.User.update(created.id, {
+        await appApi.entities.User.update(created.id, {
           full_name: newUser.full_name,
           role: newUser.role,
         });
@@ -143,7 +143,7 @@ export default function AdminSettings() {
     setDeletingUserId(user.id);
     setUserMessage('');
     try {
-      await base44.entities.User.delete(user.id);
+      await appApi.entities.User.delete(user.id);
       setUserMessage('המשתמש הוסר בהצלחה.');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     } catch (error) {

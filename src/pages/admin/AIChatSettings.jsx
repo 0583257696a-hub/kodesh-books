@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BarChart3, Bot, Link2, MessageSquare, Plus, Save, Sparkles, Trash2, UserRound } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -82,16 +82,16 @@ export default function AIChatSettings() {
   const [synonymForm, setSynonymForm] = useState({ term: '', equivalent_term: '', priority: 1, active: true });
   const [ruleForm, setRuleForm] = useState({ trigger_term: '', recommended_tags: '', priority: 1, active: true });
 
-  const { data: settings = [] } = useQuery({ queryKey: ['site-settings'], queryFn: () => base44.entities.SiteSettings.list() });
-  const { data: faqs = [] } = useQuery({ queryKey: ['chat-faq-admin'], queryFn: () => base44.entities.ChatFAQ.list('-created_date', 200) });
-  const { data: sessions = [] } = useQuery({ queryKey: ['chat-sessions-admin'], queryFn: () => base44.entities.ChatSession.list('-created_date', 200) });
-  const { data: messages = [] } = useQuery({ queryKey: ['chat-messages-admin'], queryFn: () => base44.entities.ChatMessage.list('-created_date', 500) });
-  const { data: leads = [] } = useQuery({ queryKey: ['chat-leads-admin'], queryFn: () => base44.entities.ChatLead.list('-created_date', 200) });
-  const { data: searches = [] } = useQuery({ queryKey: ['search-analytics-admin'], queryFn: () => base44.entities.SearchAnalytics.list('-created_at', 1000) });
-  const { data: missing = [] } = useQuery({ queryKey: ['missing-searches-admin'], queryFn: () => base44.entities.MissingSearch.list('-created_at', 1000) });
-  const { data: synonyms = [] } = useQuery({ queryKey: ['chat-synonyms-admin'], queryFn: () => base44.entities.SearchSynonym.list('-priority', 500) });
-  const { data: rules = [] } = useQuery({ queryKey: ['chat-rules-admin'], queryFn: () => base44.entities.RecommendationRule.list('-priority', 200) });
-  const { data: products = [] } = useQuery({ queryKey: ['admin-products-chat-intelligence'], queryFn: () => base44.entities.Product.list('-created_date', 10000) });
+  const { data: settings = [] } = useQuery({ queryKey: ['site-settings'], queryFn: () => appApi.entities.SiteSettings.list() });
+  const { data: faqs = [] } = useQuery({ queryKey: ['chat-faq-admin'], queryFn: () => appApi.entities.ChatFAQ.list('-created_date', 200) });
+  const { data: sessions = [] } = useQuery({ queryKey: ['chat-sessions-admin'], queryFn: () => appApi.entities.ChatSession.list('-created_date', 200) });
+  const { data: messages = [] } = useQuery({ queryKey: ['chat-messages-admin'], queryFn: () => appApi.entities.ChatMessage.list('-created_date', 500) });
+  const { data: leads = [] } = useQuery({ queryKey: ['chat-leads-admin'], queryFn: () => appApi.entities.ChatLead.list('-created_date', 200) });
+  const { data: searches = [] } = useQuery({ queryKey: ['search-analytics-admin'], queryFn: () => appApi.entities.SearchAnalytics.list('-created_at', 1000) });
+  const { data: missing = [] } = useQuery({ queryKey: ['missing-searches-admin'], queryFn: () => appApi.entities.MissingSearch.list('-created_at', 1000) });
+  const { data: synonyms = [] } = useQuery({ queryKey: ['chat-synonyms-admin'], queryFn: () => appApi.entities.SearchSynonym.list('-priority', 500) });
+  const { data: rules = [] } = useQuery({ queryKey: ['chat-rules-admin'], queryFn: () => appApi.entities.RecommendationRule.list('-priority', 200) });
+  const { data: products = [] } = useQuery({ queryKey: ['admin-products-chat-intelligence'], queryFn: () => appApi.entities.Product.list('-created_date', 10000) });
 
   const settingsMap = useMemo(() => settingsToMap(settings), [settings]);
   const activeFaqs = faqs.filter((faq) => faq.is_active !== false);
@@ -129,9 +129,9 @@ export default function AIChatSettings() {
         const value = key === 'ai_chat_enabled' ? String(settingsForm[key]) : settingsForm[key];
         const existing = settingsMap[key];
         if (existing) {
-          await base44.entities.SiteSettings.update(existing.id, { value });
+          await appApi.entities.SiteSettings.update(existing.id, { value });
         } else {
-          await base44.entities.SiteSettings.create({ key, value, label: key });
+          await appApi.entities.SiteSettings.create({ key, value, label: key });
         }
       }
     },
@@ -139,7 +139,7 @@ export default function AIChatSettings() {
   });
 
   const createFaq = useMutation({
-    mutationFn: (data) => base44.entities.ChatFAQ.create(data),
+    mutationFn: (data) => appApi.entities.ChatFAQ.create(data),
     onSuccess: () => {
       setFaqForm({ question: '', answer: '', category: 'כללי', is_active: true });
       queryClient.invalidateQueries({ queryKey: ['chat-faq-admin'] });
@@ -148,7 +148,7 @@ export default function AIChatSettings() {
   });
 
   const deleteFaq = useMutation({
-    mutationFn: (id) => base44.entities.ChatFAQ.delete(id),
+    mutationFn: (id) => appApi.entities.ChatFAQ.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat-faq-admin'] });
       queryClient.invalidateQueries({ queryKey: ['chat-faq'] });
@@ -156,7 +156,7 @@ export default function AIChatSettings() {
   });
 
   const createSynonym = useMutation({
-    mutationFn: (data) => base44.entities.SearchSynonym.create({ ...data, priority: Number(data.priority || 1) }),
+    mutationFn: (data) => appApi.entities.SearchSynonym.create({ ...data, priority: Number(data.priority || 1) }),
     onSuccess: () => {
       setSynonymForm({ term: '', equivalent_term: '', priority: 1, active: true });
       queryClient.invalidateQueries({ queryKey: ['chat-synonyms-admin'] });
@@ -165,7 +165,7 @@ export default function AIChatSettings() {
   });
 
   const deleteSynonym = useMutation({
-    mutationFn: (id) => base44.entities.SearchSynonym.delete(id),
+    mutationFn: (id) => appApi.entities.SearchSynonym.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat-synonyms-admin'] });
       queryClient.invalidateQueries({ queryKey: ['chat-synonyms'] });
@@ -173,7 +173,7 @@ export default function AIChatSettings() {
   });
 
   const createRule = useMutation({
-    mutationFn: (data) => base44.entities.RecommendationRule.create({
+    mutationFn: (data) => appApi.entities.RecommendationRule.create({
       trigger_term: data.trigger_term,
       recommended_tags: data.recommended_tags.split(',').map((tag) => tag.trim()).filter(Boolean),
       priority: Number(data.priority || 1),
@@ -187,7 +187,7 @@ export default function AIChatSettings() {
   });
 
   const deleteRule = useMutation({
-    mutationFn: (id) => base44.entities.RecommendationRule.delete(id),
+    mutationFn: (id) => appApi.entities.RecommendationRule.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat-rules-admin'] });
       queryClient.invalidateQueries({ queryKey: ['chat-recommendation-rules'] });

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Tag, Sparkles } from 'lucide-react';
 
-const PROMO_IMAGE = 'https://media.base44.com/images/public/6a16fe7abf75ec5b5710e703/90ae3e7c0_generated_99e32cc5.png';
+const PROMO_IMAGE = '/assets/static/home-promo.png';
 
 export default function PromoBanner() {
   return (

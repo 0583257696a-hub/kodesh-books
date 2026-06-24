@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/internalClient';
 
 export function asArray(value) {
   if (Array.isArray(value)) return value;
@@ -10,7 +10,7 @@ export function asArray(value) {
 }
 
 export async function listEntitySafely(entityName, ...args) {
-  const entity = base44.entities?.[entityName];
+  const entity = appApi.entities?.[entityName];
   if (!entity?.list) return [];
 
   try {
