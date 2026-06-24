@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, ShoppingCart, BookOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/CartContext';
 import { listProducts } from '@/services/catalogService';
 

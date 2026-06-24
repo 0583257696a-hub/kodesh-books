@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bot, BookOpen, MessageCircle, Send, ShoppingCart, UserRound, X } from 'lucide-react';
+import { Bot, BookOpen, MessageCircle, Send, ShoppingCart, X } from 'lucide-react';
 import { appApi } from '@/api/internalClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

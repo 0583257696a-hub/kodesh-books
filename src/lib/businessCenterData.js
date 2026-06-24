@@ -48,6 +48,39 @@ export function buildLeads({ users = [], orders = [], products = [], leads = [],
     orderByEmail.set(email, current);
   });
 
+  const storedLeads = leads.map((lead, index) => ({
+    id: lead.id || `lead-${index}`,
+    full_name: first(lead.full_name, lead.name, 'New lead'),
+    email: first(lead.email, 'lead@example.com'),
+    phone: first(lead.phone, ''),
+    registration_date: lead.registration_date || lead.created_date,
+    last_activity: lead.last_activity || lead.last_activity_at || lead.updated_date || lead.created_date,
+    cart_value: money(lead.cart_value),
+    products_in_cart: Array.isArray(lead.products_in_cart) ? lead.products_in_cart : [],
+    status: lead.status || 'New Visitor',
+    notes: lead.notes || lead.message || '',
+    source: lead.source || 'lead',
+  }));
+  const storedLeadById = new Map(storedLeads.map((lead) => [lead.id, lead]));
+
+  const mergeStoredLead = (lead) => {
+    const stored = storedLeadById.get(lead.id);
+    if (!stored) return lead;
+
+    return {
+      ...lead,
+      status: stored.status || lead.status,
+      notes: stored.notes ?? lead.notes,
+      full_name: first(stored.full_name, lead.full_name),
+      email: first(stored.email, lead.email),
+      phone: first(stored.phone, lead.phone),
+      registration_date: first(stored.registration_date, lead.registration_date),
+      last_activity: first(stored.last_activity, lead.last_activity),
+      cart_value: stored.cart_value || lead.cart_value,
+      products_in_cart: stored.products_in_cart?.length ? stored.products_in_cart : lead.products_in_cart,
+    };
+  };
+
   const userLeads = users.map((user, index) => {
     const userOrders = orderByEmail.get(user.email) || orders.filter((order) => order.created_by_id === user.id);
     const latestOrder = userOrders[0];
@@ -64,7 +97,7 @@ export function buildLeads({ users = [], orders = [], products = [], leads = [],
     else if (cartEvents.length) status = 'Added Product To Cart';
     if (cartEvents.length && !userOrders.length && isAfter(subDays(new Date(), 2), lastActivity)) status = 'Abandoned Cart';
 
-    return {
+    return mergeStoredLead({
       id: user.id || `user-${index}`,
       full_name: first(user.full_name, user.email, 'Customer'),
       email: first(user.email, 'unknown@example.com'),
@@ -76,12 +109,12 @@ export function buildLeads({ users = [], orders = [], products = [], leads = [],
       status,
       notes: user.notes || '',
       source: 'user',
-    };
+    });
   });
 
   const orderLeads = orders
     .filter((order) => order.customer_email && !users.some((user) => user.email === order.customer_email))
-    .map((order, index) => ({
+    .map((order, index) => mergeStoredLead({
       id: `order-lead-${order.id || index}`,
       full_name: first(order.customer_name, 'Guest customer'),
       email: first(order.customer_email, 'guest@example.com'),
@@ -95,39 +128,14 @@ export function buildLeads({ users = [], orders = [], products = [], leads = [],
       source: 'order',
     }));
 
-  const storedLeads = leads.map((lead, index) => ({
-    id: lead.id || `lead-${index}`,
-    full_name: first(lead.full_name, 'New lead'),
-    email: first(lead.email, 'lead@example.com'),
-    phone: first(lead.phone, ''),
-    registration_date: lead.registration_date || lead.created_date,
-    last_activity: lead.last_activity || lead.updated_date || lead.created_date,
-    cart_value: money(lead.cart_value),
-    products_in_cart: lead.products_in_cart || [],
-    status: lead.status || 'New Visitor',
-    notes: lead.notes || '',
-    source: 'lead',
-  }));
-
-  const combined = [...storedLeads, ...userLeads, ...orderLeads];
+  const generatedLeadIds = new Set([...userLeads, ...orderLeads].map((lead) => lead.id));
+  const combined = [...userLeads, ...orderLeads, ...storedLeads.filter((lead) => !generatedLeadIds.has(lead.id))];
 
   if (combined.length) {
     return combined.sort((a, b) => safeDate(b.last_activity).getTime() - safeDate(a.last_activity).getTime());
   }
 
-  return products.slice(0, 8).map((product, index) => ({
-    id: `sample-${product.id || index}`,
-    full_name: ['David Cohen', 'Ari Levi', 'Miriam Weiss', 'Noam Azulay'][index % 4],
-    email: `customer${index + 1}@example.com`,
-    phone: `05${index + 2}-555-01${index}${index}`,
-    registration_date: subDays(new Date(), index + 2).toISOString(),
-    last_activity: subDays(new Date(), index).toISOString(),
-    cart_value: money(product.sale_price || product.price) * (index + 1),
-    products_in_cart: [product.name],
-    status: LEAD_STATUSES[(index + 2) % LEAD_STATUSES.length],
-    notes: index % 2 ? 'Asked for delivery timing.' : 'High intent lead.',
-    source: 'sample',
-  }));
+  return [];
 }
 
 export function buildAbandonedCarts(leads) {
@@ -152,13 +160,7 @@ export function buildIncomeRows(orders = [], storedIncome = []) {
 
 export function buildExpenseRows(storedExpenses = []) {
   if (storedExpenses.length) return storedExpenses;
-
-  return [
-    { id: 'exp-1', date: subDays(new Date(), 3).toISOString(), category: 'פרסום', supplier: 'קמפיינים', amount: 1850, notes: 'קידום מכירות חודשי' },
-    { id: 'exp-2', date: subDays(new Date(), 7).toISOString(), category: 'תוכנה', supplier: 'מערכת האתר', amount: 420, notes: 'תשתית האתר' },
-    { id: 'exp-3', date: subDays(new Date(), 11).toISOString(), category: 'אחסון', supplier: 'Vercel', amount: 260, notes: 'אחסון האתר' },
-    { id: 'exp-4', date: subDays(new Date(), 18).toISOString(), category: 'משרד', supplier: 'אריזות למשלוחים', amount: 690, notes: 'ציוד אריזה' },
-  ];
+  return [];
 }
 
 export function businessKpis({ orders = [], users = [], leads = [], expenses = [] }) {

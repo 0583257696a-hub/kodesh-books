@@ -82,7 +82,7 @@ export default function Dashboard() {
   const recentOrders = orders.slice(0, 7);
 
   return (
-    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
+    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div className="mb-7 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">דשבורד אוצר הקדושה</h1>

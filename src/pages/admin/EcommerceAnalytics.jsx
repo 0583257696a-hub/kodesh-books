@@ -79,7 +79,7 @@ export default function EcommerceAnalytics() {
   const conversion = analytics.funnel[0]?.value ? Math.round((analytics.funnel.at(-1).value / analytics.funnel[0].value) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
+    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div className="mb-7">
         <h1 className="text-3xl font-bold tracking-tight">אנליטיקת ספרים ומכירות</h1>
         <p className="mt-1 text-sm text-slate-500">צפיות בספרים, הוספות לעגלה, רכישות, חיפושים, המלצות, התנהגות לקוחות ומשפך מכירה.</p>

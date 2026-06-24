@@ -58,7 +58,7 @@ function EntryForm({ type, onAdd }) {
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        onAdd({ ...form, id: `${type}-${Date.now()}`, amount: Number(form.amount || 0) });
+        onAdd({ ...form, amount: Number(form.amount || 0) });
         setForm((current) => ({ ...current, customer: '', supplier: '', amount: '', notes: '' }));
       }}
       dir="rtl"
@@ -125,8 +125,6 @@ function LedgerTable({ rows, type, onDelete }) {
 
 export default function BusinessManagement() {
   const queryClient = useQueryClient();
-  const [manualIncome, setManualIncome] = useState([]);
-  const [manualExpenses, setManualExpenses] = useState([]);
   const [hiddenIncomeIds, setHiddenIncomeIds] = useState([]);
   const [hiddenExpenseIds, setHiddenExpenseIds] = useState([]);
 
@@ -145,12 +143,24 @@ export default function BusinessManagement() {
 
   const rows = useMemo(() => {
     const leads = buildLeads({ ...data, events: data.events || [] });
-    const expenses = buildExpenseRows([...(data.expenses || []), ...manualExpenses])
+    const expenses = buildExpenseRows(data.expenses || [])
       .filter((row) => !hiddenExpenseIds.includes(row.id));
-    const incomes = buildIncomeRows(data.orders || [], [...(data.incomes || []), ...manualIncome])
+    const incomes = buildIncomeRows(data.orders || [], data.incomes || [])
       .filter((row) => !hiddenIncomeIds.includes(row.id));
     return { leads, expenses, incomes };
-  }, [data, hiddenExpenseIds, hiddenIncomeIds, manualExpenses, manualIncome]);
+  }, [data, hiddenExpenseIds, hiddenIncomeIds]);
+
+  const createIncomeM = useMutation({
+    mutationFn: (data) => appApi.entities.BusinessIncome.create(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['business-management-center'] }),
+    onError: (error) => window.alert(error.message || 'שמירת ההכנסה נכשלה.'),
+  });
+
+  const createExpenseM = useMutation({
+    mutationFn: (data) => appApi.entities.BusinessExpense.create(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['business-management-center'] }),
+    onError: (error) => window.alert(error.message || 'שמירת ההוצאה נכשלה.'),
+  });
 
   const deleteIncomeM = useMutation({
     mutationFn: (id) => appApi.entities.BusinessIncome.delete(id),
@@ -166,21 +176,17 @@ export default function BusinessManagement() {
     const ok = window.confirm('להסיר את השורה מהטבלה?');
     if (!ok) return;
 
-    const isLocalIncome = type === 'income' && (row.id?.startsWith('income-') || row.id?.startsWith('order-income-'));
-    const isLocalExpense = type === 'expense' && (row.id?.startsWith('expense-') || row.id?.startsWith('exp-'));
+    const isComputedIncome = type === 'income' && row.id?.startsWith('order-income-');
+    const isComputedExpense = type === 'expense' && row.id?.startsWith('exp-');
 
     try {
       if (type === 'income') {
-        if (row.id?.startsWith('income-')) {
-          setManualIncome((current) => current.filter((item) => item.id !== row.id));
-        } else if (!isLocalIncome) {
+        if (!isComputedIncome) {
           await deleteIncomeM.mutateAsync(row.id);
         }
         setHiddenIncomeIds((current) => [...new Set([...current, row.id])]);
       } else {
-        if (row.id?.startsWith('expense-')) {
-          setManualExpenses((current) => current.filter((item) => item.id !== row.id));
-        } else if (!isLocalExpense) {
+        if (!isComputedExpense) {
           await deleteExpenseM.mutateAsync(row.id);
         }
         setHiddenExpenseIds((current) => [...new Set([...current, row.id])]);
@@ -249,11 +255,11 @@ export default function BusinessManagement() {
           <TabsTrigger value="expenses">מעקב הוצאות</TabsTrigger>
         </TabsList>
         <TabsContent value="income">
-          <EntryForm type="income" onAdd={(row) => setManualIncome((current) => [row, ...current])} />
+          <EntryForm type="income" onAdd={(row) => createIncomeM.mutate(row)} />
           <LedgerTable rows={rows.incomes} type="income" onDelete={handleDeleteRow} />
         </TabsContent>
         <TabsContent value="expenses">
-          <EntryForm type="expense" onAdd={(row) => setManualExpenses((current) => [row, ...current])} />
+          <EntryForm type="expense" onAdd={(row) => createExpenseM.mutate(row)} />
           <LedgerTable rows={rows.expenses} type="expense" onDelete={handleDeleteRow} />
         </TabsContent>
       </Tabs>

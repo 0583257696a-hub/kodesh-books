@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { appApi } from '@/api/internalClient';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { format, isAfter, startOfDay, startOfMonth, startOfWeek } from 'date-fns';
 import { Mail, MessageCircle, Phone, Search, UserRoundCheck } from 'lucide-react';
@@ -120,8 +120,8 @@ function LeadTable({ leads, onStatusChange, onNoteChange }) {
               </td>
               <td className="px-4 py-4">
                 <Textarea
-                  value={lead.notes || ''}
-                  onChange={(event) => onNoteChange(lead.id, event.target.value)}
+                  defaultValue={lead.notes || ''}
+                  onBlur={(event) => onNoteChange(lead.id, event.target.value)}
                   placeholder="הוסף הערה"
                   className="min-h-9 w-48 resize-none border-slate-200 text-xs"
                 />
@@ -185,6 +185,7 @@ function Pipeline({ leads, onMove }) {
 }
 
 export default function SalesLeads() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [range, setRange] = useState('week');
   const [overrides, setOverrides] = useState({});
@@ -219,11 +220,46 @@ export default function SalesLeads() {
     return isAfter(date, startOfWeek(new Date()));
   });
 
-  const updateStatus = (id, status) => setOverrides((current) => ({ ...current, [id]: status }));
-  const updateNote = (id, note) => setNotes((current) => ({ ...current, [id]: note }));
+  const saveLeadM = useMutation({
+    mutationFn: async ({ lead, patch }) => {
+      const payload = {
+        id: lead.id,
+        name: lead.full_name,
+        full_name: lead.full_name,
+        email: lead.email,
+        phone: lead.phone,
+        status: patch.status ?? lead.status,
+        notes: patch.notes ?? lead.notes ?? '',
+        source: lead.source || 'lead',
+        registration_date: lead.registration_date,
+        last_activity_at: lead.last_activity,
+        cart_value: lead.cart_value || 0,
+        products_in_cart: lead.products_in_cart || [],
+      };
+      const updated = await appApi.entities.Lead.update(lead.id, payload);
+      if (updated?.id) return updated;
+      return appApi.entities.Lead.create(payload);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['sales-leads-center'] }),
+  });
+
+  const persistLead = (id, patch) => {
+    const lead = leads.find((item) => item.id === id);
+    if (lead) saveLeadM.mutate({ lead, patch });
+  };
+
+  const updateStatus = (id, status) => {
+    setOverrides((current) => ({ ...current, [id]: status }));
+    persistLead(id, { status });
+  };
+
+  const updateNote = (id, note) => {
+    setNotes((current) => ({ ...current, [id]: note }));
+    persistLead(id, { notes: note });
+  };
 
   return (
-    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="ltr">
+    <div className="min-h-screen bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">לקוחות ומכירות</h1>

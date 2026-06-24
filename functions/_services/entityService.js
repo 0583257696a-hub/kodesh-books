@@ -74,12 +74,18 @@ const ENTITY_CONFIGS = {
   },
   ChatLead: {
     table: 'chat_leads',
-    fields: ['name', 'phone', 'email', 'message', 'session_id', 'visitor_id', 'status'],
+    fields: ['name', 'phone', 'email', 'message', 'session_id', 'visitor_id', 'status', 'source', 'registration_date', 'last_activity_at', 'cart_value', 'products_in_cart_json', 'notes'],
+    aliases: { full_name: 'name', last_activity: 'last_activity_at' },
+    json: { products_in_cart: 'products_in_cart_json' },
+    numbers: ['cart_value'],
     order: 'created_at DESC',
   },
   Lead: {
     table: 'chat_leads',
-    fields: ['name', 'phone', 'email', 'message', 'session_id', 'visitor_id', 'status'],
+    fields: ['name', 'phone', 'email', 'message', 'session_id', 'visitor_id', 'status', 'source', 'registration_date', 'last_activity_at', 'cart_value', 'products_in_cart_json', 'notes'],
+    aliases: { full_name: 'name', last_activity: 'last_activity_at' },
+    json: { products_in_cart: 'products_in_cart_json' },
+    numbers: ['cart_value'],
     order: 'created_at DESC',
   },
   SearchSynonym: {
@@ -154,6 +160,8 @@ function toEntity(row = {}) {
   for (const key of ['is_active', 'active', 'show_in_home', 'show_in_nav', 'is_public', 'found_results', 'is_new', 'is_on_sale', 'is_featured', 'in_stock']) {
     if (key in next) next[key] = next[key] !== 0;
   }
+  if (next.name && !next.full_name) next.full_name = next.name;
+  if (next.last_activity_at && !next.last_activity) next.last_activity = next.last_activity_at;
   return next;
 }
 
