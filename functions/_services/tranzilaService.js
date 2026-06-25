@@ -398,6 +398,14 @@ export function tranzilaCallbackHtml(type, result = {}) {
     : 'לא התקבל אישור מטרנזילה. ניתן לנסות שוב או ליצור קשר עם החנות.';
   const eventType = isSuccess ? 'tranzila:j5-success' : 'tranzila:j5-fail';
   const orderId = result.order_id || '';
+  const statusClass = isSuccess ? 'success' : 'fail';
+  const statusMark = isSuccess ? '✓' : '!';
+  const eyebrow = isSuccess ? 'העסקה נשמרה לאישור' : 'נדרש ניסיון נוסף';
+  const note = isSuccess
+    ? 'אין צורך לבצע פעולה נוספת כרגע. מנהל החנות יאשר את החיוב הסופי בפאנל טרנזילה.'
+    : 'ההזמנה נשארה במערכת, אך פרטי האשראי לא אומתו. אפשר לחזור למסך התשלום ולנסות שוב.';
+  const primaryAction = isSuccess ? 'חזרה לחנות' : 'חזרה לתשלום';
+  const primaryHref = isSuccess ? '/' : '/checkout';
 
   return new Response(`<!doctype html>
 <html lang="he" dir="rtl">
@@ -406,18 +414,170 @@ export function tranzilaCallbackHtml(type, result = {}) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)}</title>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #fcfaf5; color: #1f160f; direction: rtl; }
-    .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; }
-    .box { max-width: 520px; border: 1px solid #e7d8b8; border-radius: 14px; background: #fff; padding: 28px; box-shadow: 0 10px 28px rgba(42, 22, 11, 0.10); }
-    h1 { margin: 0 0 12px; font-size: 24px; }
-    p { margin: 0; color: #6b5a45; line-height: 1.8; }
+    :root {
+      color-scheme: light;
+      --ink: #1f160f;
+      --muted: #6b5a45;
+      --cream: #fcfaf5;
+      --paper: #ffffff;
+      --gold: #d4af37;
+      --gold-dark: #9f7318;
+      --line: #e7d8b8;
+      --success: #28734b;
+      --success-soft: #edf8f1;
+      --fail: #9f2f2f;
+      --fail-soft: #fff1ef;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans Hebrew", sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(212, 175, 55, 0.12), transparent 28%),
+        linear-gradient(180deg, #fffaf0 0%, var(--cream) 100%);
+      color: var(--ink);
+      direction: rtl;
+    }
+    .wrap {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      text-align: center;
+    }
+    .box {
+      width: min(620px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 34px 30px;
+      box-shadow: 0 18px 42px rgba(42, 22, 11, 0.12);
+    }
+    .mark {
+      width: 68px;
+      height: 68px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 18px;
+      border-radius: 999px;
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .success .mark {
+      color: var(--success);
+      background: var(--success-soft);
+      border: 1px solid rgba(40, 115, 75, 0.24);
+    }
+    .fail .mark {
+      color: var(--fail);
+      background: var(--fail-soft);
+      border: 1px solid rgba(159, 47, 47, 0.22);
+    }
+    .eyebrow {
+      margin-bottom: 8px;
+      color: var(--gold-dark);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.2;
+    }
+    p {
+      margin: 0 auto;
+      max-width: 500px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 16px;
+    }
+    .details {
+      display: grid;
+      gap: 10px;
+      margin: 24px 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffaf1;
+      text-align: right;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .value {
+      color: var(--ink);
+      font-weight: 700;
+      direction: ltr;
+      overflow-wrap: anywhere;
+      text-align: left;
+    }
+    .notice {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    a {
+      min-width: 140px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border-radius: 10px;
+      padding: 10px 18px;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    a.primary {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--gold), #c99722);
+      box-shadow: 0 8px 18px rgba(159, 115, 24, 0.22);
+    }
+    @media (max-width: 520px) {
+      .wrap { padding: 16px; }
+      .box { padding: 28px 18px; }
+      .row { display: grid; gap: 4px; text-align: center; }
+      .value { text-align: center; }
+      a { width: 100%; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="box">
+    <div class="box ${statusClass}">
+      <div class="mark" aria-hidden="true">${statusMark}</div>
+      <div class="eyebrow">${escapeHtml(eyebrow)}</div>
       <h1>${escapeHtml(title)}</h1>
       <p>${escapeHtml(message)}</p>
+      <div class="details">
+        <div class="row">
+          <span>סטטוס</span>
+          <span class="value">${escapeHtml(isSuccess ? 'ממתין לאישור מנהל' : 'לא אומת')}</span>
+        </div>
+        ${orderId ? `<div class="row"><span>מזהה הזמנה</span><span class="value">${escapeHtml(orderId)}</span></div>` : ''}
+      </div>
+      <div class="notice">${escapeHtml(note)}</div>
+      <div class="actions">
+        <a class="primary" href="${primaryHref}" target="_top">${escapeHtml(primaryAction)}</a>
+        <a href="/contact" target="_top">יצירת קשר</a>
+      </div>
     </div>
   </div>
   <script>
