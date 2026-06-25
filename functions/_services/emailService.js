@@ -12,15 +12,27 @@ const MAILJET_DEFAULT_HOST = 'api.mailjet.com';
 const MAILJET_SEND_PATH = '/v3.1/send';
 
 function mailjetApiKey(env) {
-  return stringValue(env.MAILJET_API_KEY) || stringValue(env.MJ_APIKEY_PUBLIC);
+  const combined = stringValue(env.MAILJET_API_KEY);
+  if (combined.includes(':')) {
+    return combined.split(':')[0].trim();
+  }
+  return combined || stringValue(env.MJ_APIKEY_PUBLIC);
 }
 
 function mailjetSecretKey(env) {
-  return stringValue(env.MAILJET_SECRET_KEY) || stringValue(env.MJ_APIKEY_PRIVATE);
+  const combined = stringValue(env.MAILJET_API_KEY);
+  const explicitSecret = stringValue(env.MAILJET_SECRET_KEY) || stringValue(env.MJ_APIKEY_PRIVATE);
+  if (explicitSecret) return explicitSecret;
+  if (combined.includes(':')) {
+    return combined.split(':').slice(1).join(':').trim();
+  }
+  return '';
 }
 
 function mailjetSendUrl(env) {
-  const host = (stringValue(env.MAILJET_API_HOST) || MAILJET_DEFAULT_HOST)
+  const region = stringValue(env.MAILJET_API_REGION).toLowerCase();
+  const regionalHost = region ? `api.${region}.mailjet.com` : '';
+  const host = (stringValue(env.MAILJET_API_HOST) || regionalHost || MAILJET_DEFAULT_HOST)
     .replace(/^https?:\/\//i, '')
     .replace(/\/+$/g, '');
   return `https://${host}${MAILJET_SEND_PATH}`;
