@@ -7,6 +7,8 @@ const TRANZILA_CURRENCY_NIS = '1';
 const TRANZILA_J5_MODE = 'V';
 const TRANZILA_DEFAULT_IFRAME_PATH = 'iframenew.php';
 const DEFAULT_PUBLIC_BASE_URL = 'https://otzar-hakodesh.shop';
+const TRANZILA_APPROVED_CODES = new Set(['000', '777']);
+const TRANZILA_PENDING_CODES = new Set(['shva']);
 
 function normalizeBaseUrl(value) {
   return stringValue(value).replace(/\/+$/, '');
@@ -324,9 +326,40 @@ function callbackConfirmationCode(payload) {
   );
 }
 
+function callbackApplicationCode(payload) {
+  const code = stringValue(
+    payload.Response
+    || payload.response
+    || payload.ResponseCode
+    || payload.responseCode
+    || payload.response_code
+    || payload.status
+    || payload.Status
+    || payload.shva_response
+    || payload.shvaResponse
+  );
+
+  return code.toLowerCase() === 'shva' ? 'shva' : code.padStart(3, '0');
+}
+
+function resolveCallbackStatus(source, fallbackStatus, payload) {
+  const code = callbackApplicationCode(payload);
+
+  if (code) {
+    if (TRANZILA_APPROVED_CODES.has(code)) return 'verified';
+    if (TRANZILA_PENDING_CODES.has(code)) return 'verification_pending';
+    return 'verification_failed';
+  }
+
+  if (source === 'fail') return 'verification_failed';
+  return fallbackStatus;
+}
+
 export async function recordTranzilaCallback(env, request, source, status) {
   const now = nowIso();
   const payload = await readCallbackPayload(request);
+  const resolvedStatus = resolveCallbackStatus(source, status, payload);
+  const applicationCode = callbackApplicationCode(payload);
   let orderId = stringValue(payload.order_id || payload.OrderId || payload.orderId);
   const merchantTransactionId = callbackMerchantTransactionId(payload);
 
@@ -369,21 +402,21 @@ export async function recordTranzilaCallback(env, request, source, status) {
         updated_at = ?
     WHERE id = ?
   `).bind(
-    status,
+    resolvedStatus,
     callbackTransactionId(payload) || null,
     callbackConfirmationCode(payload) || null,
-    JSON.stringify({ source, payload }),
+    JSON.stringify({ source, application_code: applicationCode || null, payload }),
     JSON.stringify(payload),
-    status,
+    resolvedStatus,
     now,
     now,
     existing.id
   ).run();
 
   const providerTransactionId = callbackTransactionId(payload) || existing.provider_transaction_id || existing.id;
-  const paymentStatus = status === 'verified'
+  const paymentStatus = resolvedStatus === 'verified'
     ? 'j5_verified'
-    : status === 'verification_failed'
+    : resolvedStatus === 'verification_failed'
       ? 'j5_failed'
       : 'j5_pending';
 
@@ -396,7 +429,12 @@ export async function recordTranzilaCallback(env, request, source, status) {
     WHERE id = ?
   `).bind(paymentStatus, providerTransactionId, now, orderId).run();
 
-  return { order_id: orderId, transaction_id: existing.id };
+  return {
+    order_id: orderId,
+    transaction_id: existing.id,
+    status: resolvedStatus,
+    application_code: applicationCode || null,
+  };
 }
 
 export function tranzilaCallbackHtml(type, result = {}) {
@@ -407,6 +445,7 @@ export function tranzilaCallbackHtml(type, result = {}) {
     : 'לא התקבל אישור מטרנזילה. ניתן לנסות שוב או ליצור קשר עם החנות.';
   const eventType = isSuccess ? 'tranzila:j5-success' : 'tranzila:j5-fail';
   const orderId = result.order_id || '';
+  const applicationCode = result.application_code || '';
   const statusClass = isSuccess ? 'success' : 'fail';
   const statusMark = isSuccess ? '✓' : '!';
   const eyebrow = isSuccess ? 'העסקה נשמרה לאישור' : 'נדרש ניסיון נוסף';
@@ -581,6 +620,7 @@ export function tranzilaCallbackHtml(type, result = {}) {
           <span class="value">${escapeHtml(isSuccess ? 'ממתין לאישור מנהל' : 'לא אומת')}</span>
         </div>
         ${orderId ? `<div class="row"><span>מזהה הזמנה</span><span class="value">${escapeHtml(orderId)}</span></div>` : ''}
+        ${applicationCode ? `<div class="row"><span>קוד תשובה</span><span class="value">${escapeHtml(applicationCode)}</span></div>` : ''}
       </div>
       <div class="notice">${escapeHtml(note)}</div>
       <div class="actions">

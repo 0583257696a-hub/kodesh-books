@@ -6,7 +6,7 @@ async function handle(context) {
   try {
     requireDb(env);
     const result = await recordTranzilaCallback(env, request, 'success', 'verified');
-    return tranzilaCallbackHtml('success', result);
+    return tranzilaCallbackHtml(result.status === 'verified' ? 'success' : 'fail', result);
   } catch (error) {
     return jsonResponse({ error: error.message || 'Tranzila success callback failed' }, { status: error.status || 400 });
   }
