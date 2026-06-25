@@ -298,6 +298,14 @@ function callbackTransactionId(payload) {
   );
 }
 
+function callbackMerchantTransactionId(payload) {
+  return stringValue(
+    payload.DCdisable
+    || payload.dcdisable
+    || payload.dc_disable
+  );
+}
+
 function callbackConfirmationCode(payload) {
   return stringValue(
     payload.ConfirmationCode
@@ -310,7 +318,17 @@ function callbackConfirmationCode(payload) {
 export async function recordTranzilaCallback(env, request, source, status) {
   const now = nowIso();
   const payload = await readCallbackPayload(request);
-  const orderId = stringValue(payload.order_id || payload.OrderId || payload.orderId);
+  let orderId = stringValue(payload.order_id || payload.OrderId || payload.orderId);
+  const merchantTransactionId = callbackMerchantTransactionId(payload);
+
+  if (!orderId && merchantTransactionId) {
+    const transaction = await env.DB.prepare(`
+      SELECT order_id FROM payment_transactions
+      WHERE id = ? AND provider = 'tranzila'
+      LIMIT 1
+    `).bind(merchantTransactionId).first();
+    orderId = stringValue(transaction?.order_id);
+  }
 
   if (!orderId) {
     const error = new Error('Missing order_id');
