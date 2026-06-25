@@ -4,6 +4,7 @@ import { nowIso, numberValue, stringValue } from './http.js';
 const TRANZILA_DIRECT_BASE_URL = 'https://direct.tranzila.com';
 const TRANZILA_CURRENCY_NIS = '1';
 const TRANZILA_J5_MODE = 'V';
+const TRANZILA_DEFAULT_IFRAME_PATH = 'iframenew.php';
 
 function publicBaseUrl(request) {
   const url = new URL(request.url);
@@ -14,8 +15,32 @@ function getTerminalName(env) {
   return stringValue(env.TRANZILA_TERMINAL_NAME);
 }
 
-function getIframeUrl(terminalName) {
-  return `${TRANZILA_DIRECT_BASE_URL}/${encodeURIComponent(terminalName)}/iframenew.php`;
+function getIframePath(env) {
+  const iframePath = stringValue(env.TRANZILA_IFRAME_PATH) || TRANZILA_DEFAULT_IFRAME_PATH;
+  const normalizedPath = iframePath.replace(/^\/+/, '');
+
+  if (!/^[a-zA-Z0-9_-]+\.php$/.test(normalizedPath)) {
+    const error = new Error('TRANZILA_IFRAME_PATH must be a Tranzila PHP page name, for example iframe.php');
+    error.status = 500;
+    throw error;
+  }
+
+  return normalizedPath;
+}
+
+function getIframeTemplate(env) {
+  return stringValue(env.TRANZILA_IFRAME_TEMPLATE);
+}
+
+function getIframeUrl(env, terminalName) {
+  const url = new URL(`${TRANZILA_DIRECT_BASE_URL}/${encodeURIComponent(terminalName)}/${getIframePath(env)}`);
+  const template = getIframeTemplate(env);
+
+  if (template) {
+    url.searchParams.set('template', template);
+  }
+
+  return url.toString();
 }
 
 function compactJson(value) {
@@ -51,13 +76,15 @@ function orderProductsPayload(order) {
   }));
 }
 
-function buildJ5Fields(order, request, terminalName) {
+function buildJ5Fields(order, request, terminalName, env) {
   const baseUrl = publicBaseUrl(request);
   const amount = numberValue(order.total).toFixed(2);
   const description = orderDescription(order);
+  const template = getIframeTemplate(env);
 
-  return {
+  const fields = {
     sum: amount,
+    supplier: terminalName,
     cred_type: '1',
     currency: TRANZILA_CURRENCY_NIS,
     tranmode: TRANZILA_J5_MODE,
@@ -84,6 +111,12 @@ function buildJ5Fields(order, request, terminalName) {
     trButtonColor: 'D4AF37',
     nologo: '1',
   };
+
+  if (template) {
+    fields.template = template;
+  }
+
+  return fields;
 }
 
 async function upsertPaymentTransaction(env, order, terminalName, requestFields) {
@@ -326,7 +359,7 @@ export async function createTranzilaJ5Session(env, request, payload = {}) {
     throw error;
   }
 
-  const fields = buildJ5Fields(order, request, terminalName);
+  const fields = buildJ5Fields(order, request, terminalName, env);
   const paymentTransactionId = await upsertPaymentTransaction(env, order, terminalName, fields);
 
   await env.DB.prepare(`
@@ -342,7 +375,7 @@ export async function createTranzilaJ5Session(env, request, payload = {}) {
     provider: 'tranzila',
     mode: 'J5',
     transaction_id: paymentTransactionId,
-    iframe_url: getIframeUrl(terminalName),
+    iframe_url: getIframeUrl(env, terminalName),
     method: 'POST',
     fields,
   };
