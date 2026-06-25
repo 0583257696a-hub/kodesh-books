@@ -15,7 +15,7 @@ export default function PromoBanner() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative rounded-2xl overflow-hidden min-h-[300px] md:min-h-[340px] flex items-center border border-gold/20 shadow-xl"
+          className="relative rounded-2xl overflow-hidden min-h-[320px] md:min-h-[340px] flex items-center border border-gold/20 shadow-xl"
         >
           {/* Background */}
           <img
@@ -24,24 +24,25 @@ export default function PromoBanner() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Multi-stop gradient for better readability */}
-          <div className="absolute inset-0 bg-gradient-to-l from-[#1a0e05]/97 via-[#2A160B]/85 to-[#1a0e05]/40" />
+          <div className="absolute inset-0 bg-[#1a0e05]/[0.62] md:bg-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1a0e05]/[0.97] via-[#2A160B]/[0.86] to-[#1a0e05]/[0.40]" />
           {/* Top gold line */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
           {/* Bottom gold line */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
 
           {/* Content */}
-          <div className="relative z-10 w-full p-8 md:p-14">
-            <div className="max-w-lg mr-auto ml-0 text-right">
+          <div className="relative z-10 w-full p-6 sm:p-8 md:p-14">
+            <div className="max-w-lg mx-auto md:mr-auto md:ml-0 text-center md:text-right">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-gold/20 backdrop-blur-sm border border-gold/30 px-4 py-2 rounded-full mb-6">
+              <div className="inline-flex items-center gap-2 bg-gold/20 backdrop-blur-sm border border-gold/30 px-4 py-2 rounded-full mb-5 md:mb-6">
                 <Sparkles className="h-3.5 w-3.5 text-gold" aria-hidden="true" />
                 <span className="text-gold font-body text-xs font-medium tracking-wide">מבצע מיוחד • זמן מוגבל</span>
               </div>
 
               {/* Discount badge */}
-              <div className="flex items-start gap-5 mb-5">
-                <div className="text-right">
+              <div className="flex flex-col-reverse items-center gap-4 mb-5 sm:flex-row sm:items-start sm:justify-center md:justify-start md:gap-5">
+                <div className="text-center md:text-right">
                   <h2 className="font-heading text-3xl md:text-5xl font-bold text-cream leading-tight">
                     מבצעי <span className="text-gold">החודש</span><br />המיוחדים
                   </h2>
