@@ -2,15 +2,16 @@ import { boolSetting, nowIso, stringValue } from './http.js';
 import {
   buildAdminNewOrderEmail,
   buildCustomerOrderConfirmationEmail,
+  buildEmailVerificationEmail,
   buildOrderApprovedEmail,
   buildOrderCancelledEmail,
   buildOrderDeliveredEmail,
 } from './emailTemplates.js';
 
-const RESEND_SEND_URL = 'https://api.resend.com/emails';
+const MAILJET_SEND_URL = 'https://api.mailjet.com/v3.1/send';
 
 function getSender(env, settings = {}) {
-  return stringValue(env.RESEND_FROM_EMAIL)
+  return stringValue(env.MAILJET_FROM_EMAIL)
     || stringValue(settings.email_from)
     || stringValue(settings.from_email)
     || stringValue(settings.email);
@@ -38,6 +39,10 @@ function metadataFor(order, extra = {}) {
   });
 }
 
+function authMetadata(extra = {}) {
+  return JSON.stringify(extra);
+}
+
 async function ensureEmailLog(env, payload) {
   const now = nowIso();
   const existing = payload.dedupe_key
@@ -63,7 +68,7 @@ async function ensureEmailLog(env, payload) {
       created_at,
       updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, 'pending', 'resend', 'order', ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, 'pending', 'mailjet', ?, ?, ?, ?, ?)
   `).bind(
     id,
     payload.dedupe_key,
@@ -71,6 +76,7 @@ async function ensureEmailLog(env, payload) {
     payload.recipient,
     payload.subject,
     payload.html,
+    payload.related_type || 'order',
     payload.related_id,
     payload.metadata_json || '{}',
     now,
@@ -123,7 +129,7 @@ async function createNotification(env, payload) {
       created_at,
       updated_at
     )
-    VALUES (?, ?, 'email', ?, ?, ?, ?, 'order', ?, ?, ?, ?, ?)
+    VALUES (?, ?, 'email', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     crypto.randomUUID(),
     payload.type,
@@ -131,6 +137,7 @@ async function createNotification(env, payload) {
     payload.title,
     payload.message || '',
     payload.status,
+    payload.related_type || 'order',
     payload.related_id,
     payload.email_log_id,
     payload.metadata_json || '{}',
@@ -139,25 +146,56 @@ async function createNotification(env, payload) {
   ).run();
 }
 
-async function sendWithResend(env, payload) {
-  const response = await fetch(RESEND_SEND_URL, {
+function parseEmailAddress(value = '') {
+  const text = String(value || '').trim();
+  const match = text.match(/^(.*?)<([^>]+)>$/);
+  if (match) {
+    return {
+      Email: match[2].trim(),
+      Name: match[1].replace(/^"|"$/g, '').trim() || undefined,
+    };
+  }
+  return { Email: text };
+}
+
+function mailjetMessageId(data) {
+  const message = data?.Messages?.[0];
+  return message?.To?.[0]?.MessageID || message?.To?.[0]?.MessageUUID || message?.MessageID || null;
+}
+
+function mailjetError(data, response) {
+  const message = data?.Messages?.[0];
+  const errors = message?.Errors || data?.ErrorInfo || data?.ErrorMessage || data?.ErrorCode;
+  if (Array.isArray(errors) && errors.length) {
+    return errors.map((error) => error.ErrorMessage || error.ErrorInfo || error.ErrorCode || String(error)).join('; ');
+  }
+  return stringValue(errors) || `Mailjet failed with status ${response.status}`;
+}
+
+async function sendWithMailjet(env, payload) {
+  const credentials = btoa(`${env.MAILJET_API_KEY}:${env.MAILJET_SECRET_KEY}`);
+  const response = await fetch(MAILJET_SEND_URL, {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${env.RESEND_API_KEY}`,
+      authorization: `Basic ${credentials}`,
       'content-type': 'application/json',
-      'idempotency-key': payload.dedupe_key,
     },
     body: JSON.stringify({
-      from: payload.from,
-      to: [payload.recipient],
-      subject: payload.subject,
-      html: payload.html,
+      Messages: [
+        {
+          From: parseEmailAddress(payload.from),
+          To: [parseEmailAddress(payload.recipient)],
+          Subject: payload.subject,
+          HTMLPart: payload.html,
+          CustomID: payload.dedupe_key,
+        },
+      ],
     }),
   });
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.message || data.error || `Resend failed with status ${response.status}`);
+    throw new Error(mailjetError(data, response));
   }
 
   return data;
@@ -169,8 +207,8 @@ export async function sendOrderEmail(env, payload) {
     return { skipped: true, reason: 'already_sent', log_id: log.id };
   }
 
-  if (!env.RESEND_API_KEY) {
-    const errorMessage = 'RESEND_API_KEY is not configured';
+  if (!env.MAILJET_API_KEY || !env.MAILJET_SECRET_KEY) {
+    const errorMessage = 'MAILJET_API_KEY or MAILJET_SECRET_KEY is not configured';
     await updateEmailLog(env, log.id, { status: 'failed', error_message: errorMessage });
     await createNotification(env, {
       type: payload.type,
@@ -202,11 +240,12 @@ export async function sendOrderEmail(env, payload) {
   }
 
   try {
-    const result = await sendWithResend(env, payload);
+    const result = await sendWithMailjet(env, payload);
     const sentAt = nowIso();
+    const providerMessageId = mailjetMessageId(result);
     await updateEmailLog(env, log.id, {
       status: 'sent',
-      provider_message_id: result.id || null,
+      provider_message_id: providerMessageId,
       sent_at: sentAt,
     });
     await createNotification(env, {
@@ -219,7 +258,7 @@ export async function sendOrderEmail(env, payload) {
       email_log_id: log.id,
       metadata_json: payload.metadata_json,
     });
-    return { sent: true, provider_message_id: result.id || null, log_id: log.id };
+    return { sent: true, provider_message_id: providerMessageId, log_id: log.id };
   } catch (error) {
     const errorMessage = error.message || 'Email send failed';
     await updateEmailLog(env, log.id, { status: 'failed', error_message: errorMessage });
@@ -309,5 +348,23 @@ export async function sendOrderStatusEmail(env, order, status, settings = {}) {
     related_id: order.id,
     dedupe_key: dedupeKey(order, config.type, order.customer_email),
     metadata_json: metadataFor(order, { status: normalizedStatus, recipient_role: 'customer' }),
+  });
+}
+
+export async function sendEmailVerificationCode(env, customer, code, settings = {}) {
+  const from = getSender(env, settings);
+  const store = storeName(settings);
+  const recipient = customer.email;
+
+  return sendOrderEmail(env, {
+    type: 'customer_email_verification',
+    from,
+    recipient,
+    subject: `קוד אימות לחשבון שלך - ${store}`,
+    html: buildEmailVerificationEmail({ code, email: recipient }, settings),
+    related_type: 'customer',
+    related_id: customer.id,
+    dedupe_key: `customer:${customer.id}:email_verification:${Date.now()}`,
+    metadata_json: authMetadata({ customer_id: customer.id, email: recipient }),
   });
 }

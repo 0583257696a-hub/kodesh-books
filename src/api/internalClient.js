@@ -147,12 +147,20 @@ export const appApi = {
       return data;
     },
 
-    async verifyOtp() {
-      return { access_token: localStorage.getItem('ok_customer_access_token') || '' };
+    async verifyOtp(payload = {}) {
+      const data = await requestJson('/api/auth/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      if (data.access_token) localStorage.setItem('ok_customer_access_token', data.access_token);
+      return data;
     },
 
-    async resendOtp() {
-      return { ok: true };
+    async resendOtp(email) {
+      return requestJson('/api/auth/resend-otp', {
+        method: 'POST',
+        body: JSON.stringify(typeof email === 'string' ? { email } : email || {}),
+      });
     },
 
     setToken(token) {

@@ -153,6 +153,26 @@ export function buildCustomerOrderConfirmationEmail(order, settings = {}) {
   return shell(title, `מספר הזמנה: ${orderNumber(order)}`, content, settings);
 }
 
+export function buildEmailVerificationEmail({ code, email } = {}, settings = {}) {
+  const storeName = settings.store_name || 'אוצר הקדושה';
+  const title = 'אימות כתובת האימייל';
+  const content = `
+    <p style="font-size:16px;line-height:1.9;margin:0 0 16px;">
+      שלום,<br />
+      קיבלנו בקשה ליצירת חשבון באתר ${escapeHtml(storeName)} עבור ${escapeHtml(email || '')}.
+    </p>
+    <div dir="ltr" style="margin:22px 0;text-align:center;">
+      <div style="display:inline-block;background:#fbf8f0;border:1px solid #e3d2aa;border-radius:12px;padding:16px 26px;font-size:32px;letter-spacing:8px;font-weight:700;color:#2b1a0f;">
+        ${escapeHtml(code || '')}
+      </div>
+    </div>
+    <p style="font-size:15px;line-height:1.8;margin:0;color:#6f5f4a;">
+      הקוד תקף למשך 15 דקות. אם לא ביקשת ליצור חשבון, ניתן להתעלם מהודעה זו.
+    </p>
+  `;
+  return shell(title, 'קוד חד פעמי לאימות החשבון', content, settings);
+}
+
 export function buildOrderApprovedEmail(order, settings = {}) {
   const title = 'הזמנתך אושרה';
   const content = `
