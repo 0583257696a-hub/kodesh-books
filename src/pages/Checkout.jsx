@@ -202,14 +202,10 @@ export default function Checkout() {
               טען שוב את טופס האשראי
             </Button>
             <Button
-              type="button"
-              onClick={() => submitTranzilaForm('_self')}
-              className="font-body rounded-lg"
-              style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}
+              asChild
+              variant="outline"
+              className="border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold"
             >
-              פתח את טופס Tranzila בעמוד מלא
-            </Button>
-            <Button asChild variant="outline" className="border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold">
               <Link to="/contact">צור קשר</Link>
             </Button>
           </div>
