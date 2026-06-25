@@ -26,6 +26,13 @@ export default function Checkout() {
   const shipping = getShippingCost(settings, totalPrice, items);
   const total = totalPrice + shipping;
 
+  const submitTranzilaForm = (target = 'tranzila-payment-frame') => {
+    const formElement = paymentFormRef.current;
+    if (!formElement) return;
+    formElement.target = target;
+    formElement.submit();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -107,7 +114,7 @@ export default function Checkout() {
     if (!paymentSession) return undefined;
 
     const timer = window.setTimeout(() => {
-      paymentFormRef.current?.submit();
+      submitTranzilaForm();
     }, 50);
 
     return () => window.clearTimeout(timer);
@@ -189,10 +196,18 @@ export default function Checkout() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => paymentFormRef.current?.submit()}
+              onClick={() => submitTranzilaForm()}
               className="border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold"
             >
               טען שוב את טופס האשראי
+            </Button>
+            <Button
+              type="button"
+              onClick={() => submitTranzilaForm('_self')}
+              className="font-body rounded-lg"
+              style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}
+            >
+              פתח את טופס Tranzila בעמוד מלא
             </Button>
             <Button asChild variant="outline" className="border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold">
               <Link to="/contact">צור קשר</Link>
