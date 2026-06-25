@@ -105,6 +105,7 @@ Imported product images were migrated to R2 and are served through `/api/images/
 The one-time migration script is:
 
 ```powershell
+
 node scripts\migrate-product-images-to-r2.mjs --dry-run --limit=3
 node scripts\migrate-product-images-to-r2.mjs --limit=30
 ```
