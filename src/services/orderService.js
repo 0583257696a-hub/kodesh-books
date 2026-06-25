@@ -30,6 +30,21 @@ export async function createOrder(payload) {
   return data.order;
 }
 
+export async function createTranzilaJ5Session(payload) {
+  const response = await fetch('/api/payments/tranzila/session', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'content-type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await readJsonResponse(response);
+  return data.session;
+}
+
 export async function listAdminOrders() {
   const response = await fetch('/api/admin/orders?limit=500', {
     credentials: 'include',
@@ -70,4 +85,3 @@ export async function getAdminOrderPrintHtml(id) {
 
   return text;
 }
-

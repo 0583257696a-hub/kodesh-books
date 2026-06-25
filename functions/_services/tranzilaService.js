@@ -18,13 +18,29 @@ function getIframeUrl(terminalName) {
   return `${TRANZILA_DIRECT_BASE_URL}/${encodeURIComponent(terminalName)}/iframenew.php`;
 }
 
-function rawUrlEncodeJson(value) {
-  return encodeURIComponent(JSON.stringify(value));
+function compactJson(value) {
+  return JSON.stringify(value);
+}
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function orderDescription(order) {
   const orderNumber = order.order_number || order.id;
   return `Order ${orderNumber}`;
+}
+
+function orderRemarks(order) {
+  const itemNames = (order.items || [])
+    .map((item) => `${item.product_name} x${numberValue(item.quantity, 1)}`)
+    .join(', ');
+  return `${orderDescription(order)}${itemNames ? ` - ${itemNames}` : ''}`.slice(0, 250);
 }
 
 function orderProductsPayload(order) {
@@ -61,8 +77,8 @@ function buildJ5Fields(order, request, terminalName) {
     phone: order.customer_phone || '',
     city: order.city || '',
     pdesc: description,
-    remarks: description,
-    json_purchase_data: rawUrlEncodeJson(orderProductsPayload(order)),
+    remarks: orderRemarks(order),
+    json_purchase_data: compactJson(orderProductsPayload(order)),
     trBgColor: 'FCFAF5',
     trTextColor: '1F160F',
     trButtonColor: 'D4AF37',
@@ -208,7 +224,7 @@ export async function recordTranzilaCallback(env, request, source, status) {
         provider_confirmation_code = COALESCE(?, provider_confirmation_code),
         response_json = ?,
         notify_payload_json = ?,
-        verified_at = CASE WHEN ? = 'verification_pending' THEN COALESCE(verified_at, ?) ELSE verified_at END,
+        verified_at = CASE WHEN ? = 'verified' THEN COALESCE(verified_at, ?) ELSE verified_at END,
         updated_at = ?
     WHERE id = ?
   `).bind(
@@ -223,7 +239,62 @@ export async function recordTranzilaCallback(env, request, source, status) {
     existing.id
   ).run();
 
+  const providerTransactionId = callbackTransactionId(payload) || existing.provider_transaction_id || existing.id;
+  const paymentStatus = status === 'verified'
+    ? 'j5_verified'
+    : status === 'verification_failed'
+      ? 'j5_failed'
+      : 'j5_pending';
+
+  await env.DB.prepare(`
+    UPDATE orders
+    SET payment_status = ?,
+        payment_method = 'tranzila_j5',
+        payment_reference = ?,
+        updated_at = ?
+    WHERE id = ?
+  `).bind(paymentStatus, providerTransactionId, now, orderId).run();
+
   return { order_id: orderId, transaction_id: existing.id };
+}
+
+export function tranzilaCallbackHtml(type, result = {}) {
+  const isSuccess = type === 'success';
+  const title = isSuccess ? 'פרטי האשראי התקבלו' : 'אימות האשראי לא הושלם';
+  const message = isSuccess
+    ? 'ההזמנה נשמרה ופרטי האשראי הועברו לטרנזילה. החיוב הסופי יבוצע לאחר אישור מנהל בפאנל טרנזילה.'
+    : 'לא התקבל אישור מטרנזילה. ניתן לנסות שוב או ליצור קשר עם החנות.';
+  const eventType = isSuccess ? 'tranzila:j5-success' : 'tranzila:j5-fail';
+  const orderId = result.order_id || '';
+
+  return new Response(`<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #fcfaf5; color: #1f160f; direction: rtl; }
+    .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+    .box { max-width: 520px; border: 1px solid #e7d8b8; border-radius: 14px; background: #fff; padding: 28px; box-shadow: 0 10px 28px rgba(42, 22, 11, 0.10); }
+    h1 { margin: 0 0 12px; font-size: 24px; }
+    p { margin: 0; color: #6b5a45; line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="box">
+      <h1>${escapeHtml(title)}</h1>
+      <p>${escapeHtml(message)}</p>
+    </div>
+  </div>
+  <script>
+    window.parent && window.parent.postMessage(${JSON.stringify({ type: eventType, orderId })}, window.location.origin);
+  </script>
+</body>
+</html>`, {
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  });
 }
 
 export async function createTranzilaJ5Session(env, request, payload = {}) {

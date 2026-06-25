@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,14 +9,18 @@ import { Link } from 'react-router-dom';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
 import { markCheckoutStarted } from '@/services/cartService';
-import { createOrder } from '@/services/orderService';
+import { createOrder, createTranzilaJ5Session } from '@/services/orderService';
 
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
+  const paymentFormRef = useRef(null);
   const [form, setForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', city: '', shipping_address: '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState(null);
+  const [paymentSession, setPaymentSession] = useState(null);
+  const [orderSuccessMessage, setOrderSuccessMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
 
   const shipping = getShippingCost(settings, totalPrice);
@@ -63,10 +67,22 @@ export default function Checkout() {
         event_type: 'order_created',
         customer_email: form.customer_email,
         value: total,
-        metadata: { item_count: items.length, status: 'new', manual_payment: true, order_id: order.id, order_number: order.order_number },
+        metadata: { item_count: items.length, status: 'new', payment_method: 'tranzila_j5', order_id: order.id, order_number: order.order_number },
       });
+      setCreatedOrder(order);
       clearCart();
-      setOrderPlaced(true);
+
+      try {
+        const session = await createTranzilaJ5Session({
+          order_id: order.id,
+          customer_email: order.customer_email,
+        });
+        setPaymentSession(session);
+      } catch (paymentError) {
+        console.warn('Tranzila J5 session failed:', paymentError);
+        setOrderSuccessMessage('ההזמנה התקבלה בהצלחה. בשלב זה טופס האשראי של טרנזילה לא זמין, וניצור איתך קשר להשלמת התשלום.');
+        setOrderPlaced(true);
+      }
     } catch (error) {
       setSubmitError(error.message || 'שליחת ההזמנה נכשלה. נסו שוב או צרו קשר עם החנות.');
     } finally {
@@ -74,7 +90,7 @@ export default function Checkout() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!items.length) return;
     markCheckoutStarted(items, total).catch((error) => {
       console.warn('Checkout cart sync failed:', error);
@@ -86,6 +102,33 @@ export default function Checkout() {
     });
   }, []);
 
+  useEffect(() => {
+    if (!paymentSession) return undefined;
+
+    const timer = window.setTimeout(() => {
+      paymentFormRef.current?.submit();
+    }, 50);
+
+    return () => window.clearTimeout(timer);
+  }, [paymentSession]);
+
+  useEffect(() => {
+    const onMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type === 'tranzila:j5-success') {
+        setOrderSuccessMessage('פרטי האשראי התקבלו בטרנזילה. החיוב הסופי יבוצע לאחר אישור מנהל בפאנל טרנזילה.');
+        setPaymentSession(null);
+        setOrderPlaced(true);
+      }
+      if (event.data?.type === 'tranzila:j5-fail') {
+        setSubmitError('אימות האשראי בטרנזילה לא הושלם. ניתן לנסות שוב או ליצור קשר עם החנות.');
+      }
+    };
+
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, []);
+
   if (orderPlaced) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4" style={{ background: '#FCFAF5' }} dir="rtl">
@@ -94,12 +137,63 @@ export default function Checkout() {
             <CheckCircle2 className="h-10 w-10 text-gold" aria-hidden="true" />
           </div>
           <h1 className="font-heading text-3xl font-bold text-[#1F160F] mb-3">תודה על הזמנתך!</h1>
-          <p className="font-body text-[#6B5A45] mb-8 leading-relaxed">ההזמנה התקבלה בהצלחה. ניצור איתך קשר בקרוב לאחר בדיקת המלאי ותיאום תשלום.</p>
+          <p className="font-body text-[#6B5A45] mb-8 leading-relaxed">
+            {orderSuccessMessage || 'ההזמנה התקבלה בהצלחה. ניצור איתך קשר בקרוב לאחר בדיקת המלאי ותיאום תשלום.'}
+          </p>
           <div className="flex gap-3 justify-center">
             <Button asChild className="font-body px-8 py-3 rounded-lg" style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}>
               <Link to="/">חזרה לחנות</Link>
             </Button>
             <Button asChild variant="outline" className="font-body px-8 py-3 rounded-lg border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold">
+              <Link to="/contact">צור קשר</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (paymentSession && createdOrder) {
+    return (
+      <div className="min-h-screen bg-[#FCFAF5] px-4 py-8" dir="rtl">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-5 rounded-xl border border-[#E7D8B8] bg-white p-5 shadow-sm">
+            <h1 className="font-heading text-2xl font-bold text-[#1F160F]">תשלום מאובטח בטרנזילה</h1>
+            <p className="mt-2 font-body text-sm leading-relaxed text-[#6B5A45]">
+              ההזמנה נשמרה במערכת. יש להזין פרטי אשראי לאימות J5. החיוב הסופי יתבצע בפאנל טרנזילה לאחר אישור מנהל.
+            </p>
+            <p className="mt-2 font-body text-xs text-[#6B5A45]">
+              מספר הזמנה: {createdOrder.order_number || createdOrder.id}
+            </p>
+          </div>
+
+          {submitError && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</p>}
+
+          <form ref={paymentFormRef} action={paymentSession.iframe_url} target="tranzila-payment-frame" method="POST" className="hidden">
+            {Object.entries(paymentSession.fields || {}).map(([key, value]) => (
+              <input key={key} type="hidden" name={key} value={String(value ?? '')} readOnly />
+            ))}
+          </form>
+
+          <div className="overflow-hidden rounded-xl border border-[#E7D8B8] bg-white shadow-sm">
+            <iframe
+              title="טופס תשלום מאובטח של טרנזילה"
+              name="tranzila-payment-frame"
+              className="h-[720px] w-full bg-white"
+              allow="payment"
+            />
+          </div>
+
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => paymentFormRef.current?.submit()}
+              className="border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold"
+            >
+              טען שוב את טופס האשראי
+            </Button>
+            <Button asChild variant="outline" className="border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold">
               <Link to="/contact">צור קשר</Link>
             </Button>
           </div>

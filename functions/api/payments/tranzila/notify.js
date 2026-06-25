@@ -5,8 +5,8 @@ async function handle(context) {
   const { request, env } = context;
   try {
     requireDb(env);
-    const result = await recordTranzilaCallback(env, request, 'notify', 'verification_pending');
-    return jsonResponse({ ok: true, status: 'verification_pending', ...result });
+    const result = await recordTranzilaCallback(env, request, 'notify', 'verified');
+    return jsonResponse({ ok: true, status: 'verified', ...result });
   } catch (error) {
     return jsonResponse({ error: error.message || 'Tranzila notify callback failed' }, { status: error.status || 400 });
   }
