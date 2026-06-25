@@ -6,10 +6,19 @@ const TRANZILA_HANDSHAKE_URL = 'https://api.tranzila.com/v1/handshake/create';
 const TRANZILA_CURRENCY_NIS = '1';
 const TRANZILA_J5_MODE = 'V';
 const TRANZILA_DEFAULT_IFRAME_PATH = 'iframenew.php';
+const DEFAULT_PUBLIC_BASE_URL = 'https://otzar-hakodesh.shop';
 
-function publicBaseUrl(request) {
-  const url = new URL(request.url);
-  return `${url.protocol}//${url.host}`;
+function normalizeBaseUrl(value) {
+  return stringValue(value).replace(/\/+$/, '');
+}
+
+function publicBaseUrl(env) {
+  const configuredUrl = normalizeBaseUrl(env.TRANZILA_CALLBACK_BASE_URL || env.PUBLIC_SITE_URL);
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  return DEFAULT_PUBLIC_BASE_URL;
 }
 
 function getTerminalName(env) {
@@ -130,8 +139,8 @@ function orderProductsPayload(order) {
   }));
 }
 
-function buildJ5Fields(order, request, terminalName, env, paymentTransactionId, handshake) {
-  const baseUrl = publicBaseUrl(request);
+function buildJ5Fields(order, terminalName, env, paymentTransactionId, handshake) {
+  const baseUrl = publicBaseUrl(env);
   const amount = numberValue(order.total).toFixed(2);
   const description = orderDescription(order);
   const template = getIframeTemplate(env);
@@ -589,7 +598,7 @@ export function tranzilaCallbackHtml(type, result = {}) {
   });
 }
 
-export async function createTranzilaJ5Session(env, request, payload = {}) {
+export async function createTranzilaJ5Session(env, payload = {}) {
   const terminalName = getTerminalName(env);
   if (!terminalName) {
     const error = new Error('TRANZILA_TERMINAL_NAME is not configured');
@@ -629,7 +638,7 @@ export async function createTranzilaJ5Session(env, request, payload = {}) {
     throw error;
   }
 
-  const fields = buildJ5Fields(order, request, terminalName, env, paymentTransactionId, handshake);
+  const fields = buildJ5Fields(order, terminalName, env, paymentTransactionId, handshake);
   await updatePaymentTransactionRequest(env, order, terminalName, paymentTransactionId, fields, handshake);
 
   await env.DB.prepare(`

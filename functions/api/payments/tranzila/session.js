@@ -8,7 +8,7 @@ export async function onRequestPost({ request, env }) {
       return jsonResponse({ error: 'Unauthorized request' }, { status: 401 });
     }
 
-    const session = await createTranzilaJ5Session(env, request, await readJson(request));
+    const session = await createTranzilaJ5Session(env, await readJson(request));
     return jsonResponse({ ok: true, session });
   } catch (error) {
     return jsonResponse({ error: error.message || 'Tranzila session failed' }, { status: error.status || 400 });
