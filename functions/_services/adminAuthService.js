@@ -2,7 +2,7 @@ import { nowIso, stringValue } from './http.js';
 
 const ADMIN_SESSION_COOKIE = 'ok_admin_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
-const PASSWORD_ITERATIONS = 210000;
+const PASSWORD_ITERATIONS = 100000;
 const encoder = new TextEncoder();
 
 function bytesToBase64Url(bytes) {
