@@ -9,7 +9,7 @@ import { buildWhatsappUrl, getShippingCost, useSiteSettings } from '@/hooks/useS
 export default function Cart() {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
-  const shipping = getShippingCost(settings, totalPrice);
+  const shipping = getShippingCost(settings, totalPrice, items);
   const orderTotal = totalPrice + shipping;
   const whatsappOrderText = `שלום, אני רוצה להזמין: ${items.map(i => `${i.product_name} (${i.quantity})`).join(', ')}. משלוח: ${shipping === 0 ? 'חינם' : `₪${shipping.toFixed(2)}`}. סה"כ: ₪${orderTotal.toFixed(2)}`;
 

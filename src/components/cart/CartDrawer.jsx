@@ -18,7 +18,7 @@ export default function CartDrawer() {
     totalPrice,
   } = useCart();
   const { settings } = useSiteSettings();
-  const shipping = getShippingCost(settings, totalPrice);
+  const shipping = getShippingCost(settings, totalPrice, items);
   const orderTotal = totalPrice + shipping;
 
   const handleOpenChange = (open) => {

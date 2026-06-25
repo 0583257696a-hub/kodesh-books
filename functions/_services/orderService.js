@@ -130,6 +130,13 @@ function generateOrderNumber() {
   return `OK-${day}-${suffix}`;
 }
 
+function calculateShippingCost(settings, subtotal, items = []) {
+  const freeThreshold = numberValue(settings.free_shipping_threshold);
+  if (freeThreshold > 0 && subtotal >= freeThreshold) return 0;
+  if (items.length > 0 && items.every((item) => item.free_shipping)) return 0;
+  return numberValue(settings.shipping_cost, 0);
+}
+
 async function enrichItems(env, rawItems, settings) {
   const enforceStock = boolSetting(settings.enforce_stock_limit, false);
   const items = [];
@@ -161,6 +168,7 @@ async function enrichItems(env, rawItems, settings) {
       price: unitPrice,
       cost_price: numberValue(product?.cost_price),
       line_total: unitPrice * quantity,
+      free_shipping: product ? boolSetting(product.free_shipping, false) : boolSetting(rawItem.free_shipping, false),
     });
   }
 
@@ -208,8 +216,8 @@ export async function createOrder(env, payload = {}) {
   const settings = await getSettingsMap(env);
   const { items, reservations } = await enrichItems(env, payload.items, settings);
   const subtotal = numberValue(payload.subtotal, items.reduce((sum, item) => sum + item.line_total, 0));
-  const shippingCost = numberValue(payload.shipping_cost);
-  const total = numberValue(payload.total, subtotal + shippingCost);
+  const shippingCost = calculateShippingCost(settings, subtotal, items);
+  const total = subtotal + shippingCost;
   const id = crypto.randomUUID();
   const customerId = await getOrCreateCustomer(env, form, now);
   const orderNumber = generateOrderNumber();

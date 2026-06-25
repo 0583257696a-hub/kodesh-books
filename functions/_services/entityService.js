@@ -141,7 +141,7 @@ const PRODUCT_FIELDS = [
   'sku', 'barcode', 'category_id', 'category_slug', 'sub_category', 'additional_categories_json',
   'price', 'sale_price', 'cost_price', 'stock_quantity', 'weight', 'language', 'image_url',
   'gallery_urls_json', 'tags_json', 'seo_title', 'meta_description', 'imported_at',
-  'is_new', 'is_on_sale', 'is_featured', 'in_stock',
+  'is_new', 'is_on_sale', 'is_featured', 'in_stock', 'free_shipping',
 ];
 
 function boolToDb(value) {
@@ -157,7 +157,7 @@ function toEntity(row = {}) {
       next[key.slice(0, -5)] = parseJson(value, []);
     }
   }
-  for (const key of ['is_active', 'active', 'show_in_home', 'show_in_nav', 'is_public', 'found_results', 'is_new', 'is_on_sale', 'is_featured', 'in_stock']) {
+  for (const key of ['is_active', 'active', 'show_in_home', 'show_in_nav', 'is_public', 'found_results', 'is_new', 'is_on_sale', 'is_featured', 'in_stock', 'free_shipping']) {
     if (key in next) next[key] = next[key] !== 0;
   }
   if (next.name && !next.full_name) next.full_name = next.name;
@@ -232,6 +232,7 @@ function productPayload(payload = {}) {
     is_on_sale: boolToDb(payload.is_on_sale),
     is_featured: boolToDb(payload.is_featured),
     in_stock: payload.in_stock === false ? 0 : 1,
+    free_shipping: boolToDb(payload.free_shipping),
   };
 }
 

@@ -29,12 +29,14 @@ const EMPTY = {
   is_on_sale: false,
   is_featured: false,
   in_stock: true,
+  free_shipping: false,
 };
 
 const tagClass = {
   new: 'bg-amber-50 text-amber-700 border-amber-100',
   sale: 'bg-rose-50 text-rose-700 border-rose-100',
   featured: 'bg-blue-50 text-blue-700 border-blue-100',
+  shipping: 'bg-cyan-50 text-cyan-700 border-cyan-100',
   stock: 'bg-emerald-50 text-emerald-700 border-emerald-100',
   out: 'bg-slate-100 text-slate-500 border-slate-200',
 };
@@ -239,8 +241,9 @@ export default function AdminProducts() {
                       {product.is_new && <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tagClass.new}`}>חדש</span>}
                       {product.is_on_sale && <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tagClass.sale}`}>מבצע</span>}
                       {product.is_featured && <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tagClass.featured}`}>מומלץ</span>}
+                      {product.free_shipping && <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tagClass.shipping}`}>משלוח חינם</span>}
                       {(product.tags || []).slice(0, 3).map((tag) => <span key={tag} className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">{tag}</span>)}
-                      {!product.is_new && !product.is_on_sale && !product.is_featured && !(product.tags || []).length && <span className="text-xs text-slate-400">אין תגיות</span>}
+                      {!product.is_new && !product.is_on_sale && !product.is_featured && !product.free_shipping && !(product.tags || []).length && <span className="text-xs text-slate-400">אין תגיות</span>}
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -388,6 +391,7 @@ export default function AdminProducts() {
                   { key: 'is_on_sale', label: 'במבצע' },
                   { key: 'is_featured', label: 'מוצר מומלץ' },
                   { key: 'in_stock', label: 'במלאי' },
+                  { key: 'free_shipping', label: 'משלוח חינם' },
                 ].map((item) => (
                   <div key={item.key} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
                     <Label className="text-sm text-slate-700">{item.label}</Label>

@@ -29,9 +29,16 @@ export function CartProvider({ children }) {
     setItems(prev => {
       const existing = prev.find(i => i.product_id === product.id);
       if (existing) {
-        return prev.map(i => i.product_id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => i.product_id === product.id ? { ...i, quantity: i.quantity + 1, free_shipping: i.free_shipping || !!product.free_shipping } : i);
       }
-      return [...prev, { product_id: product.id, product_name: product.name, price: product.sale_price || product.price, image_url: product.image_url, quantity: 1 }];
+      return [...prev, {
+        product_id: product.id,
+        product_name: product.name,
+        price: product.sale_price || product.price,
+        image_url: product.image_url,
+        quantity: 1,
+        free_shipping: !!product.free_shipping,
+      }];
     });
     setIsCartOpen(true);
   };

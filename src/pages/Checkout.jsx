@@ -23,7 +23,7 @@ export default function Checkout() {
   const [orderSuccessMessage, setOrderSuccessMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  const shipping = getShippingCost(settings, totalPrice);
+  const shipping = getShippingCost(settings, totalPrice, items);
   const total = totalPrice + shipping;
 
   const handleSubmit = async (e) => {
@@ -52,6 +52,7 @@ export default function Checkout() {
         quantity: i.quantity,
         price: i.price,
         image_url: i.image_url,
+        free_shipping: !!i.free_shipping,
       }));
 
       const order = await createOrder({

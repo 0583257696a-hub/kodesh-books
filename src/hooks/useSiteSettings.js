@@ -106,9 +106,10 @@ export function buildMailUrl(email, subject = '') {
   return `mailto:${cleanEmail}${query}`;
 }
 
-export function getShippingCost(settings = DEFAULT_SITE_SETTINGS, subtotal = 0) {
+export function getShippingCost(settings = DEFAULT_SITE_SETTINGS, subtotal = 0, items = []) {
   const cost = Number(settings.shipping_cost ?? DEFAULT_SITE_SETTINGS.shipping_cost) || 0;
   const freeThreshold = Number(settings.free_shipping_threshold ?? DEFAULT_SITE_SETTINGS.free_shipping_threshold) || 0;
   if (freeThreshold > 0 && subtotal >= freeThreshold) return 0;
+  if (items.length > 0 && items.every((item) => item.free_shipping)) return 0;
   return cost;
 }

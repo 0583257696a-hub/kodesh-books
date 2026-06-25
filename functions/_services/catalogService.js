@@ -62,6 +62,7 @@ function normalizeProductRow(row, imageRows = []) {
     is_on_sale: boolValue(row.is_on_sale),
     is_featured: boolValue(row.is_featured),
     in_stock: boolValue(row.in_stock),
+    free_shipping: boolValue(row.free_shipping),
     created_date: row.created_at,
     updated_date: row.updated_at,
     created_at: row.created_at,
