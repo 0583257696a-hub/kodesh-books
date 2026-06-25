@@ -2,6 +2,7 @@ import { getOrder } from './orderService.js';
 import { nowIso, numberValue, stringValue } from './http.js';
 
 const TRANZILA_DIRECT_BASE_URL = 'https://direct.tranzila.com';
+const TRANZILA_HANDSHAKE_URL = 'https://api.tranzila.com/v1/handshake/create';
 const TRANZILA_CURRENCY_NIS = '1';
 const TRANZILA_J5_MODE = 'V';
 const TRANZILA_DEFAULT_IFRAME_PATH = 'iframenew.php';
@@ -13,6 +14,14 @@ function publicBaseUrl(request) {
 
 function getTerminalName(env) {
   return stringValue(env.TRANZILA_TERMINAL_NAME);
+}
+
+function getHandshakePassword(env) {
+  return stringValue(
+    env.TRANZILA_HANDSHAKE_PASSWORD
+    || env.TRANZILA_TOKEN_PASSWORD
+    || env.TRANZILA_PASSWORD
+  );
 }
 
 function getIframePath(env) {
@@ -47,6 +56,51 @@ function compactJson(value) {
   return JSON.stringify(value);
 }
 
+function parseHandshakeResponse(text) {
+  const trimmed = String(text || '').trim();
+  let data = {};
+
+  if (!trimmed) {
+    return { token: '', data };
+  }
+
+  try {
+    data = JSON.parse(trimmed);
+  } catch {
+    data = Object.fromEntries(new URLSearchParams(trimmed).entries());
+  }
+
+  return {
+    token: stringValue(data.thtk || data.token || data.TranzilaTK),
+    data,
+  };
+}
+
+async function createHandshake(env, terminalName, amount) {
+  const handshakePassword = getHandshakePassword(env);
+  if (!handshakePassword) {
+    return null;
+  }
+
+  const url = new URL(TRANZILA_HANDSHAKE_URL);
+  url.searchParams.set('supplier', terminalName);
+  url.searchParams.set('sum', amount);
+  url.searchParams.set('TranzilaPW', handshakePassword);
+
+  const response = await fetch(url.toString(), { method: 'GET' });
+  const text = await response.text();
+  const parsed = parseHandshakeResponse(text);
+
+  if (!response.ok || !parsed.token) {
+    const error = new Error('Tranzila handshake failed');
+    error.status = 502;
+    error.details = parsed.data;
+    throw error;
+  }
+
+  return parsed;
+}
+
 function escapeHtml(value = '') {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -76,7 +130,7 @@ function orderProductsPayload(order) {
   }));
 }
 
-function buildJ5Fields(order, request, terminalName, env) {
+function buildJ5Fields(order, request, terminalName, env, paymentTransactionId, handshake) {
   const baseUrl = publicBaseUrl(request);
   const amount = numberValue(order.total).toFixed(2);
   const description = orderDescription(order);
@@ -91,8 +145,9 @@ function buildJ5Fields(order, request, terminalName, env) {
     lang: 'il',
     accessibility: '2',
     newprocess: '1',
+    new_process: '1',
     u71: '1',
-    DCdisable: order.id,
+    DCdisable: paymentTransactionId,
     buttonLabel: 'אישור פרטי אשראי',
     success_url_address: `${baseUrl}/api/payments/tranzila/success?order_id=${encodeURIComponent(order.id)}`,
     fail_url_address: `${baseUrl}/api/payments/tranzila/fail?order_id=${encodeURIComponent(order.id)}`,
@@ -116,45 +171,32 @@ function buildJ5Fields(order, request, terminalName, env) {
     fields.template = template;
   }
 
+  if (handshake?.token) {
+    fields.thtk = handshake.token;
+  }
+
   return fields;
 }
 
-async function upsertPaymentTransaction(env, order, terminalName, requestFields) {
-  const now = nowIso();
-  const existing = await env.DB.prepare(`
+async function getOpenPaymentTransaction(env, orderId) {
+  return env.DB.prepare(`
     SELECT * FROM payment_transactions
     WHERE order_id = ? AND provider = 'tranzila' AND status IN ('initiated', 'redirect_created', 'verification_pending')
     ORDER BY created_at DESC
     LIMIT 1
-  `).bind(order.id).first();
+  `).bind(orderId).first();
+}
+
+async function getOrCreatePaymentTransaction(env, order, terminalName) {
+  const existing = await getOpenPaymentTransaction(env, order.id);
 
   if (existing) {
-    await env.DB.prepare(`
-      UPDATE payment_transactions
-      SET terminal_name = ?,
-          transaction_mode = ?,
-          transaction_type = ?,
-          currency = ?,
-          amount = ?,
-          status = 'redirect_created',
-          request_json = ?,
-          updated_at = ?
-      WHERE id = ?
-    `).bind(
-      terminalName,
-      TRANZILA_J5_MODE,
-      'j5_verification',
-      TRANZILA_CURRENCY_NIS,
-      numberValue(order.total),
-      JSON.stringify(requestFields),
-      now,
-      existing.id
-    ).run();
-
     return existing.id;
   }
 
   const id = crypto.randomUUID();
+  const now = nowIso();
+
   await env.DB.prepare(`
     INSERT INTO payment_transactions (
       id,
@@ -169,7 +211,7 @@ async function upsertPaymentTransaction(env, order, terminalName, requestFields)
       created_at,
       updated_at
     )
-    VALUES (?, ?, ?, ?, 'j5_verification', ?, ?, 'redirect_created', ?, ?, ?)
+    VALUES (?, ?, ?, ?, 'j5_verification', ?, ?, 'initiated', '{}', ?, ?)
   `).bind(
     id,
     order.id,
@@ -177,12 +219,51 @@ async function upsertPaymentTransaction(env, order, terminalName, requestFields)
     TRANZILA_J5_MODE,
     TRANZILA_CURRENCY_NIS,
     numberValue(order.total),
-    JSON.stringify(requestFields),
     now,
     now
   ).run();
 
   return id;
+}
+
+async function updatePaymentTransactionRequest(env, order, terminalName, transactionId, requestFields, handshake) {
+  await env.DB.prepare(`
+    UPDATE payment_transactions
+    SET terminal_name = ?,
+        transaction_mode = ?,
+        transaction_type = ?,
+        currency = ?,
+        amount = ?,
+        status = 'redirect_created',
+        request_json = ?,
+        error_message = NULL,
+        updated_at = ?
+    WHERE id = ?
+  `).bind(
+    terminalName,
+    TRANZILA_J5_MODE,
+    'j5_verification',
+    TRANZILA_CURRENCY_NIS,
+    numberValue(order.total),
+    JSON.stringify({
+      ...requestFields,
+      handshake: handshake?.data || null,
+    }),
+    nowIso(),
+    transactionId
+  ).run();
+}
+
+async function markPaymentTransactionError(env, orderId, error) {
+  const existing = await getOpenPaymentTransaction(env, orderId);
+  if (!existing) return;
+
+  await env.DB.prepare(`
+    UPDATE payment_transactions
+    SET error_message = ?,
+        updated_at = ?
+    WHERE id = ?
+  `).bind(error.message || 'Tranzila session failed', nowIso(), existing.id).run();
 }
 
 async function readCallbackPayload(request) {
@@ -359,8 +440,19 @@ export async function createTranzilaJ5Session(env, request, payload = {}) {
     throw error;
   }
 
-  const fields = buildJ5Fields(order, request, terminalName, env);
-  const paymentTransactionId = await upsertPaymentTransaction(env, order, terminalName, fields);
+  const paymentTransactionId = await getOrCreatePaymentTransaction(env, order, terminalName);
+  const amount = numberValue(order.total).toFixed(2);
+  let handshake = null;
+
+  try {
+    handshake = await createHandshake(env, terminalName, amount);
+  } catch (error) {
+    await markPaymentTransactionError(env, order.id, error);
+    throw error;
+  }
+
+  const fields = buildJ5Fields(order, request, terminalName, env, paymentTransactionId, handshake);
+  await updatePaymentTransactionRequest(env, order, terminalName, paymentTransactionId, fields, handshake);
 
   await env.DB.prepare(`
     UPDATE orders
@@ -378,5 +470,6 @@ export async function createTranzilaJ5Session(env, request, payload = {}) {
     iframe_url: getIframeUrl(env, terminalName),
     method: 'POST',
     fields,
+    handshake_enabled: Boolean(handshake?.token),
   };
 }
