@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,26 +11,58 @@ import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
 import { markCheckoutStarted } from '@/services/cartService';
 import { createOrder, createTranzilaJ5Session } from '@/services/orderService';
 
+function escapeHtmlAttribute(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function buildTranzilaIframeHtml(paymentSession) {
+  if (!paymentSession) return '';
+
+  const inputs = Object.entries(paymentSession.fields || {})
+    .map(([key, value]) => `<input type="hidden" name="${escapeHtmlAttribute(key)}" value="${escapeHtmlAttribute(value)}" />`)
+    .join('');
+
+  return `<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body style="margin:0;background:#fff;">
+  <form id="tranzila-payment-form" action="${escapeHtmlAttribute(paymentSession.iframe_url)}" method="POST">
+    ${inputs}
+  </form>
+  <script>
+    window.setTimeout(function () {
+      document.getElementById('tranzila-payment-form').submit();
+    }, 50);
+  </script>
+</body>
+</html>`;
+}
+
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
-  const paymentFormRef = useRef(null);
   const [form, setForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', city: '', shipping_address: '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [createdOrder, setCreatedOrder] = useState(null);
   const [paymentSession, setPaymentSession] = useState(null);
+  const [paymentFrameKey, setPaymentFrameKey] = useState(0);
   const [orderSuccessMessage, setOrderSuccessMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
 
   const shipping = getShippingCost(settings, totalPrice, items);
   const total = totalPrice + shipping;
 
-  const submitTranzilaForm = (target = 'tranzila-payment-frame') => {
-    const formElement = paymentFormRef.current;
-    if (!formElement) return;
-    formElement.target = target;
-    formElement.submit();
+  const reloadTranzilaFrame = () => {
+    setPaymentFrameKey((key) => key + 1);
   };
 
   const handleSubmit = async (e) => {
@@ -111,16 +143,6 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    if (!paymentSession) return undefined;
-
-    const timer = window.setTimeout(() => {
-      submitTranzilaForm();
-    }, 50);
-
-    return () => window.clearTimeout(timer);
-  }, [paymentSession]);
-
-  useEffect(() => {
     const onMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (event.data?.type === 'tranzila:j5-success') {
@@ -162,6 +184,8 @@ export default function Checkout() {
   }
 
   if (paymentSession && createdOrder) {
+    const tranzilaIframeHtml = buildTranzilaIframeHtml(paymentSession);
+
     return (
       <div className="min-h-screen bg-[#FCFAF5] px-4 py-8" dir="rtl">
         <div className="mx-auto max-w-4xl">
@@ -177,16 +201,12 @@ export default function Checkout() {
 
           {submitError && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</p>}
 
-          <form ref={paymentFormRef} action={paymentSession.iframe_url} target="tranzila-payment-frame" method="POST" className="hidden">
-            {Object.entries(paymentSession.fields || {}).map(([key, value]) => (
-              <input key={key} type="hidden" name={key} value={String(value ?? '')} readOnly />
-            ))}
-          </form>
-
           <div className="overflow-hidden rounded-xl border border-[#E7D8B8] bg-white shadow-sm">
             <iframe
+              key={paymentFrameKey}
               title="טופס תשלום מאובטח של טרנזילה"
               name="tranzila-payment-frame"
+              srcDoc={tranzilaIframeHtml}
               className="h-[720px] w-full bg-white"
               allow="payment"
             />
@@ -196,7 +216,7 @@ export default function Checkout() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => submitTranzilaForm()}
+              onClick={reloadTranzilaFrame}
               className="border-[#E7D8B8] text-[#3A2415] hover:border-gold/50 hover:text-gold"
             >
               טען שוב את טופס האשראי
