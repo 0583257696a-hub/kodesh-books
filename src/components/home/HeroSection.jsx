@@ -54,7 +54,7 @@ export default function HeroSection() {
           <div className="grid items-center gap-12 md:grid-cols-[1fr_1.1fr]" dir="ltr">
             
             {/* Logo side */}
-            <div className="hidden justify-self-center md:flex flex-col items-center gap-6">
+            <div className="flex justify-self-center flex-col items-center gap-4 md:gap-6">
               <motion.div
                 initial={{ opacity: 0, scale: 0.88 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -66,7 +66,7 @@ export default function HeroSection() {
                 <img
                   src={STORE_LOGO_URL}
                   alt={`לוגו ${settings.store_name || 'אוצר הקדושה'}`}
-                  className="pointer-events-none relative z-10 h-[260px] lg:h-[290px] xl:h-[310px] w-auto object-contain drop-shadow-2xl"
+                  className="pointer-events-none relative z-10 h-32 sm:h-40 md:h-[260px] lg:h-[290px] xl:h-[310px] w-auto object-contain drop-shadow-2xl"
                 />
               </motion.div>
             </div>
