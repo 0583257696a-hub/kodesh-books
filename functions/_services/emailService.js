@@ -8,13 +8,54 @@ import {
   buildOrderDeliveredEmail,
 } from './emailTemplates.js';
 
-const MAILJET_SEND_URL = 'https://api.mailjet.com/v3.1/send';
+const MAILJET_DEFAULT_HOST = 'api.mailjet.com';
+const MAILJET_SEND_PATH = '/v3.1/send';
+
+function mailjetApiKey(env) {
+  return stringValue(env.MAILJET_API_KEY) || stringValue(env.MJ_APIKEY_PUBLIC);
+}
+
+function mailjetSecretKey(env) {
+  return stringValue(env.MAILJET_SECRET_KEY) || stringValue(env.MJ_APIKEY_PRIVATE);
+}
+
+function mailjetSendUrl(env) {
+  const host = (stringValue(env.MAILJET_API_HOST) || MAILJET_DEFAULT_HOST)
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/+$/g, '');
+  return `https://${host}${MAILJET_SEND_PATH}`;
+}
+
+function htmlToText(html = '') {
+  return String(html)
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|tr)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
 
 function getSender(env, settings = {}) {
-  return stringValue(env.MAILJET_FROM_EMAIL)
+  const sender = stringValue(env.MAILJET_FROM_EMAIL)
     || stringValue(settings.email_from)
     || stringValue(settings.from_email)
     || stringValue(settings.email);
+  const senderName = stringValue(env.MAILJET_FROM_NAME)
+    || stringValue(settings.email_from_name)
+    || storeName(settings);
+
+  if (!sender || sender.includes('<')) return sender;
+  return senderName ? `${senderName} <${sender}>` : sender;
 }
 
 function getAdminRecipient(env, settings = {}) {
@@ -173,8 +214,8 @@ function mailjetError(data, response) {
 }
 
 async function sendWithMailjet(env, payload) {
-  const credentials = btoa(`${env.MAILJET_API_KEY}:${env.MAILJET_SECRET_KEY}`);
-  const response = await fetch(MAILJET_SEND_URL, {
+  const credentials = btoa(`${mailjetApiKey(env)}:${mailjetSecretKey(env)}`);
+  const response = await fetch(mailjetSendUrl(env), {
     method: 'POST',
     headers: {
       authorization: `Basic ${credentials}`,
@@ -187,6 +228,7 @@ async function sendWithMailjet(env, payload) {
           To: [parseEmailAddress(payload.recipient)],
           Subject: payload.subject,
           HTMLPart: payload.html,
+          TextPart: payload.text || htmlToText(payload.html),
           CustomID: payload.dedupe_key,
         },
       ],
@@ -207,8 +249,8 @@ export async function sendOrderEmail(env, payload) {
     return { skipped: true, reason: 'already_sent', log_id: log.id };
   }
 
-  if (!env.MAILJET_API_KEY || !env.MAILJET_SECRET_KEY) {
-    const errorMessage = 'MAILJET_API_KEY or MAILJET_SECRET_KEY is not configured';
+  if (!mailjetApiKey(env) || !mailjetSecretKey(env)) {
+    const errorMessage = 'MAILJET_API_KEY/MJ_APIKEY_PUBLIC or MAILJET_SECRET_KEY/MJ_APIKEY_PRIVATE is not configured';
     await updateEmailLog(env, log.id, { status: 'failed', error_message: errorMessage });
     await createNotification(env, {
       type: payload.type,
