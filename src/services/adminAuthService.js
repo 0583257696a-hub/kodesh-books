@@ -35,3 +35,14 @@ export async function logoutAdmin() {
     body: '{}',
   });
 }
+
+export async function changeAdminPassword(currentPassword, newPassword) {
+  const data = await requestAdminAuth('/api/admin/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+  });
+  return data.user;
+}

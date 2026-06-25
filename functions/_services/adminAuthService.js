@@ -213,6 +213,67 @@ export async function loginAdmin(request, env, payload = {}) {
   };
 }
 
+export async function changeAdminPassword(request, env, payload = {}) {
+  const session = await requireAdmin(request, env);
+  const currentPassword = stringValue(payload.current_password || payload.currentPassword);
+  const newPassword = stringValue(payload.new_password || payload.newPassword);
+
+  if (!currentPassword || !newPassword) {
+    const error = new Error('Missing current or new password');
+    error.status = 400;
+    throw error;
+  }
+
+  if (newPassword.length < 10) {
+    const error = new Error('New password must contain at least 10 characters');
+    error.status = 400;
+    throw error;
+  }
+
+  if (currentPassword === newPassword) {
+    const error = new Error('New password must be different from the current password');
+    error.status = 400;
+    throw error;
+  }
+
+  const adminUser = await env.DB.prepare('SELECT * FROM admin_users WHERE id = ? AND active = 1 LIMIT 1')
+    .bind(session.user.id)
+    .first();
+
+  if (!adminUser) {
+    throw unauthorized('Admin authentication required');
+  }
+
+  const valid = await verifyPassword(currentPassword, adminUser);
+  if (!valid) {
+    throw unauthorized('Invalid current password');
+  }
+
+  const hashed = await hashPassword(newPassword);
+  const now = nowIso();
+
+  await env.DB.prepare(`
+    UPDATE admin_users
+    SET password_hash = ?,
+        password_salt = ?,
+        password_iterations = ?,
+        updated_at = ?
+    WHERE id = ?
+  `).bind(
+    hashed.password_hash,
+    hashed.password_salt,
+    hashed.password_iterations,
+    now,
+    adminUser.id
+  ).run();
+
+  await env.DB.prepare('DELETE FROM sessions WHERE admin_user_id = ? AND id <> ?')
+    .bind(adminUser.id, session.session_id)
+    .run();
+
+  return { user: publicAdminUser(adminUser) };
+}
+
 export async function getAdminSession(request, env) {
   const token = parseCookies(request)[ADMIN_SESSION_COOKIE];
   if (!token) return null;

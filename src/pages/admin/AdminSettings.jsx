@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { appApi } from '@/api/internalClient';
+import { changeAdminPassword } from '@/services/adminAuthService';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,6 +55,13 @@ export default function AdminSettings() {
   const [creatingUser, setCreatingUser] = useState(false);
   const [userMessage, setUserMessage] = useState('');
   const [deletingUserId, setDeletingUserId] = useState('');
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
 
   const { data: settings = [] } = useQuery({
     queryKey: ['site-settings'],
@@ -153,11 +161,94 @@ export default function AdminSettings() {
     }
   };
 
+  const handleChangePassword = async (event) => {
+    event.preventDefault();
+    setPasswordMessage('');
+
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordMessage('יש למלא סיסמה נוכחית, סיסמה חדשה ואישור סיסמה.');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 10) {
+      setPasswordMessage('הסיסמה החדשה חייבת להכיל לפחות 10 תווים.');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordMessage('אישור הסיסמה אינו תואם לסיסמה החדשה.');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await changeAdminPassword(passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordMessage('סיסמת המנהל עודכנה בהצלחה.');
+    } catch (error) {
+      setPasswordMessage(error.message === 'Invalid current password'
+        ? 'הסיסמה הנוכחית שגויה.'
+        : (error.message || 'עדכון סיסמת המנהל נכשל.'));
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   return (
     <div className="min-h-screen space-y-8 bg-white p-6 text-slate-950 lg:p-8" dir="rtl">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">ניהול הרשאות</h1>
         <p className="mt-1 text-sm text-slate-500">פתיחת משתמשים, בחירת סיסמה, הגדרת תפקידים והסרת משתמשים מהמערכת.</p>
+      </div>
+
+      <div className="rounded-lg border border-amber-100 bg-amber-50 p-6">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-slate-950">
+          <KeyRound className="h-5 w-5 text-amber-700" /> שינוי סיסמת מנהל
+        </h2>
+        <p className="mb-5 text-sm text-slate-600">עדכון סיסמת הכניסה לפאנל האדמין. הסיסמה נשמרת מוצפנת בשרת בלבד.</p>
+
+        <form onSubmit={handleChangePassword} className="grid gap-4 lg:grid-cols-4">
+          <div className="space-y-1.5">
+            <Label className="text-sm text-slate-700">סיסמה נוכחית *</Label>
+            <Input
+              type="password"
+              value={passwordForm.currentPassword}
+              onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))}
+              className="border-slate-200 bg-white text-slate-950"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm text-slate-700">סיסמה חדשה *</Label>
+            <Input
+              type="password"
+              value={passwordForm.newPassword}
+              onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))}
+              className="border-slate-200 bg-white text-slate-950"
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-sm text-slate-700">אישור סיסמה חדשה *</Label>
+            <Input
+              type="password"
+              value={passwordForm.confirmPassword}
+              onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
+              className="border-slate-200 bg-white text-slate-950"
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          <div className="flex items-end">
+            <Button type="submit" disabled={changingPassword} className="h-10 w-full bg-amber-700 text-white hover:bg-amber-800">
+              {changingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : 'עדכן סיסמה'}
+            </Button>
+          </div>
+        </form>
+
+        {passwordMessage && <p className="mt-4 text-sm text-slate-700">{passwordMessage}</p>}
       </div>
 
       <div className="rounded-lg border border-blue-100 bg-blue-50 p-6">
