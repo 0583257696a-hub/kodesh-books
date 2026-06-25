@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,41 +11,6 @@ import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
 import { markCheckoutStarted } from '@/services/cartService';
 import { createOrder, createTranzilaJ5Session } from '@/services/orderService';
 
-function escapeHtmlAttribute(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-function buildTranzilaIframeHtml(paymentSession) {
-  if (!paymentSession) return '';
-
-  const inputs = Object.entries(paymentSession.fields || {})
-    .map(([key, value]) => `<input type="hidden" name="${escapeHtmlAttribute(key)}" value="${escapeHtmlAttribute(value)}" />`)
-    .join('');
-
-  return `<!doctype html>
-<html lang="he" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-</head>
-<body style="margin:0;background:#fff;">
-  <form id="tranzila-payment-form" action="${escapeHtmlAttribute(paymentSession.iframe_url)}" method="POST">
-    ${inputs}
-  </form>
-  <script>
-    window.setTimeout(function () {
-      document.getElementById('tranzila-payment-form').submit();
-    }, 50);
-  </script>
-</body>
-</html>`;
-}
-
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
@@ -57,6 +22,7 @@ export default function Checkout() {
   const [paymentFrameKey, setPaymentFrameKey] = useState(0);
   const [orderSuccessMessage, setOrderSuccessMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
+  const tranzilaFormRef = useRef(null);
 
   const shipping = getShippingCost(settings, totalPrice, items);
   const total = totalPrice + shipping;
@@ -159,6 +125,16 @@ export default function Checkout() {
     return () => window.removeEventListener('message', onMessage);
   }, []);
 
+  useEffect(() => {
+    if (!paymentSession) return undefined;
+
+    const timer = window.setTimeout(() => {
+      tranzilaFormRef.current?.submit();
+    }, 50);
+
+    return () => window.clearTimeout(timer);
+  }, [paymentFrameKey, paymentSession]);
+
   if (orderPlaced) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4" style={{ background: '#FCFAF5' }} dir="rtl">
@@ -184,8 +160,6 @@ export default function Checkout() {
   }
 
   if (paymentSession && createdOrder) {
-    const tranzilaIframeHtml = buildTranzilaIframeHtml(paymentSession);
-
     return (
       <div className="min-h-screen bg-[#FCFAF5] px-4 py-8" dir="rtl">
         <div className="mx-auto max-w-4xl">
@@ -201,12 +175,31 @@ export default function Checkout() {
 
           {submitError && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</p>}
 
+          <form
+            ref={tranzilaFormRef}
+            action={paymentSession.iframe_url}
+            method={paymentSession.method || 'POST'}
+            target="tranzila-payment-frame"
+            className="hidden"
+            aria-hidden="true"
+          >
+            {Object.entries(paymentSession.fields || {}).map(([key, value]) => (
+              <input
+                key={key}
+                type="hidden"
+                name={key}
+                value={String(value ?? '')}
+                readOnly
+              />
+            ))}
+          </form>
+
           <div className="overflow-hidden rounded-xl border border-[#E7D8B8] bg-white shadow-sm">
             <iframe
               key={paymentFrameKey}
               title="טופס תשלום מאובטח של טרנזילה"
               name="tranzila-payment-frame"
-              srcDoc={tranzilaIframeHtml}
+              src="about:blank"
               className="h-[720px] w-full bg-white"
               allow="payment"
             />
