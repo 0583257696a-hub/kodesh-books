@@ -43,6 +43,8 @@ function normalizeOrderRow(row, items = []) {
     shipping_cost: numberValue(row.shipping_cost),
     discount_total: numberValue(row.discount_total),
     total: numberValue(row.total),
+    final_amount: numberValue(row.final_amount ?? row.total),
+    currency: stringValue(row.currency || '1'),
     items,
   };
 }
@@ -236,6 +238,8 @@ export async function createOrder(env, payload = {}) {
       shipping_cost,
       shipping_method,
       total,
+      final_amount,
+      currency,
       status,
       payment_status,
       payment_method,
@@ -247,7 +251,7 @@ export async function createOrder(env, payload = {}) {
       created_at,
       updated_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', 'manual_pending', 'manual', 0, 0, ?, ?, '', ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', 'manual_pending', 'manual', 0, 0, ?, ?, '', ?, ?)
   `).bind(
     id,
     orderNumber,
@@ -261,6 +265,8 @@ export async function createOrder(env, payload = {}) {
     shippingCost,
     stringValue(payload.shipping_method) || 'home_delivery',
     total,
+    total,
+    '1',
     JSON.stringify(reservations),
     stringValue(form.notes),
     now,

@@ -1,7 +1,7 @@
 import { getOrder } from './orderService.js';
 import { nowIso, numberValue, stringValue } from './http.js';
 
-const TRANZILA_DIRECT_BASE_URL = 'https://direct.tranzila.com';
+const TRANZILA_DEFAULT_IFRAME_BASE_URL = 'https://direct.tranzila.com';
 const TRANZILA_HANDSHAKE_URL = 'https://api.tranzila.com/v1/handshake/create';
 const TRANZILA_CURRENCY_NIS = '1';
 const TRANZILA_J5_MODE = 'V';
@@ -15,7 +15,7 @@ function normalizeBaseUrl(value) {
 }
 
 function publicBaseUrl(env) {
-  const configuredUrl = normalizeBaseUrl(env.TRANZILA_CALLBACK_BASE_URL || env.PUBLIC_SITE_URL);
+  const configuredUrl = normalizeBaseUrl(env.TRANZILA_CALLBACK_BASE_URL || env.SITE_URL || env.PUBLIC_SITE_URL);
   if (configuredUrl) {
     return configuredUrl;
   }
@@ -25,6 +25,26 @@ function publicBaseUrl(env) {
 
 function getTerminalName(env) {
   return stringValue(env.TRANZILA_TERMINAL_NAME);
+}
+
+function getTransactionMode(env) {
+  return stringValue(env.TRANZILA_TRANMODE) || TRANZILA_J5_MODE;
+}
+
+function getIframeBaseUrl(env) {
+  const baseUrl = normalizeBaseUrl(env.TRANZILA_IFRAME_BASE_URL) || TRANZILA_DEFAULT_IFRAME_BASE_URL;
+  if (!/^https:\/\/[a-z0-9.-]+$/i.test(baseUrl)) {
+    const error = new Error('TRANZILA_IFRAME_BASE_URL must be a valid https URL');
+    error.status = 500;
+    throw error;
+  }
+  return baseUrl;
+}
+
+function isFlagEnabled(value, fallback = true) {
+  const normalized = stringValue(value).toLowerCase();
+  if (!normalized) return fallback;
+  return ['1', 'true', 'yes', 'on'].includes(normalized);
 }
 
 function getHandshakePassword(env) {
@@ -53,7 +73,7 @@ function getIframeTemplate(env) {
 }
 
 function getIframeUrl(env, terminalName) {
-  const url = new URL(`${TRANZILA_DIRECT_BASE_URL}/${encodeURIComponent(terminalName)}/${getIframePath(env)}`);
+  const url = new URL(`${getIframeBaseUrl(env)}/${encodeURIComponent(terminalName)}/${getIframePath(env)}`);
   const template = getIframeTemplate(env);
 
   if (template) {
@@ -143,23 +163,26 @@ function orderProductsPayload(order) {
 
 function buildJ5Fields(order, terminalName, env, paymentTransactionId, handshake) {
   const baseUrl = publicBaseUrl(env);
-  const amount = numberValue(order.total).toFixed(2);
+  const amount = numberValue(order.final_amount ?? order.total).toFixed(2);
   const description = orderDescription(order);
   const template = getIframeTemplate(env);
+  const transactionMode = getTransactionMode(env);
 
   const fields = {
     sum: amount,
     supplier: terminalName,
     cred_type: '1',
     currency: TRANZILA_CURRENCY_NIS,
-    tranmode: TRANZILA_J5_MODE,
+    tranmode: transactionMode,
     lang: 'il',
     accessibility: '2',
     newprocess: '1',
     new_process: '1',
     u71: '1',
+    myid: order.id,
+    orderId: order.id,
     DCdisable: paymentTransactionId,
-    buttonLabel: 'אישור פרטי אשראי',
+    buttonLabel: 'אימות כרטיס',
     success_url_address: `${baseUrl}/api/payments/tranzila/success?order_id=${encodeURIComponent(order.id)}`,
     fail_url_address: `${baseUrl}/api/payments/tranzila/fail?order_id=${encodeURIComponent(order.id)}`,
     notify_url_address: `${baseUrl}/api/payments/tranzila/notify?order_id=${encodeURIComponent(order.id)}`,
@@ -227,9 +250,9 @@ async function getOrCreatePaymentTransaction(env, order, terminalName) {
     id,
     order.id,
     terminalName,
-    TRANZILA_J5_MODE,
+    getTransactionMode(env),
     TRANZILA_CURRENCY_NIS,
-    numberValue(order.total),
+    numberValue(order.final_amount ?? order.total),
     now,
     now
   ).run();
@@ -252,10 +275,10 @@ async function updatePaymentTransactionRequest(env, order, terminalName, transac
     WHERE id = ?
   `).bind(
     terminalName,
-    TRANZILA_J5_MODE,
+    getTransactionMode(env),
     'j5_verification',
     TRANZILA_CURRENCY_NIS,
-    numberValue(order.total),
+    numberValue(order.final_amount ?? order.total),
     JSON.stringify({
       ...requestFields,
       handshake: handshake?.data || null,
@@ -299,14 +322,64 @@ async function readCallbackPayload(request) {
   return payload;
 }
 
-function callbackTransactionId(payload) {
+const SENSITIVE_PAYLOAD_KEYS = new Set([
+  'ccno_full',
+  'card_number',
+  'cardNumber',
+  'credit_card',
+  'pan',
+  'cvv',
+  'cvv2',
+  'cccvv',
+  'expdate',
+  'expiry',
+  'expiration',
+]);
+
+function sanitizeTranzilaPayload(payload = {}) {
+  return Object.entries(payload).reduce((acc, [key, value]) => {
+    const text = stringValue(Array.isArray(value) ? value[0] : value);
+    if (SENSITIVE_PAYLOAD_KEYS.has(key)) {
+      acc[key] = '[REMOVED]';
+      return acc;
+    }
+    if (key.toLowerCase() === 'ccno' && text.length > 4) {
+      acc[key] = text.slice(-4);
+      return acc;
+    }
+    acc[key] = text;
+    return acc;
+  }, {});
+}
+
+function callbackToken(payload) {
   return stringValue(
     payload.TranzilaTK
-    || payload.tranzila_transaction_id
+    || payload.tranzilaTK
+    || payload.tranzila_token
+    || payload.card_token
+    || payload.token
+  );
+}
+
+function callbackCardLast4(payload) {
+  const value = stringValue(payload.ccno || payload.card_last4 || payload.last4);
+  return value ? value.slice(-4) : '';
+}
+
+function callbackTransactionId(payload) {
+  return stringValue(
+    payload.tranzila_transaction_id
     || payload.transaction_id
+    || payload.txn_id
+    || payload.reference_txn_id
     || payload.index
     || payload.Index
   );
+}
+
+function callbackTranzilaIndex(payload) {
+  return stringValue(payload.index || payload.Index || payload.tranzila_index);
 }
 
 function callbackMerchantTransactionId(payload) {
@@ -321,9 +394,42 @@ function callbackConfirmationCode(payload) {
   return stringValue(
     payload.ConfirmationCode
     || payload.confirmation_code
+    || payload.auth_number
+    || payload.AuthNumber
     || payload.authnr
     || payload.AuthNr
   );
+}
+
+function callbackResponseMessage(payload) {
+  return stringValue(
+    payload.ResponseDescription
+    || payload.response_description
+    || payload.response_message
+    || payload.errdesc
+    || payload.error
+    || payload.message
+  );
+}
+
+function callbackAmount(payload) {
+  return numberValue(payload.sum || payload.Sum || payload.amount || payload.Amount, null);
+}
+
+function callbackCurrency(payload) {
+  return stringValue(payload.currency || payload.Currency) || TRANZILA_CURRENCY_NIS;
+}
+
+function callbackCardType(payload) {
+  return stringValue(payload.cardtype || payload.card_type || payload.cardType);
+}
+
+function callbackCardIssuer(payload) {
+  return stringValue(payload.cardissuer || payload.card_issuer || payload.cardIssuer);
+}
+
+function callbackCardAcquirer(payload) {
+  return stringValue(payload.cardacquirer || payload.card_acquirer || payload.cardAcquirer);
 }
 
 function callbackApplicationCode(payload) {
@@ -391,49 +497,113 @@ export async function recordTranzilaCallback(env, request, source, status) {
     throw error;
   }
 
+  const order = await getOrder(env, orderId);
+  if (!order) {
+    const error = new Error('Order not found');
+    error.status = 404;
+    throw error;
+  }
+
+  const cleanPayload = sanitizeTranzilaPayload(payload);
+  const responseMessage = callbackResponseMessage(payload);
+  const token = callbackToken(payload);
+  const cardLast4 = callbackCardLast4(payload);
+  const providerTransactionId = callbackTransactionId(payload) || existing.provider_transaction_id || existing.id;
+  const confirmationCode = callbackConfirmationCode(payload);
+  const expectedAmount = numberValue(order.final_amount ?? order.total);
+  const returnedAmount = callbackAmount(payload);
+  const amountMatches = returnedAmount === null || returnedAmount <= 0 || returnedAmount.toFixed(2) === expectedAmount.toFixed(2);
+  const finalStatus = amountMatches ? resolvedStatus : 'verification_failed';
+  const finalApplicationCode = amountMatches ? applicationCode : (applicationCode || 'AMOUNT_MISMATCH');
+  const finalResponseMessage = amountMatches ? responseMessage : 'Amount mismatch';
+
   await env.DB.prepare(`
     UPDATE payment_transactions
     SET status = ?,
         provider_transaction_id = COALESCE(?, provider_transaction_id),
         provider_confirmation_code = COALESCE(?, provider_confirmation_code),
+        payment_stage = 'verification',
+        response_code = ?,
+        response_message = ?,
+        tranzila_index = COALESCE(?, tranzila_index),
+        tranzila_token = COALESCE(?, tranzila_token),
+        card_last4 = COALESCE(?, card_last4),
+        card_type = COALESCE(?, card_type),
+        card_issuer = COALESCE(?, card_issuer),
+        card_acquirer = COALESCE(?, card_acquirer),
+        auth_number = COALESCE(?, auth_number),
         response_json = ?,
         notify_payload_json = ?,
+        raw_payload_json = ?,
         verified_at = CASE WHEN ? = 'verified' THEN COALESCE(verified_at, ?) ELSE verified_at END,
+        error_message = CASE WHEN ? = 'verification_failed' THEN ? ELSE NULL END,
         updated_at = ?
     WHERE id = ?
   `).bind(
-    resolvedStatus,
-    callbackTransactionId(payload) || null,
-    callbackConfirmationCode(payload) || null,
-    JSON.stringify({ source, application_code: applicationCode || null, payload }),
-    JSON.stringify(payload),
-    resolvedStatus,
+    finalStatus,
+    providerTransactionId || null,
+    confirmationCode || null,
+    finalApplicationCode || null,
+    finalResponseMessage || null,
+    callbackTranzilaIndex(payload) || null,
+    token || null,
+    cardLast4 || null,
+    callbackCardType(payload) || null,
+    callbackCardIssuer(payload) || null,
+    callbackCardAcquirer(payload) || null,
+    confirmationCode || null,
+    JSON.stringify({ source, application_code: finalApplicationCode || null, payload: cleanPayload }),
+    JSON.stringify(cleanPayload),
+    JSON.stringify(cleanPayload),
+    finalStatus,
     now,
+    finalStatus,
+    finalResponseMessage || finalApplicationCode || 'Verification failed',
     now,
     existing.id
   ).run();
 
-  const providerTransactionId = callbackTransactionId(payload) || existing.provider_transaction_id || existing.id;
-  const paymentStatus = resolvedStatus === 'verified'
-    ? 'j5_verified'
-    : resolvedStatus === 'verification_failed'
-      ? 'j5_failed'
-      : 'j5_pending';
+  const paymentStatus = finalStatus === 'verified'
+    ? 'payment_verified_waiting_manager_approval'
+    : finalStatus === 'verification_failed'
+      ? 'payment_verification_failed'
+      : 'pending_payment_verification';
 
   await env.DB.prepare(`
     UPDATE orders
     SET payment_status = ?,
         payment_method = 'tranzila_j5',
         payment_reference = ?,
+        payment_provider = 'tranzila',
+        manager_approval_status = CASE WHEN ? = 'verified' THEN 'waiting' ELSE manager_approval_status END,
+        tranzila_token = CASE WHEN ? = 'verified' THEN COALESCE(?, tranzila_token) ELSE tranzila_token END,
+        card_last4 = CASE WHEN ? = 'verified' THEN COALESCE(?, card_last4) ELSE card_last4 END,
+        verified_at = CASE WHEN ? = 'verified' THEN COALESCE(verified_at, ?) ELSE verified_at END,
+        payment_error = CASE WHEN ? = 'verification_failed' THEN ? ELSE NULL END,
         updated_at = ?
     WHERE id = ?
-  `).bind(paymentStatus, providerTransactionId, now, orderId).run();
+  `).bind(
+    paymentStatus,
+    providerTransactionId,
+    finalStatus,
+    finalStatus,
+    token || null,
+    finalStatus,
+    cardLast4 || null,
+    finalStatus,
+    now,
+    finalStatus,
+    finalResponseMessage || finalApplicationCode || 'Verification failed',
+    now,
+    orderId
+  ).run();
 
   return {
     order_id: orderId,
     transaction_id: existing.id,
-    status: resolvedStatus,
-    application_code: applicationCode || null,
+    status: finalStatus,
+    application_code: finalApplicationCode || null,
+    amount_mismatch: !amountMatches,
   };
 }
 
@@ -646,6 +816,12 @@ export async function createTranzilaJ5Session(env, payload = {}) {
     throw error;
   }
 
+  if (!isFlagEnabled(env.TRANZILA_ENABLE_J5, true)) {
+    const error = new Error('Tranzila J5 verification is disabled');
+    error.status = 503;
+    throw error;
+  }
+
   const orderId = stringValue(payload.order_id || payload.orderId);
   const customerEmail = stringValue(payload.customer_email || payload.customerEmail).toLowerCase();
   if (!orderId || !customerEmail) {
@@ -668,7 +844,7 @@ export async function createTranzilaJ5Session(env, payload = {}) {
   }
 
   const paymentTransactionId = await getOrCreatePaymentTransaction(env, order, terminalName);
-  const amount = numberValue(order.total).toFixed(2);
+  const amount = numberValue(order.final_amount ?? order.total).toFixed(2);
   let handshake = null;
 
   try {
@@ -683,12 +859,16 @@ export async function createTranzilaJ5Session(env, payload = {}) {
 
   await env.DB.prepare(`
     UPDATE orders
-    SET payment_status = 'j5_session_created',
+    SET payment_status = 'pending_payment_verification',
         payment_method = 'tranzila_j5',
+        payment_provider = 'tranzila',
         payment_reference = ?,
+        final_amount = ?,
+        currency = ?,
+        payment_error = NULL,
         updated_at = ?
     WHERE id = ?
-  `).bind(paymentTransactionId, nowIso(), order.id).run();
+  `).bind(paymentTransactionId, numberValue(order.final_amount ?? order.total), TRANZILA_CURRENCY_NIS, nowIso(), order.id).run();
 
   return {
     provider: 'tranzila',

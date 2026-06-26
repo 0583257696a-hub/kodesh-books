@@ -128,28 +128,46 @@ export async function syncCustomerAdminAccess(env, customerOrId) {
     return null;
   }
 
-  if (!customer.password_hash || !customer.password_salt) {
-    return null;
-  }
+  const hasCustomerPassword = Boolean(customer.password_hash && customer.password_salt);
+  const generatedPassword = hasCustomerPassword || existingAdmin ? null : await hashPassword(randomToken(32));
+  const adminPasswordHash = hasCustomerPassword ? customer.password_hash : generatedPassword?.password_hash;
+  const adminPasswordSalt = hasCustomerPassword ? customer.password_salt : generatedPassword?.password_salt;
+  const adminPasswordIterations = hasCustomerPassword
+    ? Number(customer.password_iterations || PASSWORD_ITERATIONS)
+    : Number(generatedPassword?.password_iterations || PASSWORD_ITERATIONS);
 
   if (existingAdmin) {
-    await env.DB.prepare(`
-      UPDATE admin_users
-      SET password_hash = ?,
-          password_salt = ?,
-          password_iterations = ?,
-          full_name = ?,
-          active = 1,
-          updated_at = ?
-      WHERE id = ?
-    `).bind(
-      customer.password_hash,
-      customer.password_salt,
-      Number(customer.password_iterations || PASSWORD_ITERATIONS),
-      stringValue(customer.full_name) || email.split('@')[0] || 'Admin',
-      now,
-      existingAdmin.id
-    ).run();
+    if (hasCustomerPassword) {
+      await env.DB.prepare(`
+        UPDATE admin_users
+        SET password_hash = ?,
+            password_salt = ?,
+            password_iterations = ?,
+            full_name = ?,
+            active = 1,
+            updated_at = ?
+        WHERE id = ?
+      `).bind(
+        adminPasswordHash,
+        adminPasswordSalt,
+        adminPasswordIterations,
+        stringValue(customer.full_name) || email.split('@')[0] || 'Admin',
+        now,
+        existingAdmin.id
+      ).run();
+    } else {
+      await env.DB.prepare(`
+        UPDATE admin_users
+        SET full_name = ?,
+            active = 1,
+            updated_at = ?
+        WHERE id = ?
+      `).bind(
+        stringValue(customer.full_name) || email.split('@')[0] || 'Admin',
+        now,
+        existingAdmin.id
+      ).run();
+    }
     return existingAdmin.id;
   }
 
@@ -171,9 +189,9 @@ export async function syncCustomerAdminAccess(env, customerOrId) {
   `).bind(
     adminId,
     email,
-    customer.password_hash,
-    customer.password_salt,
-    Number(customer.password_iterations || PASSWORD_ITERATIONS),
+    adminPasswordHash,
+    adminPasswordSalt,
+    adminPasswordIterations,
     stringValue(customer.full_name) || email.split('@')[0] || 'Admin',
     now,
     now
@@ -546,6 +564,9 @@ export async function resetCustomerPassword(env, payload = {}) {
         reset_token_hash = NULL, reset_token_expires_at = NULL, updated_at = ?
     WHERE id = ?
   `).bind(hashed.password_hash, hashed.password_salt, hashed.password_iterations, nowIso(), customer.id).run();
+
+  const updatedCustomer = await findCustomerById(env, customer.id);
+  await syncCustomerAdminAccess(env, updatedCustomer);
 
   return { ok: true };
 }

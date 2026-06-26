@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, Eye, Printer, Clock, AlertCircle, Truck, CheckCircle2 } from 'lucide-react';
+import { Search, Eye, Printer, Clock, AlertCircle, Truck, CheckCircle2, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   calculateOrderProfit,
@@ -22,6 +22,22 @@ const STATUS = {
   delivered: { ...ORDER_STATUSES.delivered, color: ORDER_STATUSES.delivered.tone, icon: Truck },
   cancelled: { ...ORDER_STATUSES.cancelled, color: ORDER_STATUSES.cancelled.tone, icon: AlertCircle },
 };
+
+const PAYMENT_STATUS_LABELS = {
+  manual_pending: 'ממתין לתשלום',
+  pending_payment_verification: 'ממתין לאימות אשראי',
+  payment_verified_waiting_manager_approval: 'אומת - לאישור בפאנל טרנזילה',
+  payment_verification_failed: 'אימות אשראי נכשל',
+  paid: 'שולם',
+  j5_session_created: 'נפתח אימות אשראי',
+  j5_verified: 'אומת - לאישור בפאנל טרנזילה',
+  j5_failed: 'אימות אשראי נכשל',
+  j5_pending: 'ממתין לאימות אשראי',
+};
+
+function paymentStatusLabel(order) {
+  return PAYMENT_STATUS_LABELS[order?.payment_status] || order?.payment_status || 'לא ידוע';
+}
 
 export default function AdminOrders() {
   const queryClient = useQueryClient();
@@ -225,6 +241,29 @@ export default function AdminOrders() {
                   <p className="text-xs text-slate-500">רווח</p>
                   <p className="font-bold text-emerald-700">{currency(profit.profit)}</p>
                 </div>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-white p-3">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-slate-500" />
+                    <p className="font-semibold text-slate-950">תשלום טרנזילה</p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">
+                    {paymentStatusLabel(selectedOrder)}
+                  </span>
+                </div>
+                <div className="grid gap-2 text-xs text-slate-600 sm:grid-cols-2">
+                  <div>סכום לחיוב: <span className="font-semibold text-slate-950">₪{Number(selectedOrder.final_amount ?? selectedOrder.total ?? 0).toFixed(2)}</span></div>
+                  <div>מטבע: <span className="font-semibold text-slate-950">{selectedOrder.currency || '1'}</span></div>
+                  <div>כרטיס: <span className="font-semibold text-slate-950">{selectedOrder.card_last4 ? `**** ${selectedOrder.card_last4}` : 'לא נקלט'}</span></div>
+                  <div>אימות: <span className="font-semibold text-slate-950">{selectedOrder.verified_at ? format(new Date(selectedOrder.verified_at), 'dd/MM/yy HH:mm') : 'ממתין'}</span></div>
+                </div>
+                {selectedOrder.payment_error && (
+                  <p className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">{selectedOrder.payment_error}</p>
+                )}
+                <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  האישור והחיוב הסופי מתבצעים בפאנל טרנזילה, לא מתוך האתר.
+                </p>
               </div>
               <div className="space-y-2">
                 <p className="text-xs text-slate-500">הערות פנימיות</p>
