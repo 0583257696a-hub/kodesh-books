@@ -10,7 +10,6 @@
    - `tranmode=V`
    - `sum`
    - `currency=1`
-   - `myid`
    - `orderId`
    - `DCdisable`
    - כתובות success/fail/notify
@@ -54,7 +53,7 @@ TRANZILA_IFRAME_TEMPLATE=
 ## מה הוטמע
 
 - יצירת session ל-iframe עם `tranmode=V`.
-- זיהוי הזמנה דרך `order_id`, `orderId`, `myid` או `DCdisable`.
+- זיהוי הזמנה דרך `order_id`, `orderId` או `DCdisable`.
 - שמירת payload מנוקה בלבד ללא מספר כרטיס מלא וללא CVV.
 - שמירת token, ארבע ספרות אחרונות, קוד תשובה, הודעת תשובה ומזהה Tranzila כאשר הם חוזרים.
 - אימות סכום מול ההזמנה לפני סימון verification כמוצלח.
