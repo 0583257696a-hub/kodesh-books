@@ -1,7 +1,7 @@
 import { getOrder } from './orderService.js';
 import { nowIso, numberValue, stringValue } from './http.js';
 
-const TRANZILA_DEFAULT_IFRAME_BASE_URL = 'https://direct.tranzila.com';
+const TRANZILA_DEFAULT_IFRAME_BASE_URL = 'https://directng.tranzila.com';
 const TRANZILA_HANDSHAKE_URL = 'https://api.tranzila.com/v1/handshake/create';
 const TRANZILA_CURRENCY_NIS = '1';
 const TRANZILA_J5_MODE = 'V';
@@ -81,6 +81,28 @@ function getIframeUrl(env, terminalName) {
   }
 
   return url.toString();
+}
+
+function transactionUnsupportedMessage(codeOrMessage = '') {
+  const value = stringValue(codeOrMessage);
+  if (!value) return '';
+  if (!/(275497|illegal operation)/i.test(value)) return '';
+  return 'המסוף אינו מורשה ל-J5 / Verification / Tokenization. יש לפנות ל-Tranzila להפעלת המודול.';
+}
+
+function safeTranzilaRequestLog({ iframeUrl, terminalName, fields }) {
+  return {
+    iframeUrl,
+    terminalName,
+    sum: fields.sum,
+    currency: fields.currency,
+    tranmode: fields.tranmode,
+    myid: fields.myid,
+    DCdisable: fields.DCdisable,
+    success_url_address: fields.success_url_address,
+    fail_url_address: fields.fail_url_address,
+    notify_url_address: fields.notify_url_address,
+  };
 }
 
 function compactJson(value) {
@@ -167,6 +189,8 @@ function buildJ5Fields(order, terminalName, env, paymentTransactionId, handshake
   const description = orderDescription(order);
   const template = getIframeTemplate(env);
   const transactionMode = getTransactionMode(env);
+  const country = stringValue(order.country || order.shipping_country || env.TRANZILA_DEFAULT_COUNTRY) || 'IL';
+  const zip = stringValue(order.zip || order.postal_code || order.shipping_zip || env.TRANZILA_DEFAULT_ZIP) || '0000000';
 
   const fields = {
     sum: amount,
@@ -189,6 +213,8 @@ function buildJ5Fields(order, terminalName, env, paymentTransactionId, handshake
     company: 'אוצר הקדושה',
     contact: order.customer_name || '',
     email: order.customer_email || '',
+    country,
+    zip,
     address: order.shipping_address || '',
     phone: order.customer_phone || '',
     city: order.city || '',
@@ -260,7 +286,8 @@ async function getOrCreatePaymentTransaction(env, order, terminalName) {
   return id;
 }
 
-async function updatePaymentTransactionRequest(env, order, terminalName, transactionId, requestFields, handshake) {
+async function updatePaymentTransactionRequest(env, order, terminalName, transactionId, requestFields, handshake, iframeUrl) {
+  const requestLog = safeTranzilaRequestLog({ iframeUrl, terminalName, fields: requestFields });
   await env.DB.prepare(`
     UPDATE payment_transactions
     SET terminal_name = ?,
@@ -281,6 +308,9 @@ async function updatePaymentTransactionRequest(env, order, terminalName, transac
     numberValue(order.final_amount ?? order.total),
     JSON.stringify({
       ...requestFields,
+      iframe_url: iframeUrl,
+      terminal_name: terminalName,
+      safe_debug_log: requestLog,
       handshake: handshake?.data || null,
     }),
     nowIso(),
@@ -409,6 +439,7 @@ function callbackResponseMessage(payload) {
     || payload.errdesc
     || payload.error
     || payload.message
+    || payload.raw_body
   );
 }
 
@@ -433,6 +464,7 @@ function callbackCardAcquirer(payload) {
 }
 
 function callbackApplicationCode(payload) {
+  const rawBodyCode = stringValue(payload.raw_body).match(/\b(\d{3,6})\b/)?.[1] || '';
   const code = stringValue(
     payload.Response
     || payload.response
@@ -443,6 +475,7 @@ function callbackApplicationCode(payload) {
     || payload.Status
     || payload.shva_response
     || payload.shvaResponse
+    || rawBodyCode
   );
 
   return code.toLowerCase() === 'shva' ? 'shva' : code.padStart(3, '0');
@@ -515,7 +548,12 @@ export async function recordTranzilaCallback(env, request, source, status) {
   const amountMatches = returnedAmount === null || returnedAmount <= 0 || returnedAmount.toFixed(2) === expectedAmount.toFixed(2);
   const finalStatus = amountMatches ? resolvedStatus : 'verification_failed';
   const finalApplicationCode = amountMatches ? applicationCode : (applicationCode || 'AMOUNT_MISMATCH');
-  const finalResponseMessage = amountMatches ? responseMessage : 'Amount mismatch';
+  const unsupportedTerminalMessage = getTransactionMode(env) === 'V'
+    ? transactionUnsupportedMessage(`${applicationCode || ''} ${responseMessage || ''} ${payload.raw_body || ''}`)
+    : '';
+  const finalResponseMessage = amountMatches
+    ? (unsupportedTerminalMessage || responseMessage)
+    : 'Amount mismatch';
 
   await env.DB.prepare(`
     UPDATE payment_transactions
@@ -855,7 +893,10 @@ export async function createTranzilaJ5Session(env, payload = {}) {
   }
 
   const fields = buildJ5Fields(order, terminalName, env, paymentTransactionId, handshake);
-  await updatePaymentTransactionRequest(env, order, terminalName, paymentTransactionId, fields, handshake);
+  const iframeUrl = getIframeUrl(env, terminalName);
+  const requestLog = safeTranzilaRequestLog({ iframeUrl, terminalName, fields });
+  console.info('Tranzila iframe request', requestLog);
+  await updatePaymentTransactionRequest(env, order, terminalName, paymentTransactionId, fields, handshake, iframeUrl);
 
   await env.DB.prepare(`
     UPDATE orders
@@ -874,7 +915,8 @@ export async function createTranzilaJ5Session(env, payload = {}) {
     provider: 'tranzila',
     mode: 'J5',
     transaction_id: paymentTransactionId,
-    iframe_url: getIframeUrl(env, terminalName),
+    iframe_url: iframeUrl,
+    debug_log: requestLog,
     method: 'POST',
     fields,
     handshake_enabled: Boolean(handshake?.token),

@@ -129,6 +129,18 @@ export default function Checkout() {
     if (!paymentSession) return undefined;
 
     const timer = window.setTimeout(() => {
+      console.info('Tranzila iframe form submit', paymentSession.debug_log || {
+        iframeUrl: paymentSession.iframe_url,
+        terminalName: paymentSession.fields?.supplier,
+        sum: paymentSession.fields?.sum,
+        currency: paymentSession.fields?.currency,
+        tranmode: paymentSession.fields?.tranmode,
+        myid: paymentSession.fields?.myid,
+        DCdisable: paymentSession.fields?.DCdisable,
+        success_url_address: paymentSession.fields?.success_url_address,
+        fail_url_address: paymentSession.fields?.fail_url_address,
+        notify_url_address: paymentSession.fields?.notify_url_address,
+      });
       tranzilaFormRef.current?.submit();
     }, 50);
 
