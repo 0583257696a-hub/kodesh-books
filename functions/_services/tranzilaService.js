@@ -361,8 +361,16 @@ const SENSITIVE_PAYLOAD_KEYS = new Set([
   'cvv2',
   'cccvv',
   'expdate',
+  'expyear',
+  'expmonth',
+  'expiry_month',
+  'expiry_year',
   'expiry',
   'expiration',
+  'myid',
+  'id_number',
+  'identity_number',
+  'holder_id',
 ]);
 
 function sanitizeTranzilaPayload(payload = {}) {
