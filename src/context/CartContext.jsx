@@ -1,13 +1,27 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { syncCart } from '@/services/cartService';
+import { normalizeBooleanValue, normalizeMoneyValue } from '@/hooks/useSiteSettings';
 
 const CartContext = createContext();
 
+function normalizeCartItems(items = []) {
+  return (Array.isArray(items) ? items : []).map((item) => ({
+    ...item,
+    price: normalizeMoneyValue(item.price, 0),
+    quantity: Math.max(1, Number.parseInt(item.quantity, 10) || 1),
+    free_shipping: normalizeBooleanValue(item.free_shipping),
+  }));
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
-    const saved = localStorage.getItem('otzar_cart');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('otzar_cart');
+      return saved ? normalizeCartItems(JSON.parse(saved)) : [];
+    } catch {
+      return [];
+    }
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -27,17 +41,18 @@ export function CartProvider({ children }) {
     });
 
     setItems(prev => {
+      const freeShipping = normalizeBooleanValue(product.free_shipping);
       const existing = prev.find(i => i.product_id === product.id);
       if (existing) {
-        return prev.map(i => i.product_id === product.id ? { ...i, quantity: i.quantity + 1, free_shipping: i.free_shipping || !!product.free_shipping } : i);
+        return prev.map(i => i.product_id === product.id ? { ...i, quantity: i.quantity + 1, free_shipping: freeShipping } : i);
       }
       return [...prev, {
         product_id: product.id,
         product_name: product.name,
-        price: product.sale_price || product.price,
+        price: normalizeMoneyValue(product.sale_price || product.price, 0),
         image_url: product.image_url,
         quantity: 1,
-        free_shipping: !!product.free_shipping,
+        free_shipping: freeShipping,
       }];
     });
     setIsCartOpen(true);

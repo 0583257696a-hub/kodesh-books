@@ -148,6 +148,10 @@ function boolToDb(value) {
   return value === true || value === 1 || value === '1' || value === 'true' ? 1 : 0;
 }
 
+function boolFromDb(value) {
+  return value === true || value === 1 || value === '1' || value === 'true';
+}
+
 function toEntity(row = {}) {
   const next = { ...row };
   next.created_date = row.created_at || row.created_date;
@@ -158,7 +162,7 @@ function toEntity(row = {}) {
     }
   }
   for (const key of ['is_active', 'active', 'show_in_home', 'show_in_nav', 'is_public', 'found_results', 'is_new', 'is_on_sale', 'is_featured', 'in_stock', 'free_shipping']) {
-    if (key in next) next[key] = next[key] !== 0;
+    if (key in next) next[key] = boolFromDb(next[key]);
   }
   if (next.name && !next.full_name) next.full_name = next.name;
   if (next.last_activity_at && !next.last_activity) next.last_activity = next.last_activity_at;

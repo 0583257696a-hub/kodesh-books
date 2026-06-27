@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { appApi } from '@/api/internalClient';
 import { changeAdminPassword } from '@/services/adminAuthService';
+import { DEFAULT_SITE_SETTINGS } from '@/hooks/useSiteSettings';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,11 @@ const NOTIFICATION_FIELDS = [
 
 const FIELDS = [...STORE_FIELDS, ...SHIPPING_FIELDS, ...NOTIFICATION_FIELDS];
 
+const DEFAULT_SETTING_VALUES = FIELDS.reduce((values, field) => {
+  values[field.key] = DEFAULT_SITE_SETTINGS[field.key] ?? (field.type === 'boolean' ? 'false' : '');
+  return values;
+}, {});
+
 const EMPTY_USER = {
   full_name: '',
   email: '',
@@ -47,7 +53,7 @@ const EMPTY_USER = {
 
 export default function AdminSettings() {
   const queryClient = useQueryClient();
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState(() => ({ ...DEFAULT_SETTING_VALUES }));
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [savingKey, setSavingKey] = useState('');
   const [settingsMessage, setSettingsMessage] = useState('');
@@ -63,7 +69,7 @@ export default function AdminSettings() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState('');
 
-  const { data: settings = [] } = useQuery({
+  const { data: settings = [], isLoading: settingsLoading } = useQuery({
     queryKey: ['site-settings'],
     queryFn: () => appApi.entities.SiteSettings.list(),
   });
@@ -74,14 +80,14 @@ export default function AdminSettings() {
   });
 
   useEffect(() => {
-    if (settingsLoaded || settings.length === 0) return;
-    const map = {};
+    if (settingsLoaded || settingsLoading) return;
+    const map = { ...DEFAULT_SETTING_VALUES };
     settings.forEach((setting) => {
       map[setting.key] = setting.value;
     });
     setValues(map);
     setSettingsLoaded(true);
-  }, [settings, settingsLoaded]);
+  }, [settings, settingsLoaded, settingsLoading]);
 
   const saveSetting = async (key) => {
     setSavingKey(key);

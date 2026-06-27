@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
-import { getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
+import { getShippingCost, normalizeBooleanValue, useSiteSettings } from '@/hooks/useSiteSettings';
 import { markCheckoutStarted } from '@/services/cartService';
 import { createOrder, createTranzilaJ5Session } from '@/services/orderService';
 
@@ -57,7 +57,7 @@ export default function Checkout() {
         quantity: i.quantity,
         price: i.price,
         image_url: i.image_url,
-        free_shipping: !!i.free_shipping,
+        free_shipping: normalizeBooleanValue(i.free_shipping),
       }));
 
       const order = await createOrder({

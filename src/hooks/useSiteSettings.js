@@ -53,7 +53,7 @@ export function settingsArrayToMap(settings = []) {
 
   return settingsList.reduce((map, setting) => {
     if (setting?.key) {
-      map[setting.key] = setting.value || '';
+      map[setting.key] = setting.value ?? '';
     }
     return map;
   }, {});
@@ -106,10 +106,21 @@ export function buildMailUrl(email, subject = '') {
   return `mailto:${cleanEmail}${query}`;
 }
 
+export function normalizeBooleanValue(value) {
+  if (value === true || value === 1) return true;
+  if (value === false || value === 0 || value === null || value === undefined) return false;
+  return ['true', '1', 'yes', 'on', 'כן', 'פעיל'].includes(String(value).trim().toLowerCase());
+}
+
+export function normalizeMoneyValue(value, fallback = 0) {
+  const parsed = Number(String(value ?? '').replace(/[^\d.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 export function getShippingCost(settings = DEFAULT_SITE_SETTINGS, subtotal = 0, items = []) {
-  const cost = Number(settings.shipping_cost ?? DEFAULT_SITE_SETTINGS.shipping_cost) || 0;
-  const freeThreshold = Number(settings.free_shipping_threshold ?? DEFAULT_SITE_SETTINGS.free_shipping_threshold) || 0;
+  const cost = normalizeMoneyValue(settings.shipping_cost ?? DEFAULT_SITE_SETTINGS.shipping_cost, 0);
+  const freeThreshold = normalizeMoneyValue(settings.free_shipping_threshold ?? DEFAULT_SITE_SETTINGS.free_shipping_threshold, 0);
   if (freeThreshold > 0 && subtotal >= freeThreshold) return 0;
-  if (items.length > 0 && items.every((item) => item.free_shipping)) return 0;
+  if (items.length > 0 && items.every((item) => normalizeBooleanValue(item.free_shipping))) return 0;
   return cost;
 }
