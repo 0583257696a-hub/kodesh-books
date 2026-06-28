@@ -46,7 +46,7 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
     <aside className={cn(
       'fixed top-0 right-0 z-40 flex h-full flex-col border-l border-slate-200 bg-white shadow-sm transition-all duration-300',
       collapsed ? 'w-16' : 'w-56 md:w-60'
-    )}>
+    )} aria-label="תפריט ניהול">
       <div className={cn('flex h-16 items-center gap-3 border-b border-slate-200 px-4', collapsed && 'justify-center px-2')}>
         {!collapsed && (
           <div>
@@ -58,13 +58,14 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
           type="button"
           onClick={() => setCollapsed(!collapsed)}
           className="mr-auto rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-700"
-          aria-label="Toggle sidebar"
+          aria-label={collapsed ? 'הרחב תפריט ניהול' : 'כווץ תפריט ניהול'}
+          aria-expanded={!collapsed}
         >
-          <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} />
+          <ChevronLeft className={cn('h-4 w-4 transition-transform', collapsed && 'rotate-180')} aria-hidden="true" />
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-4">
+      <nav className="flex-1 overflow-y-auto py-4" aria-label="ניווט ניהול">
         {NAV.map((item) => {
           const active = pathname === item.path;
           return (
@@ -77,8 +78,10 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
                 collapsed && 'justify-center px-2'
               )}
               title={collapsed ? item.label : undefined}
+              aria-current={active ? 'page' : undefined}
+              aria-label={collapsed ? item.label : undefined}
             >
-              <item.icon className={cn('flex-shrink-0', active ? 'h-5 w-5' : 'h-4 w-4')} />
+              <item.icon className={cn('flex-shrink-0', active ? 'h-5 w-5' : 'h-4 w-4')} aria-hidden="true" />
               {!collapsed && <span className="whitespace-nowrap">{item.label}</span>}
               {active && !collapsed && <span className="mr-auto h-1.5 w-1.5 rounded-full bg-blue-600" />}
             </Link>
@@ -90,13 +93,14 @@ export default function AdminSidebar({ collapsed, setCollapsed }) {
         <button
           type="button"
           onClick={() => logout()}
+          aria-label={collapsed ? 'התנתקות' : undefined}
           className={cn(
             'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 font-body text-sm text-rose-500 transition-all hover:bg-rose-50 hover:text-rose-700',
             collapsed && 'justify-center'
           )}
           title={collapsed ? 'התנתקות' : undefined}
         >
-          <LogOut className="h-4 w-4 flex-shrink-0" />
+          <LogOut className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
           {!collapsed && 'התנתקות'}
         </button>
       </div>

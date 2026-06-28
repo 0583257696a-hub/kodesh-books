@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, SlidersHorizontal, X, ChevronLeft, BookOpen, ArrowUpDown } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { listProducts } from '@/services/catalogService';
@@ -125,8 +125,10 @@ export default function Catalog() {
         </h3>
         <div className="space-y-1">
           <button
+            type="button"
             className={`w-full text-center px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${!selectedCategory ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
             onClick={() => updateCategoryFilter('')}
+            aria-pressed={!selectedCategory}
           >
             <span className="flex items-center justify-center">
               <span>הכל</span>
@@ -135,8 +137,10 @@ export default function Catalog() {
           {categories.map(cat => (
             <button
               key={cat.id}
+              type="button"
               className={`w-full text-center px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${selectedCategory === cat.id ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
               onClick={() => updateCategoryFilter(cat.id)}
+              aria-pressed={selectedCategory === cat.id}
             >
               <span className="flex items-center justify-center">
                 <span>{cat.name}</span>
@@ -156,8 +160,10 @@ export default function Catalog() {
           {SORT_OPTIONS.map(opt => (
             <button
               key={opt.value}
+              type="button"
               className={`w-full text-right px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${sortBy === opt.value ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
               onClick={() => setSortBy(opt.value)}
+              aria-pressed={sortBy === opt.value}
             >
               {opt.label}
             </button>
@@ -227,16 +233,18 @@ export default function Catalog() {
         {/* Top bar: search + mobile filter + count */}
         <div className="flex items-center gap-3 mb-8">
           <div className="relative flex-1 max-w-md">
+            <label htmlFor="catalog-search" className="sr-only">חיפוש בקטלוג</label>
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B5A45]" aria-hidden="true" />
             <Input
+              id="catalog-search"
               placeholder="חיפוש בקטגוריה..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pr-10 font-body border-[#E7D8B8] bg-white text-[#1F160F] focus:ring-gold/30 focus:border-gold/40 rounded-lg"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5A45] hover:text-gold transition-colors" aria-label="נקה חיפוש">
-                <X className="h-4 w-4" />
+              <button type="button" onClick={() => setSearchQuery('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B5A45] hover:text-gold transition-colors" aria-label="נקה חיפוש">
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -250,6 +258,9 @@ export default function Catalog() {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-[#FCFAF5] w-80 overflow-y-auto border-l border-[#E7D8B8]" dir="rtl">
+              <SheetHeader>
+                <SheetTitle className="sr-only">סינון ומיון</SheetTitle>
+              </SheetHeader>
               <div className="pt-6 px-1">
                 <FilterSidebar />
               </div>

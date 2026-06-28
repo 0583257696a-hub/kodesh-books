@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { appApi } from "@/api/internalClient";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,13 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const errorRef = useRef(null);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus();
+    }
+  }, [error]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,7 +85,14 @@ export default function Register() {
         subtitle={`שלחנו קוד אימות אל ${email}`}
       >
         {error && (
-          <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+          <div
+            id="register-error"
+            ref={errorRef}
+            tabIndex={-1}
+            role="alert"
+            aria-live="assertive"
+            className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+          >
             {error}
           </div>
         )}
@@ -89,6 +103,8 @@ export default function Register() {
             onChange={setOtpCode}
             autoFocus
             autoComplete="one-time-code"
+            aria-invalid={!!error}
+            aria-describedby={error ? "register-error" : undefined}
           >
             <InputOTPGroup>
               <InputOTPSlot index={0} />
@@ -107,7 +123,7 @@ export default function Register() {
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
               מאמת...
             </>
           ) : (
@@ -116,7 +132,7 @@ export default function Register() {
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
           לא קיבלת קוד?{" "}
-          <button onClick={handleResend} className="text-primary font-medium hover:underline">
+          <button type="button" onClick={handleResend} className="text-primary font-medium hover:underline">
             שלח שוב
           </button>
         </p>
@@ -143,7 +159,7 @@ export default function Register() {
         className="w-full h-12 text-sm font-medium mb-6"
         onClick={handleGoogle}
       >
-        <GoogleIcon className="w-5 h-5 mr-2" />
+        <GoogleIcon className="w-5 h-5 mr-2" aria-hidden="true" />
         המשך עם Google
       </Button>
 
@@ -157,7 +173,14 @@ export default function Register() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+        <div
+          id="register-error"
+          ref={errorRef}
+          tabIndex={-1}
+          role="alert"
+          aria-live="assertive"
+          className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+        >
           {error}
         </div>
       )}
@@ -176,6 +199,8 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"
+              aria-invalid={!!error}
+              aria-describedby={error ? "register-error" : undefined}
               required
             />
           </div>
@@ -192,6 +217,8 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pl-10 h-12"
+              aria-invalid={!!error}
+              aria-describedby={error ? "register-error" : undefined}
               required
             />
           </div>
@@ -208,6 +235,8 @@ export default function Register() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="pl-10 h-12"
+              aria-invalid={!!error}
+              aria-describedby={error ? "register-error" : undefined}
               required
             />
           </div>
@@ -215,7 +244,7 @@ export default function Register() {
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
               יוצר חשבון...
             </>
           ) : (

@@ -23,6 +23,7 @@ export default function Checkout() {
   const [orderSuccessMessage, setOrderSuccessMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
   const tranzilaFormRef = useRef(null);
+  const submitErrorRef = useRef(null);
 
   const shipping = getShippingCost(settings, totalPrice, items);
   const total = totalPrice + shipping;
@@ -109,6 +110,12 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
+    if (submitError) {
+      submitErrorRef.current?.focus();
+    }
+  }, [submitError]);
+
+  useEffect(() => {
     const onMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (event.data?.type === 'tranzila:j5-success') {
@@ -185,7 +192,17 @@ export default function Checkout() {
             </p>
           </div>
 
-          {submitError && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</p>}
+          {submitError && (
+            <p
+              ref={submitErrorRef}
+              tabIndex={-1}
+              role="alert"
+              aria-live="assertive"
+              className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
+              {submitError}
+            </p>
+          )}
 
           <form
             ref={tranzilaFormRef}
@@ -271,7 +288,7 @@ export default function Checkout() {
 
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="grid lg:grid-cols-3 gap-8">
-          <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white rounded-xl p-6 border border-[#E7D8B8] space-y-5" style={{ boxShadow: '0 2px 16px rgba(42,22,11,0.06)' }}>
+          <form onSubmit={handleSubmit} className="lg:col-span-2 bg-white rounded-xl p-6 border border-[#E7D8B8] space-y-5" style={{ boxShadow: '0 2px 16px rgba(42,22,11,0.06)' }} aria-busy={isSubmitting}>
             <h2 className="font-heading text-xl font-bold text-[#1F160F] pb-4 border-b border-[#E7D8B8]">פרטי המזמין</h2>
 
             <div className="space-y-2">
@@ -311,7 +328,17 @@ export default function Checkout() {
               <p className="font-body text-xs text-[#6B5A45]">הפרטים שלך מאובטחים ולא יועברו לצד שלישי</p>
             </div>
 
-            {submitError && <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{submitError}</p>}
+            {submitError && (
+              <p
+                ref={submitErrorRef}
+                tabIndex={-1}
+                role="alert"
+                aria-live="assertive"
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
+                {submitError}
+              </p>
+            )}
 
             <Button
               type="submit"
@@ -319,7 +346,12 @@ export default function Checkout() {
               className="w-full font-body py-5 text-base rounded-lg"
               style={{ background: isSubmitting ? '#c9a84c' : 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}
             >
-              {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'ביצוע הזמנה'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                  <span className="sr-only">שולח הזמנה</span>
+                </>
+              ) : 'ביצוע הזמנה'}
             </Button>
           </form>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,19 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const errorRef = useRef(null);
 
   useEffect(() => {
     if (!isLoadingAdminAuth && isAdminAuthenticated) {
       navigate('/secret-admin', { replace: true });
     }
   }, [isAdminAuthenticated, isLoadingAdminAuth, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus();
+    }
+  }, [error]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,36 +58,49 @@ export default function AdminLogin() {
 
         <div className="bg-white border border-gold/20 rounded-2xl p-8 shadow-md">
           {error && (
-            <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-body">
+            <div
+              id="admin-login-error"
+              ref={errorRef}
+              tabIndex={-1}
+              role="alert"
+              aria-live="assertive"
+              className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-body"
+            >
               {error}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label className="text-walnut font-body text-sm">אימייל</Label>
+              <Label htmlFor="admin-email" className="text-walnut font-body text-sm">אימייל</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
                 <Input
+                  id="admin-email"
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   className="bg-secondary border-border text-foreground pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
                   placeholder="admin@example.com"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "admin-login-error" : undefined}
                   required
                   autoFocus
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-walnut font-body text-sm">סיסמה</Label>
+              <Label htmlFor="admin-password" className="text-walnut font-body text-sm">סיסמה</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
                 <Input
+                  id="admin-password"
                   type="password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   className="bg-secondary border-border text-foreground pl-10 h-12 font-body focus:border-gold/50 focus:ring-gold/20"
                   placeholder="••••••••"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "admin-login-error" : undefined}
                   required
                 />
               </div>
@@ -90,7 +110,12 @@ export default function AdminLogin() {
               disabled={loading || isLoadingAdminAuth}
               className="w-full h-12 bg-gold text-white hover:bg-gold/90 font-body font-semibold text-base mt-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'כניסה לפאנל'}
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                  <span className="sr-only">מתחבר לפאנל</span>
+                </>
+              ) : 'כניסה לפאנל'}
             </Button>
           </form>
         </div>

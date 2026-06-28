@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { appApi } from "@/api/internalClient";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const errorRef = useRef(null);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus();
+    }
+  }, [error]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,7 +58,7 @@ export default function Login() {
         className="w-full h-12 text-sm font-medium mb-6"
         onClick={handleGoogle}
       >
-        <GoogleIcon className="w-5 h-5 mr-2" />
+        <GoogleIcon className="w-5 h-5 mr-2" aria-hidden="true" />
         Continue with Google
       </Button>
 
@@ -65,7 +72,14 @@ export default function Login() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+        <div
+          id="login-error"
+          ref={errorRef}
+          tabIndex={-1}
+          role="alert"
+          aria-live="assertive"
+          className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm"
+        >
           {error}
         </div>
       )}
@@ -84,6 +98,8 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12"
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : undefined}
               required
             />
           </div>
@@ -105,6 +121,8 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pl-10 h-12"
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : undefined}
               required
             />
           </div>
@@ -112,7 +130,7 @@ export default function Login() {
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
               Logging in...
             </>
           ) : (

@@ -74,7 +74,7 @@ export default function PrivacyPolicy() {
         <div className="mx-auto mt-4 h-0.5 w-16 bg-gold" />
       </div>
 
-      <main className="mx-auto max-w-5xl px-4 py-12">
+      <div className="mx-auto max-w-5xl px-4 py-12">
         <div className="grid gap-8 lg:grid-cols-[240px_1fr]">
           <aside className="hidden lg:block">
             <nav className="sticky top-32 rounded-xl border border-gold/10 bg-white p-4 shadow-sm" aria-label="ניווט בעמוד">
@@ -118,7 +118,7 @@ export default function PrivacyPolicy() {
             </div>
           </article>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

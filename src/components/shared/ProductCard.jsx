@@ -13,8 +13,6 @@ export default function ProductCard({ product }) {
   const { categoryMap } = useStoreCategories();
   const productPath = `/product/${product.id}`;
 
-  const openProduct = () => navigate(productPath);
-
   const isOutOfStock = product.in_stock === false;
 
   return (
@@ -27,25 +25,20 @@ export default function ProductCard({ product }) {
       <div className="bg-white rounded-xl overflow-hidden transition-all duration-400 border border-[#E7D8B8] hover:border-gold/40 hover:shadow-lg" style={{ boxShadow: '0 2px 12px rgba(42,22,11,0.06)' }}>
         
         {/* Image */}
-        <div
-          role="link"
-          tabIndex={0}
-          onClick={openProduct}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProduct(); } }}
-          className="relative aspect-[3/4] cursor-pointer overflow-hidden bg-[#F8F3E8]"
-          aria-label={`פתח את ${product.name}`}
-        >
-          {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="h-full w-full object-cover transition-transform duration-600 group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#F8F3E8] to-[#EDE4D0]">
-              <BookOpen className="h-16 w-16 text-gold/25" aria-hidden="true" />
-            </div>
-          )}
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#F8F3E8]">
+          <Link to={productPath} className="block h-full w-full cursor-pointer" aria-label={`פתח את ${product.name}`}>
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="h-full w-full object-cover transition-transform duration-600 group-hover:scale-105"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#F8F3E8] to-[#EDE4D0]">
+                <BookOpen className="h-16 w-16 text-gold/25" aria-hidden="true" />
+              </div>
+            )}
+          </Link>
 
           {/* Tags */}
           <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
@@ -63,6 +56,7 @@ export default function ProductCard({ product }) {
           {/* Quick view + Add to cart overlay */}
           <div className="absolute bottom-0 left-0 right-0 flex flex-col gap-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10">
             <button
+              type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(productPath); }}
               className="w-full bg-[#2A160B]/85 backdrop-blur-sm text-cream/80 hover:text-gold font-body text-xs py-2.5 flex items-center justify-center gap-2 transition-colors"
               aria-label={`צפייה מהירה ב${product.name}`}

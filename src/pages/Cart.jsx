@@ -17,7 +17,7 @@ export default function Cart() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4" style={{ background: '#FCFAF5' }}>
         <div className="text-center">
-          <ShoppingCart className="h-20 w-20 text-gold/25 mx-auto mb-6" />
+          <ShoppingCart className="h-20 w-20 text-gold/25 mx-auto mb-6" aria-hidden="true" />
           <h1 className="font-heading text-3xl font-bold text-[#1F160F] mb-3">העגלה ריקה</h1>
           <p className="font-body text-[#6B5A45] mb-8">לא הוספת מוצרים עדיין</p>
           <Button asChild className="font-body px-8 py-3 rounded-lg" style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}>
@@ -76,18 +76,18 @@ export default function Cart() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center border border-[#E7D8B8] rounded-lg overflow-hidden">
-                        <button onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="p-2 hover:bg-[#F8F3E8] transition-colors" aria-label={`הפחת כמות עבור ${item.product_name}`}>
+                        <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="p-2 hover:bg-[#F8F3E8] transition-colors" aria-label={`הפחת כמות עבור ${item.product_name}`}>
                           <Minus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
                         </button>
                         <span className="px-4 font-body font-bold text-sm text-[#1F160F]" aria-live="polite">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="p-2 hover:bg-[#F8F3E8] transition-colors" aria-label={`הוסף כמות עבור ${item.product_name}`}>
+                        <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="p-2 hover:bg-[#F8F3E8] transition-colors" aria-label={`הוסף כמות עבור ${item.product_name}`}>
                           <Plus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
                         </button>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <span className="font-heading font-bold text-[#1F160F]">₪{(item.price * item.quantity).toFixed(2)}</span>
-                        <button onClick={() => removeItem(item.product_id)} className="text-red-400 hover:text-red-600 transition-colors" aria-label={`הסר את ${item.product_name} מהעגלה`}>
+                        <button type="button" onClick={() => removeItem(item.product_id)} className="text-red-400 hover:text-red-600 transition-colors" aria-label={`הסר את ${item.product_name} מהעגלה`}>
                           <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
@@ -127,7 +127,7 @@ export default function Cart() {
               </a>
             </Button>
 
-            <button onClick={clearCart} className="w-full text-center text-xs text-[#6B5A45] hover:text-red-500 mt-4 font-body transition-colors">
+            <button type="button" onClick={clearCart} className="w-full text-center text-xs text-[#6B5A45] hover:text-red-500 mt-4 font-body transition-colors">
               ריקון העגלה
             </button>
           </div>
@@ -136,7 +136,7 @@ export default function Cart() {
         {/* Back */}
         <Button asChild variant="ghost" className="font-body text-[#6B5A45] hover:text-gold mt-8">
           <Link to="/catalog">
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />
             המשך קניות
           </Link>
         </Button>

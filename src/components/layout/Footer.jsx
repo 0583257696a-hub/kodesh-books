@@ -46,7 +46,7 @@ export default function Footer() {
                     aria-label={item.label}
                     className="w-9 h-9 rounded-full border border-gold/20 bg-gold/5 flex items-center justify-center text-cream/60 hover:text-gold hover:border-gold/50 hover:bg-gold/10 transition-all duration-200"
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-4 w-4" aria-hidden="true" />
                   </a>
                 ))}
               </div>

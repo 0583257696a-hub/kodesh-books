@@ -430,21 +430,27 @@ export default function StoreChatBot() {
   return (
     <div className="fixed bottom-5 left-5 z-50 font-body" dir="rtl">
       {open && (
-        <section className="mb-3 flex h-[min(680px,calc(100vh-120px))] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-gold/30 bg-cream shadow-2xl">
+        <section
+          id="store-chat-panel"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="store-chat-title"
+          className="mb-3 flex h-[min(680px,calc(100vh-120px))] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-gold/30 bg-cream shadow-2xl"
+        >
           <header className="flex items-center gap-3 bg-walnut px-4 py-3 text-cream">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold text-walnut">
-              <Bot className="h-5 w-5" />
+              <Bot className="h-5 w-5" aria-hidden="true" />
             </div>
             <div className="flex-1">
-              <h2 className="font-heading text-base font-bold">ספרן אוצר הקדושה</h2>
+              <h2 id="store-chat-title" className="font-heading text-base font-bold">ספרן אוצר הקדושה</h2>
               <p className="text-xs text-cream/70">עזרה בחיפוש ספרים והזמנות</p>
             </div>
             <button type="button" onClick={() => setOpen(false)} className="rounded-lg p-1.5 hover:bg-white/10" aria-label="סגור צ׳אט">
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </header>
 
-          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite" aria-relevant="additions">
             <div className="flex flex-wrap gap-2">
               {QUICK_ACTIONS.map((action) => (
                 <button
@@ -482,7 +488,7 @@ export default function StoreChatBot() {
                                 <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
                               ) : (
                                 <span className="flex h-full w-full items-center justify-center">
-                                  <BookOpen className="h-5 w-5 text-gold" />
+                                  <BookOpen className="h-5 w-5 text-gold" aria-hidden="true" />
                                 </span>
                               )}
                             </Link>
@@ -503,7 +509,7 @@ export default function StoreChatBot() {
                               <Link to={`/product/${product.id}`} onClick={() => handleProductOpen(product)}>צפה במוצר</Link>
                             </Button>
                             <Button onClick={() => { addItem(product); trackProductAction('added_to_cart_product_id', product); }} className="h-8 bg-gold text-xs text-walnut hover:bg-gold/90">
-                              <ShoppingCart className="ml-1 h-3.5 w-3.5" /> הוסף
+                              <ShoppingCart className="ml-1 h-3.5 w-3.5" aria-hidden="true" /> הוסף
                             </Button>
                           </div>
                         </div>
@@ -518,10 +524,13 @@ export default function StoreChatBot() {
               <div className="rounded-2xl border border-gold/30 bg-white p-3 shadow-sm">
                 <p className="mb-2 text-sm font-bold text-walnut">נחזור אליך עם המלצה</p>
                 <div className="space-y-2">
-                  <Input value={lead.name} onChange={(event) => setLead((current) => ({ ...current, name: event.target.value }))} placeholder="שם" />
-                  <Input value={lead.phone} onChange={(event) => setLead((current) => ({ ...current, phone: event.target.value }))} placeholder="טלפון" />
-                  <Textarea value={lead.message} onChange={(event) => setLead((current) => ({ ...current, message: event.target.value }))} placeholder="מה אתה מחפש?" rows={2} />
-                  <Button onClick={saveLead} className="h-9 w-full bg-gold text-walnut hover:bg-gold/90">שליחת פרטים</Button>
+                  <label htmlFor="chat-lead-name" className="sr-only">שם</label>
+                  <Input id="chat-lead-name" value={lead.name} onChange={(event) => setLead((current) => ({ ...current, name: event.target.value }))} placeholder="שם" />
+                  <label htmlFor="chat-lead-phone" className="sr-only">טלפון</label>
+                  <Input id="chat-lead-phone" type="tel" value={lead.phone} onChange={(event) => setLead((current) => ({ ...current, phone: event.target.value }))} placeholder="טלפון" />
+                  <label htmlFor="chat-lead-message" className="sr-only">מה אתה מחפש?</label>
+                  <Textarea id="chat-lead-message" value={lead.message} onChange={(event) => setLead((current) => ({ ...current, message: event.target.value }))} placeholder="מה אתה מחפש?" rows={2} />
+                  <Button type="button" onClick={saveLead} className="h-9 w-full bg-gold text-walnut hover:bg-gold/90">שליחת פרטים</Button>
                 </div>
               </div>
             )}
@@ -543,9 +552,10 @@ export default function StoreChatBot() {
               </div>
             )}
             <div className="flex gap-2">
-              <Input value={input} onChange={(event) => setInput(event.target.value)} placeholder="כתוב מה אתה מחפש..." className="h-10" />
+              <label htmlFor="store-chat-message" className="sr-only">כתיבת הודעה לצ׳אט</label>
+              <Input id="store-chat-message" value={input} onChange={(event) => setInput(event.target.value)} placeholder="כתוב מה אתה מחפש..." className="h-10" />
               <Button type="submit" className="h-10 w-10 bg-walnut p-0 text-cream hover:bg-walnut/90" aria-label="שליחה">
-                <Send className="h-4 w-4" />
+                <Send className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           </form>
@@ -556,9 +566,11 @@ export default function StoreChatBot() {
         type="button"
         onClick={() => setOpen((value) => !value)}
         className="flex h-14 w-14 items-center justify-center rounded-2xl bg-walnut text-gold shadow-xl ring-2 ring-gold/30 transition hover:scale-105"
-        aria-label="פתח צ׳אט ספרן"
+        aria-label={open ? 'סגור צ׳אט ספרן' : 'פתח צ׳אט ספרן'}
+        aria-expanded={open}
+        aria-controls="store-chat-panel"
       >
-        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        {open ? <X className="h-6 w-6" aria-hidden="true" /> : <MessageCircle className="h-6 w-6" aria-hidden="true" />}
       </button>
     </div>
   );

@@ -189,17 +189,17 @@ export default function ProductDetail() {
             {/* Quantity & Add to cart */}
             <div className="flex items-center gap-4 pt-4">
               <div className="flex items-center border border-gold/20 rounded-lg overflow-hidden">
-                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 hover:bg-secondary transition-colors" aria-label={`הפחת כמות עבור ${product.name}`}>
+                <button type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-3 hover:bg-secondary transition-colors" aria-label={`הפחת כמות עבור ${product.name}`}>
                   <Minus className="h-4 w-4" aria-hidden="true" />
                 </button>
                 <span className="px-6 font-body font-bold text-lg" aria-live="polite">{quantity}</span>
-                <button onClick={() => setQuantity(q => q + 1)} className="p-3 hover:bg-secondary transition-colors" aria-label={`הוסף כמות עבור ${product.name}`}>
+                <button type="button" onClick={() => setQuantity(q => q + 1)} className="p-3 hover:bg-secondary transition-colors" aria-label={`הוסף כמות עבור ${product.name}`}>
                   <Plus className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
 
               <Button onClick={handleAddToCart} className="flex-1 bg-gold text-walnut hover:bg-gold/90 font-body text-base py-6 rounded-lg gold-glow gold-glow-hover transition-all">
-                <ShoppingCart className="h-5 w-5 ml-2" />
+                <ShoppingCart className="h-5 w-5 ml-2" aria-hidden="true" />
                 הוסף לעגלה
               </Button>
             </div>
@@ -221,7 +221,7 @@ export default function ProductDetail() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         <Button asChild variant="ghost" className="font-body text-muted-foreground hover:text-gold">
           <Link to="/catalog">
-            <ArrowRight className="h-4 w-4 ml-2" />
+            <ArrowRight className="h-4 w-4 ml-2" aria-hidden="true" />
             חזור לקטלוג
           </Link>
         </Button>

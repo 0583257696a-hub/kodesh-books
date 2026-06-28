@@ -20,11 +20,14 @@ export default function AdminLayout() {
   return (
     <AdminGuard>
       <div className="min-h-screen bg-white text-slate-950" dir="rtl">
+        <a href="#admin-main-content" className="skip-link">
+          דלג לתוכן הניהול
+        </a>
         <AdminSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         <main className={cn(
           'transition-all duration-300 min-h-screen',
           collapsed ? 'mr-16' : 'mr-0 md:mr-60'
-        )}>
+        )} id="admin-main-content" tabIndex={-1}>
           <Outlet />
         </main>
       </div>

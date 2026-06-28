@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, ShoppingCart, Menu, X, Phone, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildWhatsappUrl, buildPhoneUrl, useSiteSettings } from '@/hooks/useSiteSettings';
@@ -18,6 +18,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const searchToggleRef = useRef(null);
 
   const navItems = [
     { label: 'ראשי', path: '/' },
@@ -43,6 +44,20 @@ export default function Header() {
     setSearchOpen(false);
     navigate(path);
   };
+
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSearchOpen(false);
+        searchToggleRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [searchOpen]);
 
   const isActiveNavItem = (item) => {
     const [itemPath, itemQuery = ''] = item.path.split('?');
@@ -110,11 +125,14 @@ export default function Header() {
             <div className="flex items-center gap-1">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors" aria-label="פתח תפריט ניווט" aria-expanded={mobileMenuOpen}>
+                  <Button variant="ghost" size="icon" className="lg:hidden text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors" aria-label="פתח תפריט ניווט" aria-expanded={mobileMenuOpen} aria-controls="mobile-navigation-menu">
                     <Menu className="h-5 w-5" aria-hidden="true" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="bg-[#FCFAF5] w-80 border-l border-[#E7D8B8] p-0" dir="rtl">
+                <SheetContent id="mobile-navigation-menu" side="right" className="bg-[#FCFAF5] w-80 border-l border-[#E7D8B8] p-0" dir="rtl">
+                  <SheetHeader>
+                    <SheetTitle className="sr-only">תפריט ניווט</SheetTitle>
+                  </SheetHeader>
                   <div className="flex items-center justify-between p-4 border-b border-[#E7D8B8]">
                     <img src={STORE_LOGO_URL} alt="לוגו אוצר הקדושה" className="h-12 w-auto object-contain" />
                   </div>
@@ -127,6 +145,7 @@ export default function Header() {
                           type="button"
                           onClick={() => handleMobileNavigation(item.path)}
                           className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${active ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
+                          aria-current={active ? 'page' : undefined}
                         >
                           {active && <span className="w-1 h-4 rounded-full bg-gold flex-shrink-0" aria-hidden="true" />}
                           {item.label}
@@ -137,13 +156,13 @@ export default function Header() {
                   <div className="p-4 mt-2 space-y-2">
                     {settings.phone && (
                       <a href={buildPhoneUrl(settings.phone)} className="flex items-center gap-3 text-sm text-[#6B5A45] hover:text-gold font-body transition-colors">
-                        <Phone className="h-4 w-4 text-gold/60" />
+                        <Phone className="h-4 w-4 text-gold/60" aria-hidden="true" />
                         {settings.phone}
                       </a>
                     )}
                     {settings.whatsapp && (
                       <a href={buildWhatsappUrl(settings.whatsapp, 'שלום, אשמח לקבל עזרה')} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm text-[#6B5A45] hover:text-gold font-body transition-colors">
-                        <MessageCircle className="h-4 w-4 text-gold/60" />
+                        <MessageCircle className="h-4 w-4 text-gold/60" aria-hidden="true" />
                         {settings.whatsapp}
                       </a>
                     )}
@@ -154,10 +173,12 @@ export default function Header() {
               <Button
                 variant="ghost"
                 size="icon"
+                ref={searchToggleRef}
                 onClick={() => setSearchOpen(!searchOpen)}
                 className="text-[#3A2415] hover:text-gold hover:bg-gold/8 transition-colors"
                 aria-label={searchOpen ? 'סגור חיפוש' : 'פתח חיפוש'}
                 aria-expanded={searchOpen}
+                aria-controls="site-search"
               >
                 <Search className="h-5 w-5" aria-hidden="true" />
               </Button>

@@ -139,11 +139,12 @@ export default function AlsoBought({ currentProductId, category }) {
                       </div>
                     </Link>
                     <button
+                      type="button"
                       onClick={() => addItem(product)}
                       className="w-full flex items-center justify-center gap-1.5 bg-gold/10 hover:bg-gold text-gold hover:text-walnut font-body text-xs font-semibold py-2 rounded-lg transition-colors duration-200"
                       aria-label={`הוסף את ${product.name} לעגלה`}
                     >
-                      <ShoppingCart className="h-3.5 w-3.5" />
+                      <ShoppingCart className="h-3.5 w-3.5" aria-hidden="true" />
                       הוסף לעגלה
                     </button>
                   </div>
@@ -157,18 +158,20 @@ export default function AlsoBought({ currentProductId, category }) {
         {total > VISIBLE && (
           <>
             <button
+              type="button"
               onClick={handlePrev}
               className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white border border-gold/20 hover:border-gold hover:bg-gold/5 rounded-full p-2 shadow-md transition-all"
               aria-label="הקודם"
             >
-              <ChevronRight className="h-5 w-5 text-foreground" />
+              <ChevronRight className="h-5 w-5 text-foreground" aria-hidden="true" />
             </button>
             <button
+              type="button"
               onClick={handleNext}
               className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white border border-gold/20 hover:border-gold hover:bg-gold/5 rounded-full p-2 shadow-md transition-all"
               aria-label="הבא"
             >
-              <ChevronLeft className="h-5 w-5 text-foreground" />
+              <ChevronLeft className="h-5 w-5 text-foreground" aria-hidden="true" />
             </button>
           </>
         )}
@@ -179,6 +182,7 @@ export default function AlsoBought({ currentProductId, category }) {
             {Array.from({ length: maxIndex + 1 }).map((_, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => { scrollToIndex(i); resetTimer(); }}
                 className={`h-1.5 rounded-full transition-all duration-300 ${i === current ? 'w-5 bg-gold' : 'w-1.5 bg-gold/30'}`}
                 aria-label={`עבור לשקופית ${i + 1}`}
