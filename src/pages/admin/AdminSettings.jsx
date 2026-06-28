@@ -18,6 +18,8 @@ const STORE_FIELDS = [
   { key: 'seo_title', label: 'כותרת SEO', placeholder: 'אוצר הקדושה | ספרי קודש', icon: Globe },
   { key: 'seo_description', label: 'תיאור SEO', placeholder: 'החנות המובילה לספרי קודש...', icon: Globe },
   { key: 'google_analytics_id', label: 'Google Analytics Measurement ID', placeholder: 'G-XXXXXXXXXX', icon: Globe },
+  { key: 'enable_poptin_pixel', label: 'Poptin Pixel פעיל', type: 'boolean' },
+  { key: 'poptin_pixel_id', label: 'Poptin Pixel ID', placeholder: '11e54a5a6477a', icon: Globe },
   { key: 'facebook', label: 'קישור פייסבוק', placeholder: 'https://facebook.com/...', icon: Share2 },
   { key: 'instagram', label: 'קישור אינסטגרם', placeholder: 'https://instagram.com/...', icon: Share2 },
 ];
@@ -29,6 +31,16 @@ const SHIPPING_FIELDS = [
 ];
 
 const NOTIFICATION_FIELDS = [
+  {
+    key: 'email_provider',
+    label: 'ספק אוטומציית מיילים',
+    type: 'select',
+    options: [
+      { value: 'mailjet', label: 'Mailjet' },
+      { value: 'resend', label: 'Resend' },
+      { value: 'poptin', label: 'Poptin - דורש API/Webhook למיילים' },
+    ],
+  },
   { key: 'admin_email', label: 'אימייל מנהל לקבלת הזמנות', placeholder: 'admin@example.com', icon: Bell, type: 'email' },
   { key: 'enable_order_emails', label: 'שליחת מייל הזמנה חדשה למנהל', type: 'boolean' },
   { key: 'enable_customer_order_emails', label: 'שליחת מייל אישור קבלת הזמנה ללקוח', type: 'boolean' },
@@ -40,7 +52,7 @@ const NOTIFICATION_FIELDS = [
 const FIELDS = [...STORE_FIELDS, ...SHIPPING_FIELDS, ...NOTIFICATION_FIELDS];
 
 const DEFAULT_SETTING_VALUES = FIELDS.reduce((values, field) => {
-  values[field.key] = DEFAULT_SITE_SETTINGS[field.key] ?? (field.type === 'boolean' ? 'false' : '');
+  values[field.key] = DEFAULT_SITE_SETTINGS[field.key] ?? (field.type === 'boolean' ? 'false' : field.options?.[0]?.value || '');
   return values;
 }, {});
 
@@ -431,7 +443,16 @@ export default function AdminSettings() {
             <div key={field.key} className="space-y-1.5">
               <Label className="text-sm text-slate-700">{field.label}</Label>
               <div className="flex gap-2">
-                {field.type === 'boolean' ? (
+                {field.type === 'select' ? (
+                  <Select value={values[field.key] || field.options?.[0]?.value || ''} onValueChange={(value) => setValues((current) => ({ ...current, [field.key]: value }))}>
+                    <SelectTrigger className="flex-1 border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-white">
+                      {(field.options || []).map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : field.type === 'boolean' ? (
                   <Select value={values[field.key] || 'true'} onValueChange={(value) => setValues((current) => ({ ...current, [field.key]: value }))}>
                     <SelectTrigger className="flex-1 border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-white">
@@ -471,13 +492,23 @@ export default function AdminSettings() {
             <div key={field.key} className="space-y-1.5">
               <Label className="text-sm text-slate-700">{field.label}</Label>
               <div className="flex gap-2">
-                <Input
-                  value={values[field.key] || ''}
-                  onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
-                  placeholder={field.placeholder}
-                  type={field.type || 'text'}
-                  className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
-                />
+                {field.type === 'boolean' ? (
+                  <Select value={values[field.key] || 'false'} onValueChange={(value) => setValues((current) => ({ ...current, [field.key]: value }))}>
+                    <SelectTrigger className="flex-1 border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
+                    <SelectContent className="bg-white">
+                      <SelectItem value="true">פעיל</SelectItem>
+                      <SelectItem value="false">כבוי</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={values[field.key] || ''}
+                    onChange={(event) => setValues((current) => ({ ...current, [field.key]: event.target.value }))}
+                    placeholder={field.placeholder}
+                    type={field.type || 'text'}
+                    className="flex-1 border-slate-200 bg-white text-slate-950 placeholder:text-slate-400"
+                  />
+                )}
                 <Button
                   type="button"
                   onClick={() => saveSetting(field.key)}

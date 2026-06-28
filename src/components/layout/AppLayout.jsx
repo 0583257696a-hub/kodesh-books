@@ -5,7 +5,7 @@ import Footer from './Footer';
 import CookieConsent from './CookieConsent';
 import StoreChatBot from '@/components/chat/StoreChatBot';
 import CartDrawer from '@/components/cart/CartDrawer';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { normalizeBooleanValue, useSiteSettings } from '@/hooks/useSiteSettings';
 
 const SITE_URL = 'https://otzar-hakodesh.shop';
 const OG_IMAGE = `${SITE_URL}/images/otzar-logo-transparent.png`;
@@ -66,6 +66,31 @@ function syncGoogleAnalytics(measurementId) {
   }
 }
 
+function syncPoptinPixel(pixelId, enabled) {
+  const scriptId = 'pixel-script-poptin';
+  const cleanId = String(pixelId || '').trim();
+  const existingScript = document.getElementById(scriptId);
+
+  if (!normalizeBooleanValue(enabled) || !cleanId) {
+    existingScript?.remove();
+    return;
+  }
+
+  const src = `https://cdn.popt.in/pixel.js?id=${encodeURIComponent(cleanId)}`;
+  if (!existingScript) {
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = src;
+    script.async = true;
+    document.head.appendChild(script);
+    return;
+  }
+
+  if (existingScript.src !== src) {
+    existingScript.src = src;
+  }
+}
+
 export default function AppLayout() {
   const { settings } = useSiteSettings();
   const location = useLocation();
@@ -97,6 +122,10 @@ export default function AppLayout() {
   useEffect(() => {
     syncGoogleAnalytics(settings.google_analytics_id);
   }, [settings.google_analytics_id]);
+
+  useEffect(() => {
+    syncPoptinPixel(settings.poptin_pixel_id, settings.enable_poptin_pixel);
+  }, [settings.enable_poptin_pixel, settings.poptin_pixel_id]);
 
   return (
     <div className="min-h-screen flex flex-col bg-cream">
