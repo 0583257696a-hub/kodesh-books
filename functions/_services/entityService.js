@@ -206,7 +206,7 @@ function productPayload(payload = {}) {
   const category = stringValue(payload.category || payload.category_slug || payload.category_id);
   const slug = stringValue(payload.slug) || crypto.randomUUID();
   return {
-    base44_id: payload.base44_id || '',
+    base44_id: stringValue(payload.base44_id) || null,
     name: stringValue(payload.name),
     slug,
     description: payload.description || '',

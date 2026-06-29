@@ -47,6 +47,7 @@ export default function AdminProducts() {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
+  const [formError, setFormError] = useState('');
   const { categories, categoryMap } = useStoreCategories();
 
   const { data: products = [], isLoading } = useQuery({
@@ -59,7 +60,9 @@ export default function AdminProducts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       setOpen(false);
+      setFormError('');
     },
+    onError: (error) => setFormError(error.message || 'שמירת המוצר נכשלה.'),
   });
 
   const updateM = useMutation({
@@ -67,7 +70,9 @@ export default function AdminProducts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       setOpen(false);
+      setFormError('');
     },
+    onError: (error) => setFormError(error.message || 'שמירת המוצר נכשלה.'),
   });
 
   const deleteM = useMutation({
@@ -77,6 +82,11 @@ export default function AdminProducts() {
 
   const handleSave = () => {
     const { id, created_date, updated_date, created_by_id, ...data } = editItem;
+    if (!String(data.name || '').trim()) {
+      setFormError('יש למלא שם מוצר.');
+      return;
+    }
+    setFormError('');
     if (id) {
       updateM.mutate({ id, data });
     } else {
@@ -100,6 +110,8 @@ export default function AdminProducts() {
       if (image?.image_url) {
         setEditItem((current) => ({ ...current, image_url: image.image_url }));
       }
+    } catch (error) {
+      setFormError(error.message || 'העלאת תמונת המוצר נכשלה.');
     } finally {
       setUploading(false);
       event.target.value = '';
@@ -121,6 +133,8 @@ export default function AdminProducts() {
         ...current,
         gallery_urls: [...(current.gallery_urls || []), ...uploaded.map((image) => image.image_url).filter(Boolean)],
       }));
+    } catch (error) {
+      setFormError(error.message || 'העלאת תמונות הגלריה נכשלה.');
     } finally {
       setUploading(false);
       event.target.value = '';
@@ -164,6 +178,7 @@ export default function AdminProducts() {
         <Button
           onClick={() => {
             setEditItem({ ...EMPTY });
+            setFormError('');
             setOpen(true);
           }}
           className="bg-blue-600 text-white hover:bg-blue-700"
@@ -253,6 +268,7 @@ export default function AdminProducts() {
                         size="icon"
                         onClick={() => {
                           setEditItem(product);
+                          setFormError('');
                           setOpen(true);
                         }}
                         className="h-8 w-8 text-slate-500 hover:bg-blue-50 hover:text-blue-700"
@@ -288,6 +304,12 @@ export default function AdminProducts() {
 
           {editItem && (
             <div className="mt-2 space-y-5">
+              {formError && (
+                <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700" role="alert">
+                  {formError}
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5 md:col-span-2">
                   <Label className="text-sm text-slate-700">שם המוצר *</Label>
