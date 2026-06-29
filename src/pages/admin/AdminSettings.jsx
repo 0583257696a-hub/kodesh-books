@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { appApi } from '@/api/internalClient';
 import { changeAdminPassword } from '@/services/adminAuthService';
+import { resetStoreActivity } from '@/services/adminMaintenanceService';
 import { DEFAULT_SITE_SETTINGS } from '@/hooks/useSiteSettings';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound, Truck } from 'lucide-react';
+import { AlertTriangle, Bell, Loader2, Store, Phone, Globe, Share2, UserPlus, Trash2, ShieldCheck, KeyRound, Truck } from 'lucide-react';
 
 const STORE_FIELDS = [
   { key: 'store_name', label: 'שם החנות', placeholder: 'אוצר הקדושה', icon: Store },
@@ -80,6 +81,9 @@ export default function AdminSettings() {
   });
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState('');
+  const [resetConfirmation, setResetConfirmation] = useState('');
+  const [resettingStore, setResettingStore] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
 
   const { data: settings = [], isLoading: settingsLoading } = useQuery({
     queryKey: ['site-settings'],
@@ -209,6 +213,31 @@ export default function AdminSettings() {
         : (error.message || 'עדכון סיסמת המנהל נכשל.'));
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleResetStoreActivity = async () => {
+    setResetMessage('');
+
+    if (resetConfirmation.trim() !== 'איפוס חנות') {
+      setResetMessage('כדי לאפס יש להקליד בדיוק: איפוס חנות');
+      return;
+    }
+
+    const ok = window.confirm('פעולה זו תמחק הזמנות, עגלות, סטטיסטיקות, לידים, לוגי מייל ועסקאות תשלום. מוצרים וקטגוריות לא יימחקו. להמשיך?');
+    if (!ok) return;
+
+    setResettingStore(true);
+    try {
+      const response = await resetStoreActivity(resetConfirmation);
+      localStorage.removeItem('otzar_analytics_events');
+      await queryClient.invalidateQueries();
+      setResetConfirmation('');
+      setResetMessage(`האיפוס בוצע בהצלחה. נמחקו ${response.result?.total_deleted || 0} רשומות פעילות.`);
+    } catch (error) {
+      setResetMessage(error.message || 'איפוס נתוני הפעילות נכשל.');
+    } finally {
+      setResettingStore(false);
     }
   };
 
@@ -522,6 +551,38 @@ export default function AdminSettings() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 shadow-sm">
+        <h2 className="mb-2 flex items-center gap-2 font-bold text-rose-950">
+          <AlertTriangle className="h-5 w-5 text-rose-700" /> איפוס פעילות וניסיונות
+        </h2>
+        <p className="mb-5 text-sm leading-7 text-rose-800">
+          פעולה זו מוחקת הזמנות, פריטי הזמנה, עסקאות תשלום, עגלות, סטטיסטיקות, חיפושים, לידים, לוגי מייל והתראות.
+          מוצרים, תמונות, קטגוריות, קופונים, משתמשים והגדרות חנות לא יימחקו.
+        </p>
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
+          <div className="space-y-1.5">
+            <Label className="text-sm text-rose-900">להפעלת האיפוס הקלד: איפוס חנות</Label>
+            <Input
+              value={resetConfirmation}
+              onChange={(event) => setResetConfirmation(event.target.value)}
+              className="border-rose-200 bg-white text-slate-950"
+              placeholder="איפוס חנות"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              type="button"
+              onClick={handleResetStoreActivity}
+              disabled={resettingStore || resetConfirmation.trim() !== 'איפוס חנות'}
+              className="h-10 bg-rose-700 px-5 text-white hover:bg-rose-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {resettingStore ? <Loader2 className="h-4 w-4 animate-spin" /> : 'אפס פעילות'}
+            </Button>
+          </div>
+        </div>
+        {resetMessage && <p className="mt-4 text-sm font-semibold text-rose-900">{resetMessage}</p>}
       </div>
     </div>
   );
