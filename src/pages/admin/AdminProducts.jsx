@@ -48,7 +48,19 @@ export default function AdminProducts() {
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const [formError, setFormError] = useState('');
-  const { categories, categoryMap } = useStoreCategories();
+  const { categories: allCategories, categoryMap } = useStoreCategories({ includeInactive: true });
+  const categories = allCategories.filter((category) => category.active);
+  const defaultProductCategory = categories[0]?.slug || EMPTY.category;
+  const productFormCategories = editItem?.category && !categories.some((category) => category.slug === editItem.category)
+    ? [
+      {
+        id: editItem.category,
+        slug: editItem.category,
+        name: categoryMap[editItem.category] || editItem.category,
+      },
+      ...categories,
+    ]
+    : categories;
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['admin-products'],
@@ -161,7 +173,7 @@ export default function AdminProducts() {
       (product.tags || []).some((tag) => tag?.toLowerCase().includes(q)) ||
       product.barcode?.toLowerCase().includes(q) ||
       product.sub_category?.toLowerCase().includes(q) ||
-      categoryMap[product.category]?.toLowerCase().includes(q) ||
+      (categoryMap[product.category] || product.category || '').toLowerCase().includes(q) ||
       product.sku?.toLowerCase().includes(q)
     );
   });
@@ -177,7 +189,7 @@ export default function AdminProducts() {
         </div>
         <Button
           onClick={() => {
-            setEditItem({ ...EMPTY });
+            setEditItem({ ...EMPTY, category: defaultProductCategory });
             setFormError('');
             setOpen(true);
           }}
@@ -235,7 +247,7 @@ export default function AdminProducts() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-slate-600">{categoryMap[product.category] || '-'}</td>
+                  <td className="px-5 py-4 text-slate-600">{categoryMap[product.category] || product.category || '-'}</td>
                   <td className="px-5 py-4">
                     {product.is_on_sale && product.sale_price ? (
                       <div>
@@ -369,7 +381,7 @@ export default function AdminProducts() {
                   <Select value={editItem.category} onValueChange={(value) => setEditItem((current) => ({ ...current, category: value }))}>
                     <SelectTrigger className="border-slate-200 bg-white text-slate-950"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-white">
-                      {categories.map((category) => (
+                      {productFormCategories.map((category) => (
                         <SelectItem key={category.slug} value={category.slug}>{category.name}</SelectItem>
                       ))}
                     </SelectContent>

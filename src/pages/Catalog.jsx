@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Search, SlidersHorizontal, X, ChevronLeft, BookOpen, ArrowUpDown } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
-import { useStoreCategories } from '@/hooks/useStoreCategories';
+import { productMatchesCategory, resolveCategorySlug, useStoreCategories } from '@/hooks/useStoreCategories';
 import { listProducts } from '@/services/catalogService';
 import { motion } from 'framer-motion';
 
@@ -23,14 +23,18 @@ export default function Catalog() {
   const location = useLocation();
   const navigate = useNavigate();
   const urlParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
-  const initialCategory = urlParams.get('category') === 'children' ? 'kids' : (urlParams.get('category') || '');
+  const rawCategory = urlParams.get('category') || '';
   const initialSearch = urlParams.get('search') || '';
   const isSale = urlParams.get('sale') === 'true';
+  const { categories, categoryMap, categoryNameToId } = useStoreCategories();
+  const initialCategory = useMemo(
+    () => resolveCategorySlug(rawCategory, categories, categoryNameToId),
+    [rawCategory, categories, categoryNameToId]
+  );
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('newest');
-  const { categories, categoryMap } = useStoreCategories();
 
   useEffect(() => {
     setSelectedCategory(initialCategory);
@@ -38,12 +42,12 @@ export default function Catalog() {
   }, [initialCategory, initialSearch]);
 
   useEffect(() => {
-    if (urlParams.get('category') === 'children') {
+    if (rawCategory && initialCategory && rawCategory !== initialCategory) {
       const nextParams = new URLSearchParams(location.search);
-      nextParams.set('category', 'kids');
+      nextParams.set('category', initialCategory);
       navigate(`/catalog?${nextParams.toString()}`, { replace: true });
     }
-  }, [location.search, navigate, urlParams]);
+  }, [initialCategory, location.search, navigate, rawCategory]);
 
   const { data: allProducts = [], isLoading } = useQuery({
     queryKey: ['all-products'],
@@ -52,7 +56,7 @@ export default function Catalog() {
 
   const filteredProducts = useMemo(() => {
     let result = [...allProducts];
-    if (selectedCategory) result = result.filter(p => p.category === selectedCategory);
+    if (selectedCategory) result = result.filter(p => productMatchesCategory(p, selectedCategory));
     if (isSale) result = result.filter(p => p.is_on_sale);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -64,7 +68,7 @@ export default function Catalog() {
         p.sku?.toLowerCase().includes(q) ||
         p.barcode?.toLowerCase().includes(q) ||
         p.sub_category?.toLowerCase().includes(q) ||
-        categoryMap[p.category]?.toLowerCase().includes(q) ||
+        (categoryMap[p.category] || p.category || '').toLowerCase().includes(q) ||
         p.description?.toLowerCase().includes(q)
       );
     }
@@ -136,11 +140,11 @@ export default function Catalog() {
           </button>
           {categories.map(cat => (
             <button
-              key={cat.id}
+              key={cat.slug}
               type="button"
-              className={`w-full text-center px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${selectedCategory === cat.id ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
-              onClick={() => updateCategoryFilter(cat.id)}
-              aria-pressed={selectedCategory === cat.id}
+              className={`w-full text-center px-3 py-2.5 rounded-lg font-body text-sm transition-all duration-200 ${selectedCategory === cat.slug ? 'bg-[#2A160B] text-cream font-semibold' : 'text-[#3A2415] hover:bg-gold/8 hover:text-gold'}`}
+              onClick={() => updateCategoryFilter(cat.slug)}
+              aria-pressed={selectedCategory === cat.slug}
             >
               <span className="flex items-center justify-center">
                 <span>{cat.name}</span>

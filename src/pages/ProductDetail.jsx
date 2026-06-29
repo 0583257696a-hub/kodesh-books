@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, BookOpen, ArrowRight, Minus, Plus, X, ZoomIn } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { CATEGORY_MAP } from '@/lib/categories';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
@@ -163,7 +162,7 @@ export default function ProductDetail() {
           {/* Info */}
           <div className="space-y-6">
             {product.category && (
-              <span className="text-gold font-body text-sm">{categoryMap[product.category] || CATEGORY_MAP[product.category]}</span>
+              <span className="text-gold font-body text-sm">{categoryMap[product.category] || product.category}</span>
             )}
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground">{product.name}</h1>
             {product.author && (

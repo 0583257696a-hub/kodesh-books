@@ -25,15 +25,16 @@ const normalizeCategory = (category, index = 0) => {
   icon: category.icon || 'FolderOpen',
   image_url: category.image_url || CATEGORY_IMAGES[slug] || '',
   display_order: Number(category.display_order ?? index),
-  show_in_home: category.show_in_home !== false,
-  show_in_nav: category.show_in_nav !== false,
-  active: category.active !== false,
+  show_in_home: category.show_in_home !== false && category.show_in_home !== 0,
+  show_in_nav: category.show_in_nav !== false && category.show_in_nav !== 0,
+  active: category.active !== false && category.active !== 0,
   system: DEFAULT_CATEGORY_IDS.has(slug),
-  record_id: category.id && category.slug ? category.id : '',
+  record_id: category.record_id || (category.id && category.slug && category.id !== slug ? category.id : ''),
 });
 };
 
-export function buildCategoryCollections(dynamicCategories = []) {
+export function buildCategoryCollections(dynamicCategories = [], options = {}) {
+  const includeInactive = options.includeInactive === true;
   const merged = new Map();
 
   CATEGORIES.forEach((category, index) => {
@@ -47,17 +48,20 @@ export function buildCategoryCollections(dynamicCategories = []) {
     }
   });
 
-  const categories = Array.from(merged.values())
-    .filter((category) => category.active)
+  const allCategories = Array.from(merged.values())
     .sort((a, b) => a.display_order - b.display_order || a.name.localeCompare(b.name, 'he'));
 
-  const categoryMap = categories.reduce((acc, category) => {
+  const categories = includeInactive
+    ? allCategories
+    : allCategories.filter((category) => category.active);
+
+  const categoryMap = allCategories.reduce((acc, category) => {
     acc[category.id] = category.name;
     acc[category.slug] = category.name;
     return acc;
   }, { ...CATEGORY_MAP });
 
-  const categoryNameToId = categories.reduce((acc, category) => {
+  const categoryNameToId = allCategories.reduce((acc, category) => {
     acc[category.name] = category.slug;
     return acc;
   }, { ...CATEGORY_NAME_TO_ID });
@@ -65,15 +69,49 @@ export function buildCategoryCollections(dynamicCategories = []) {
   return { categories, categoryMap, categoryNameToId };
 }
 
-export function useStoreCategories() {
+export function resolveCategorySlug(value, categories = [], categoryNameToId = {}) {
+  const normalized = String(value || '').trim();
+  if (!normalized) return '';
+  if (normalized === 'children') return 'kids';
+  if (categoryNameToId[normalized]) return categoryNameToId[normalized];
+
+  const match = categories.find((category) => (
+    category.slug === normalized ||
+    category.id === normalized ||
+    category.record_id === normalized ||
+    category.name === normalized
+  ));
+
+  return match?.slug || normalized;
+}
+
+export function productMatchesCategory(product, categorySlug) {
+  const expected = String(categorySlug || '').trim();
+  if (!expected) return true;
+
+  const productCategories = [
+    product.category,
+    product.category_slug,
+    product.category_id,
+    ...(Array.isArray(product.additional_categories) ? product.additional_categories : []),
+  ].map((value) => String(value || '').trim()).filter(Boolean);
+
+  return productCategories.includes(expected);
+}
+
+export function useStoreCategories(options = {}) {
+  const includeInactive = options.includeInactive === true;
   const { data = [], isLoading } = useQuery({
-    queryKey: ['store-categories'],
-    queryFn: () => listCategories(),
+    queryKey: ['store-categories', 'all'],
+    queryFn: () => listCategories({ includeInactive: true }),
     retry: false,
     staleTime: 60_000,
   });
 
-  const collections = useMemo(() => buildCategoryCollections(data), [data]);
+  const collections = useMemo(
+    () => buildCategoryCollections(data, { includeInactive }),
+    [data, includeInactive]
+  );
 
   return { ...collections, isLoading };
 }

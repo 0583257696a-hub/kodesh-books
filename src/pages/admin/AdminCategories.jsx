@@ -41,7 +41,11 @@ export default function AdminCategories() {
     retry: false,
   });
 
-  const { categories } = useMemo(() => buildCategoryCollections(storedCategories), [storedCategories]);
+  const { categories } = useMemo(
+    () => buildCategoryCollections(storedCategories, { includeInactive: true }),
+    [storedCategories]
+  );
+  const activeCategoryCount = categories.filter((category) => category.active).length;
 
   const saveMutation = useMutation({
     mutationFn: async (category) => {
@@ -143,7 +147,7 @@ export default function AdminCategories() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">ניהול קטגוריות</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {categories.length} קטגוריות פעילות באתר. קטגוריה חדשה תופיע בתפריט, בקטלוג ובקובץ האקסל לייבוא.
+            {categories.length} קטגוריות מוגדרות, {activeCategoryCount} פעילות באתר. קטגוריה חדשה תופיע בתפריט, בקטלוג ובקובץ האקסל לייבוא.
           </p>
         </div>
         <Button onClick={() => openEditor()} className="bg-blue-600 text-white hover:bg-blue-700">

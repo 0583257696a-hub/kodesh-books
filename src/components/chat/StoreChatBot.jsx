@@ -500,7 +500,7 @@ export default function StoreChatBot() {
                               >
                                 {product.name}
                               </Link>
-                              <p className="text-xs text-walnut/60">{product.author || product.publisher || CATEGORY_MAP[product.category]}</p>
+                              <p className="text-xs text-walnut/60">{product.author || product.publisher || categoryMap[product.category]}</p>
                               <p className="mt-1 font-bold text-gold">₪{product.sale_price || product.price}</p>
                             </div>
                           </div>
