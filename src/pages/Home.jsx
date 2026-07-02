@@ -9,10 +9,13 @@ export default function Home() {
   return (
     <div>
       <HeroSection />
+      <PromoBanner placement="home_after_hero" />
       <CategoriesSection />
+      <PromoBanner placement="home_after_categories" />
       <FeaturedProducts />
       <PromoBanner />
       <TestimonialsSection />
+      <PromoBanner placement="home_after_testimonials" />
     </div>
   );
 }

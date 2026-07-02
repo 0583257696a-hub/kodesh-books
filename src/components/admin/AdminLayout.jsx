@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminGuard from './AdminGuard';
+import AdminErrorBoundary from './AdminErrorBoundary';
 import { cn } from '@/lib/utils';
 
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const syncMobileState = () => {
@@ -28,7 +30,9 @@ export default function AdminLayout() {
           'transition-all duration-300 min-h-screen',
           collapsed ? 'mr-16' : 'mr-0 md:mr-60'
         )} id="admin-main-content" tabIndex={-1}>
-          <Outlet />
+          <AdminErrorBoundary resetKey={location.pathname}>
+            <Outlet />
+          </AdminErrorBoundary>
         </main>
       </div>
     </AdminGuard>
