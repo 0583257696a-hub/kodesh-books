@@ -16,6 +16,7 @@ Supported values:
 
 - `mailjet`
 - `resend`
+- `cloudflare`
 - `poptin`
 
 `poptin` is currently wired as a known provider name and Poptin Pixel is loaded in the browser. Transactional email sending through Poptin still requires real Poptin API or webhook details before it can send order emails.
@@ -42,6 +43,26 @@ Optional:
 
 - `RESEND_FROM_EMAIL`
 - `RESEND_FROM_NAME`
+
+## Cloudflare Email
+
+Required Worker binding in `wrangler.jsonc`:
+
+```json
+"send_email": [
+  {
+    "name": "EMAIL",
+    "allowed_sender_addresses": ["welcome@otzar-hakodesh.shop"]
+  }
+]
+```
+
+Set `site_settings.email_provider` to `cloudflare`, or use `EMAIL_PROVIDER=cloudflare`.
+The sender should be a verified Cloudflare Email Routing address, for example:
+
+```text
+EMAIL_FROM=welcome@otzar-hakodesh.shop
+```
 
 ## Shared Sender Variables
 

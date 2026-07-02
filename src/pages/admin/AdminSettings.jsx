@@ -39,6 +39,7 @@ const NOTIFICATION_FIELDS = [
     options: [
       { value: 'mailjet', label: 'Mailjet' },
       { value: 'resend', label: 'Resend' },
+      { value: 'cloudflare', label: 'Cloudflare Email' },
       { value: 'poptin', label: 'Poptin - דורש API/Webhook למיילים' },
     ],
   },

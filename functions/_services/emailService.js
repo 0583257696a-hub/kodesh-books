@@ -17,8 +17,10 @@ function getSender(env, settings = {}, provider = 'mailjet') {
   const sender = stringValue(env.EMAIL_FROM)
     || (provider === 'resend' ? stringValue(env.RESEND_FROM_EMAIL) : '')
     || (provider === 'mailjet' ? stringValue(env.MAILJET_FROM_EMAIL) : '')
+    || (provider === 'cloudflare' ? stringValue(env.CLOUDFLARE_EMAIL_FROM) : '')
     || stringValue(env.MAILJET_FROM_EMAIL)
     || stringValue(env.RESEND_FROM_EMAIL)
+    || stringValue(env.CLOUDFLARE_EMAIL_FROM)
     || stringValue(settings.email_from)
     || stringValue(settings.from_email)
     || stringValue(settings.email);

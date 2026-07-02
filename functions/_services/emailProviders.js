@@ -4,7 +4,7 @@ const MAILJET_DEFAULT_HOST = 'api.mailjet.com';
 const MAILJET_SEND_PATH = '/v3.1/send';
 const RESEND_SEND_URL = 'https://api.resend.com/emails';
 
-const SUPPORTED_EMAIL_PROVIDERS = new Set(['mailjet', 'resend', 'poptin']);
+const SUPPORTED_EMAIL_PROVIDERS = new Set(['mailjet', 'resend', 'cloudflare', 'poptin']);
 
 export function normalizeEmailProvider(value) {
   const provider = stringValue(value).toLowerCase();
@@ -113,6 +113,12 @@ export function emailProviderConfigError(env, provider) {
       : 'RESEND_API_KEY is not configured';
   }
 
+  if (provider === 'cloudflare') {
+    return env.EMAIL && typeof env.EMAIL.send === 'function'
+      ? ''
+      : 'Cloudflare send_email binding EMAIL is not configured';
+  }
+
   if (provider === 'poptin') {
     return 'Poptin Pixel is configured in the browser, but transactional email sending through Poptin requires Poptin API/webhook details that are not configured yet';
   }
@@ -180,8 +186,24 @@ async function sendWithResend(env, payload) {
   };
 }
 
+async function sendWithCloudflareEmail(env, payload) {
+  const response = await env.EMAIL.send({
+    to: payload.recipient,
+    from: payload.from,
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text || htmlToText(payload.html),
+  });
+
+  return {
+    raw: response || {},
+    provider_message_id: response?.messageId || response?.id || null,
+  };
+}
+
 export async function sendWithEmailProvider(env, provider, payload) {
   if (provider === 'mailjet') return sendWithMailjet(env, payload);
   if (provider === 'resend') return sendWithResend(env, payload);
+  if (provider === 'cloudflare') return sendWithCloudflareEmail(env, payload);
   throw new Error(emailProviderConfigError(env, provider));
 }
