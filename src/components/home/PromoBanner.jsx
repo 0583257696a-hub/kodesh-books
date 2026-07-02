@@ -51,7 +51,45 @@ function BannerButton({ banner }) {
   );
 }
 
+function BannerImageLink({ banner }) {
+  const ctaUrl = banner.cta_url || '';
+  const label = banner.title || banner.cta_text || 'באנר פרסומי';
+  const image = (
+    <img
+      src={banner.image_url}
+      alt={label}
+      className="block h-auto w-full object-contain"
+    />
+  );
+
+  if (!ctaUrl) return image;
+
+  return /^https?:\/\//i.test(ctaUrl) ? (
+    <a href={ctaUrl} target="_blank" rel="noopener noreferrer" aria-label={label}>
+      {image}
+    </a>
+  ) : (
+    <Link to={ctaUrl} aria-label={label}>
+      {image}
+    </Link>
+  );
+}
+
 function PromoBannerCard({ banner, index = 0, showDefaultDiscount = false }) {
+  if (banner.image_url && !banner.isDefault) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: Math.min(index * 0.08, 0.2) }}
+        className="relative overflow-hidden rounded-2xl border border-gold/20 bg-[#1a0e05] shadow-xl"
+      >
+        <BannerImageLink banner={banner} />
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

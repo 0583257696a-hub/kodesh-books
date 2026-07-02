@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Megaphone, Plus, Trash2, Loader2, Image } from 'lucide-react';
+import { Megaphone, Plus, Trash2, Loader2, Image, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
@@ -48,10 +48,19 @@ const DEFAULT_BANNER_FORM = {
   is_active: true,
 };
 
+const parseBannerValue = (banner) => {
+  try {
+    return JSON.parse(banner?.value || '{}');
+  } catch {
+    return {};
+  }
+};
+
 export default function AdminContent() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ ...DEFAULT_BANNER_FORM });
+  const [editingBanner, setEditingBanner] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [contentValues, setContentValues] = useState({});
   const [savingKey, setSavingKey] = useState('');
@@ -82,6 +91,21 @@ export default function AdminContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
       setForm({ ...DEFAULT_BANNER_FORM });
+      setEditingBanner(null);
+      setBannerError('');
+      setOpen(false);
+    },
+    onError: (error) => {
+      setBannerError(error.message || 'שמירת הבאנר נכשלה.');
+    },
+  });
+
+  const updateBannerM = useMutation({
+    mutationFn: ({ id, data }) => appApi.entities.SiteSettings.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      setForm({ ...DEFAULT_BANNER_FORM });
+      setEditingBanner(null);
       setBannerError('');
       setOpen(false);
     },
@@ -113,7 +137,6 @@ export default function AdminContent() {
 
   const saveBanner = () => {
     setBannerError('');
-    const key = `banner_${Date.now()}`;
     const payload = {
       ...form,
       placement: form.placement || DEFAULT_BANNER_PLACEMENT,
@@ -121,7 +144,18 @@ export default function AdminContent() {
       cta_url: form.cta_url || DEFAULT_BANNER_FORM.cta_url,
       is_active: form.is_active !== false,
     };
-    createM.mutate({ key, value: JSON.stringify(payload), label: payload.title || 'באנר פרסומי', value_type: 'json' });
+    const data = {
+      value: JSON.stringify(payload),
+      label: payload.title || 'באנר פרסומי',
+      value_type: 'json',
+    };
+
+    if (editingBanner?.id) {
+      updateBannerM.mutate({ id: editingBanner.id, data });
+      return;
+    }
+
+    createM.mutate({ key: `banner_${Date.now()}`, ...data });
   };
 
   const saveTopBanner = (text) => {
@@ -160,6 +194,27 @@ export default function AdminContent() {
     } finally {
       setSavingKey('');
     }
+  };
+
+  const openNewBannerDialog = () => {
+    setEditingBanner(null);
+    setForm({ ...DEFAULT_BANNER_FORM });
+    setBannerError('');
+    setOpen(true);
+  };
+
+  const openEditBannerDialog = (banner) => {
+    const parsed = parseBannerValue(banner);
+    setEditingBanner(banner);
+    setForm({
+      ...DEFAULT_BANNER_FORM,
+      ...parsed,
+      title: parsed.title || banner.label || '',
+      placement: parsed.placement || DEFAULT_BANNER_PLACEMENT,
+      is_active: parsed.is_active !== false,
+    });
+    setBannerError('');
+    setOpen(true);
   };
 
   const renderEditableField = (field) => (
@@ -236,10 +291,7 @@ export default function AdminContent() {
             <Image className="h-5 w-5 text-blue-600" /> באנרים פרסומיים
           </h2>
           <Button
-            onClick={() => {
-              setForm({ ...DEFAULT_BANNER_FORM });
-              setOpen(true);
-            }}
+            onClick={openNewBannerDialog}
             className="h-9 bg-blue-600 text-sm text-white hover:bg-blue-700"
           >
             <Plus className="ml-1 h-4 w-4" /> באנר חדש
@@ -251,10 +303,7 @@ export default function AdminContent() {
         ) : (
           <div className="space-y-3">
             {banners.map((banner) => {
-              let parsed = {};
-              try {
-                parsed = JSON.parse(banner.value);
-              } catch {}
+              const parsed = parseBannerValue(banner);
               return (
                 <div key={banner.id} className="flex items-center gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
                   {parsed.image_url && <img src={parsed.image_url} alt="" className="h-10 w-16 rounded-lg object-cover" />}
@@ -265,9 +314,20 @@ export default function AdminContent() {
                       {bannerPlacementLabel(parsed.placement || DEFAULT_BANNER_PLACEMENT)}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => deleteM.mutate(banner.id)} className="h-8 w-8 text-slate-500 hover:bg-rose-50 hover:text-rose-700">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEditBannerDialog(banner)}
+                      className="h-8 w-8 text-slate-500 hover:bg-blue-50 hover:text-blue-700"
+                      aria-label="עריכת באנר"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => deleteM.mutate(banner.id)} className="h-8 w-8 text-slate-500 hover:bg-rose-50 hover:text-rose-700" aria-label="מחיקת באנר">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}
@@ -279,12 +339,16 @@ export default function AdminContent() {
         open={open}
         onOpenChange={(nextOpen) => {
           setOpen(nextOpen);
-          if (!nextOpen) setBannerError('');
+          if (!nextOpen) {
+            setBannerError('');
+            setEditingBanner(null);
+            setForm({ ...DEFAULT_BANNER_FORM });
+          }
         }}
       >
         <DialogContent className="max-w-md border-slate-200 bg-white text-slate-950" dir="rtl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">באנר חדש</DialogTitle>
+            <DialogTitle className="text-xl font-bold">{editingBanner ? 'עריכת באנר' : 'באנר חדש'}</DialogTitle>
           </DialogHeader>
           <div className="mt-2 space-y-4">
             {bannerError && (
@@ -338,8 +402,8 @@ export default function AdminContent() {
               <Label className="text-sm text-slate-700">באנר פעיל</Label>
               <Switch checked={form.is_active !== false} onCheckedChange={(value) => setForm((current) => ({ ...current, is_active: value }))} />
             </div>
-            <Button onClick={saveBanner} disabled={createM.isPending || (!form.title && !form.image_url)} className="h-11 w-full bg-blue-600 font-semibold text-white hover:bg-blue-700">
-              {createM.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'שמירת באנר'}
+            <Button onClick={saveBanner} disabled={createM.isPending || updateBannerM.isPending || (!form.title && !form.image_url)} className="h-11 w-full bg-blue-600 font-semibold text-white hover:bg-blue-700">
+              {createM.isPending || updateBannerM.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'שמירת באנר'}
             </Button>
           </div>
         </DialogContent>
