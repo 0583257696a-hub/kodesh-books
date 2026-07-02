@@ -11,13 +11,15 @@ const PROMO_IMAGE = '/assets/static/home-promo.png';
 function parseBannerEntry([key, value]) {
   try {
     const parsed = JSON.parse(value);
+    const targetUrl = parsed.target_url || parsed.link_url || parsed.cta_url || '';
     return {
       id: key,
       placement: parsed.placement || DEFAULT_BANNER_PLACEMENT,
       title: parsed.title || '',
       subtitle: parsed.subtitle || '',
       cta_text: parsed.cta_text || 'לכל המבצעים',
-      cta_url: parsed.cta_url || '/catalog?sale=true',
+      cta_url: parsed.cta_url || targetUrl || '/catalog?sale=true',
+      target_url: targetUrl,
       image_url: parsed.image_url || '',
       badge_text: parsed.badge_text || 'מבצע מיוחד • זמן מוגבל',
       is_active: parsed.is_active !== false,
@@ -52,7 +54,7 @@ function BannerButton({ banner }) {
 }
 
 function BannerImageLink({ banner }) {
-  const ctaUrl = banner.cta_url || '';
+  const ctaUrl = banner.target_url || banner.cta_url || '';
   const label = banner.title || banner.cta_text || 'באנר פרסומי';
   const image = (
     <img
@@ -164,6 +166,7 @@ export default function PromoBanner({ placement = DEFAULT_BANNER_PLACEMENT }) {
       subtitle: '',
       cta_text: 'לכל המבצעים',
       cta_url: '/catalog?sale=true',
+      target_url: '/catalog?sale=true',
       image_url: PROMO_IMAGE,
       badge_text: 'מבצע מיוחד • זמן מוגבל',
       is_active: true,

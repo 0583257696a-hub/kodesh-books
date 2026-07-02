@@ -16,6 +16,13 @@ const q = async (entity, fallback = []) => {
   }
 };
 
+const asArray = (value) => (Array.isArray(value) ? value.filter(Boolean) : []);
+
+const withCreatedDate = (record) => ({
+  ...record,
+  created_date: record.created_date || record.created_at || record.createdDate || new Date().toISOString(),
+});
+
 function StatCard({ icon: Icon, label, value, sub, tone = 'blue' }) {
   const tones = {
     blue: 'bg-blue-50 text-blue-700',
@@ -50,12 +57,21 @@ export default function Dashboard() {
     }),
   });
 
-  const orders = data.orders || [];
-  const products = data.products || [];
-  const users = data.users || [];
-  const leads = useMemo(() => buildLeads(data), [data]);
-  const analytics = useMemo(() => buildAnalytics(data), [data]);
-  const expenses = buildExpenseRows(data.expenses || []);
+  const normalizedData = useMemo(() => ({
+    orders: asArray(data.orders).map(withCreatedDate),
+    products: asArray(data.products).map(withCreatedDate),
+    users: asArray(data.users).map(withCreatedDate),
+    leads: asArray(data.leads).map(withCreatedDate),
+    expenses: asArray(data.expenses).map(withCreatedDate),
+    events: asArray(data.events).map(withCreatedDate),
+  }), [data]);
+
+  const orders = normalizedData.orders;
+  const products = normalizedData.products;
+  const users = normalizedData.users;
+  const leads = useMemo(() => buildLeads(normalizedData), [normalizedData]);
+  const analytics = useMemo(() => buildAnalytics(normalizedData), [normalizedData]);
+  const expenses = buildExpenseRows(normalizedData.expenses);
   const kpis = businessKpis({ orders, users, leads, expenses });
   const monthStart = startOfMonth(new Date());
   const monthlyOrders = orders.filter((order) => !['cancelled'].includes(normalizeOrderStatus(order.status)) && safeDate(order.created_date) >= monthStart);

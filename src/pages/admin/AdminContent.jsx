@@ -43,6 +43,7 @@ const DEFAULT_BANNER_FORM = {
   subtitle: '',
   cta_text: 'למבצעים',
   cta_url: '/catalog?sale=true',
+  target_url: '/catalog?sale=true',
   image_url: '',
   placement: DEFAULT_BANNER_PLACEMENT,
   is_active: true,
@@ -142,6 +143,7 @@ export default function AdminContent() {
       placement: form.placement || DEFAULT_BANNER_PLACEMENT,
       cta_text: form.cta_text || DEFAULT_BANNER_FORM.cta_text,
       cta_url: form.cta_url || DEFAULT_BANNER_FORM.cta_url,
+      target_url: form.target_url || form.cta_url || DEFAULT_BANNER_FORM.target_url,
       is_active: form.is_active !== false,
     };
     const data = {
@@ -211,6 +213,7 @@ export default function AdminContent() {
       ...parsed,
       title: parsed.title || banner.label || '',
       placement: parsed.placement || DEFAULT_BANNER_PLACEMENT,
+      target_url: parsed.target_url || parsed.cta_url || DEFAULT_BANNER_FORM.target_url,
       is_active: parsed.is_active !== false,
     });
     setBannerError('');
@@ -313,6 +316,11 @@ export default function AdminContent() {
                     <p className="mt-1 text-xs font-semibold text-blue-700">
                       {bannerPlacementLabel(parsed.placement || DEFAULT_BANNER_PLACEMENT)}
                     </p>
+                    {(parsed.target_url || parsed.cta_url) && (
+                      <p className="mt-1 text-xs text-slate-500">
+                        קישור יעד: {parsed.target_url || parsed.cta_url}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -391,6 +399,18 @@ export default function AdminContent() {
                 <Label className="text-sm text-slate-700">קישור כפתור</Label>
                 <Input value={form.cta_url} onChange={(event) => setForm((current) => ({ ...current, cta_url: event.target.value }))} className="border-slate-200 bg-white text-slate-950" placeholder="/catalog?sale=true" />
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm text-slate-700">קישור יעד בלחיצה על הבאנר</Label>
+              <Input
+                value={form.target_url || ''}
+                onChange={(event) => setForm((current) => ({ ...current, target_url: event.target.value }))}
+                className="border-slate-200 bg-white text-slate-950"
+                placeholder="/catalog או https://example.com"
+              />
+              <p className="text-xs text-slate-500">
+                בבאנר תמונה מלא, כל לחיצה על הבאנר תעבור לקישור הזה. אם השדה ריק, ייעשה שימוש בקישור הכפתור.
+              </p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-sm text-slate-700">תמונת רקע</Label>
