@@ -28,7 +28,7 @@ npm run build
 ## Required Secrets And Variables
 
 Configure these in Cloudflare Pages, not in frontend code:
-
+ 
 - `BOOTSTRAP_ADMIN_EMAIL`: first admin email.
 - `BOOTSTRAP_ADMIN_PASSWORD`: first admin password.
 - `RESEND_API_KEY`: Resend API key for order emails.
