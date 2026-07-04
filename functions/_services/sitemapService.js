@@ -111,3 +111,22 @@ export async function sitemapResponse(env = {}) {
     },
   });
 }
+
+export async function handleSitemapRequest({ request, env }) {
+  if (!['GET', 'HEAD'].includes(request.method)) {
+    return new Response('Method Not Allowed', {
+      status: 405,
+      headers: { allow: 'GET, HEAD' },
+    });
+  }
+
+  const response = await sitemapResponse(env);
+  if (request.method === 'HEAD') {
+    return new Response(null, {
+      status: response.status,
+      headers: response.headers,
+    });
+  }
+
+  return response;
+}
