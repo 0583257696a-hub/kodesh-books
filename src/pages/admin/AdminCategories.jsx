@@ -65,8 +65,9 @@ export default function AdminCategories() {
         active: category.active !== false,
       };
 
-      if (category.record_id) {
-        return appApi.entities.StoreCategory.update(category.record_id, payload);
+      const updateId = category.original_record_id || category.record_id;
+      if (updateId) {
+        return appApi.entities.StoreCategory.update(updateId, payload);
       }
 
       const existing = storedCategories.find((item) => item.slug === payload.slug);
@@ -161,6 +162,7 @@ export default function AdminCategories() {
     setEditItem({
       ...EMPTY_CATEGORY,
       ...category,
+      original_record_id: category.record_id || category.id || category.slug || '',
       slug: category.slug || category.id || '',
       image_url: category.image_url || CATEGORY_IMAGES[category.slug || category.id] || '',
       r2_key: category.r2_key || '',
