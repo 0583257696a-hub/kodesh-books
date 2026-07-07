@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { CATEGORY_IMAGES, buildCategoryCollections } from '@/hooks/useStoreCategories';
+import { imageKeyFromImageUrl, uploadCategoryImage } from '@/services/uploadService';
 import { Boxes, FolderOpen, Loader2, Pencil, Plus, Trash2, UploadCloud } from 'lucide-react';
 
 const EMPTY_CATEGORY = {
@@ -15,6 +16,7 @@ const EMPTY_CATEGORY = {
   slug: '',
   description: '',
   image_url: '',
+  r2_key: '',
   icon: 'FolderOpen',
   display_order: 100,
   show_in_home: true,
@@ -34,6 +36,7 @@ export default function AdminCategories() {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const { data: storedCategories = [], isLoading } = useQuery({
     queryKey: ['store-categories-admin'],
@@ -54,6 +57,7 @@ export default function AdminCategories() {
         slug: slugifyHebrew(category.slug || category.name),
         description: category.description || '',
         image_url: category.image_url || '',
+        r2_key: category.r2_key || '',
         icon: category.icon || 'FolderOpen',
         display_order: Number(category.display_order || 100),
         show_in_home: category.show_in_home !== false,
@@ -77,7 +81,9 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ['store-categories-admin'] });
       setOpen(false);
       setEditItem(null);
+      setFormError('');
     },
+    onError: (error) => setFormError(error.message || 'שמירת הקטגוריה נכשלה.'),
   });
 
   const deleteMutation = useMutation({
@@ -93,6 +99,7 @@ export default function AdminCategories() {
           slug: category.slug,
           description: category.description || '',
           image_url: category.image_url || '',
+          r2_key: category.r2_key || '',
           icon: category.icon || 'FolderOpen',
           display_order: Number(category.display_order || 100),
           show_in_home: false,
@@ -123,22 +130,53 @@ export default function AdminCategories() {
     const file = event.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setFormError('');
     try {
-      const { file_url } = await appApi.uploads.uploadFile({ file });
-      setEditItem((current) => ({ ...current, image_url: file_url }));
+      const categorySlug = slugifyHebrew(editItem?.slug || editItem?.name) || 'new-category';
+      const image = await uploadCategoryImage(file, {
+        categorySlug,
+        altText: editItem?.name || file.name,
+        replaceImageKey: editItem?.r2_key || imageKeyFromImageUrl(editItem?.image_url),
+        replaceImageUrl: editItem?.image_url,
+      });
+      if (image?.image_url) {
+        setEditItem((current) => ({
+          ...current,
+          image_url: image.image_url,
+          r2_key: image.image_key || current?.r2_key || '',
+        }));
+      }
+    } catch (error) {
+      setFormError(error.message || 'העלאת תמונת הקטגוריה נכשלה.');
     } finally {
       setUploading(false);
+      event.target.value = '';
     }
   };
 
   const openEditor = (category = EMPTY_CATEGORY) => {
+    setFormError('');
     setEditItem({
       ...EMPTY_CATEGORY,
       ...category,
       slug: category.slug || category.id || '',
       image_url: category.image_url || CATEGORY_IMAGES[category.slug || category.id] || '',
+      r2_key: category.r2_key || '',
     });
     setOpen(true);
+  };
+
+  const handleSave = () => {
+    if (!editItem?.name?.trim()) {
+      setFormError('יש למלא שם קטגוריה.');
+      return;
+    }
+    if (!slugifyHebrew(editItem.slug || editItem.name)) {
+      setFormError('יש למלא מזהה קטגוריה תקין.');
+      return;
+    }
+    setFormError('');
+    saveMutation.mutate(editItem);
   };
 
   return (
@@ -224,6 +262,12 @@ export default function AdminCategories() {
 
           {editItem && (
             <div className="space-y-5">
+              {formError && (
+                <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700" role="alert">
+                  {formError}
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>שם קטגוריה *</Label>
@@ -302,7 +346,7 @@ export default function AdminCategories() {
               </div>
 
               <Button
-                onClick={() => saveMutation.mutate(editItem)}
+                onClick={handleSave}
                 disabled={saveMutation.isPending || !editItem.name.trim() || !slugifyHebrew(editItem.slug || editItem.name)}
                 className="h-11 w-full bg-blue-600 font-semibold text-white hover:bg-blue-700"
               >

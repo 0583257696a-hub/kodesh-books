@@ -24,6 +24,7 @@ const normalizeCategory = (category, index = 0) => {
   description: category.description || '',
   icon: category.icon || 'FolderOpen',
   image_url: category.image_url || CATEGORY_IMAGES[slug] || '',
+  r2_key: category.r2_key || '',
   display_order: Number(category.display_order ?? index),
   show_in_home: category.show_in_home !== false && category.show_in_home !== 0,
   show_in_nav: category.show_in_nav !== false && category.show_in_nav !== 0,

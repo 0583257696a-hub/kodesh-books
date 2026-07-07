@@ -1,4 +1,5 @@
 const PRODUCT_IMAGE_UPLOAD_ENDPOINT = '/api/admin/uploads/product-image';
+const CATEGORY_IMAGE_UPLOAD_ENDPOINT = '/api/admin/uploads/category-image';
 const IMAGE_ROUTE_PREFIX = '/api/images/';
 
 async function readJsonResponse(response) {
@@ -60,6 +61,29 @@ export async function uploadProductImages(files, options = {}) {
   return data.images || [];
 }
 
+export async function uploadCategoryImage(file, options = {}) {
+  if (!file) return null;
+
+  const formData = new FormData();
+  formData.append('file', file);
+  if (options.categorySlug) formData.set('category_slug', options.categorySlug);
+  if (options.altText) formData.set('alt_text', options.altText);
+  if (options.replaceImageKey) formData.set('replace_image_key', options.replaceImageKey);
+  if (options.replaceImageUrl) formData.set('replace_image_url', options.replaceImageUrl);
+
+  const response = await fetch(CATEGORY_IMAGE_UPLOAD_ENDPOINT, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+  });
+
+  const data = await readJsonResponse(response);
+  return data.image || null;
+}
+
 export async function removeProductImage({ imageId, imageKey, imageUrl } = {}) {
   const key = imageKey || imageKeyFromImageUrl(imageUrl);
   if (!imageId && !key) {
@@ -82,4 +106,3 @@ export async function removeProductImage({ imageId, imageKey, imageUrl } = {}) {
 
   return readJsonResponse(response);
 }
-
