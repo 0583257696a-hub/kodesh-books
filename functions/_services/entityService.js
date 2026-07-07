@@ -202,8 +202,10 @@ function normalizePayload(config, payload = {}) {
   return values;
 }
 
-function productPayload(payload = {}) {
+function productPayload(payload = {}, categoryRef = {}) {
   const category = stringValue(payload.category || payload.category_slug || payload.category_id);
+  const categoryId = stringValue(categoryRef.id) || category;
+  const categorySlug = stringValue(categoryRef.slug) || category;
   const slug = stringValue(payload.slug) || crypto.randomUUID();
   return {
     base44_id: stringValue(payload.base44_id) || null,
@@ -216,8 +218,8 @@ function productPayload(payload = {}) {
     publisher: payload.publisher || '',
     sku: payload.sku || '',
     barcode: payload.barcode || '',
-    category_id: category,
-    category_slug: category,
+    category_id: categoryId,
+    category_slug: categorySlug,
     sub_category: payload.sub_category || '',
     additional_categories_json: JSON.stringify(payload.additional_categories || []),
     price: numberValue(payload.price),
@@ -237,6 +239,29 @@ function productPayload(payload = {}) {
     is_featured: boolToDb(payload.is_featured),
     in_stock: payload.in_stock === false ? 0 : 1,
     free_shipping: boolToDb(payload.free_shipping),
+  };
+}
+
+async function resolveProductCategory(env, payload = {}) {
+  const category = stringValue(payload.category || payload.category_slug || payload.category_id);
+  if (!category) return {};
+
+  const row = await env.DB.prepare(`
+    SELECT id, slug
+    FROM categories
+    WHERE id = ? OR slug = ? OR base44_id = ?
+    LIMIT 1
+  `).bind(category, category, category).first();
+
+  if (!row) {
+    const error = new Error(`Category not found: ${category}`);
+    error.status = 400;
+    throw error;
+  }
+
+  return {
+    id: row.id,
+    slug: row.slug || row.id,
   };
 }
 
@@ -332,7 +357,8 @@ async function getGenericById(env, entityName, id) {
 
 async function createProduct(env, payload) {
   const id = payload.id || crypto.randomUUID();
-  const values = productPayload(payload);
+  const categoryRef = await resolveProductCategory(env, payload);
+  const values = productPayload(payload, categoryRef);
   const now = nowIso();
   const columns = ['id', ...PRODUCT_FIELDS, 'created_at', 'updated_at'];
   await env.DB.prepare(`
@@ -343,7 +369,8 @@ async function createProduct(env, payload) {
 }
 
 async function updateProduct(env, id, payload) {
-  const values = productPayload(payload);
+  const categoryRef = await resolveProductCategory(env, payload);
+  const values = productPayload(payload, categoryRef);
   values.updated_at = nowIso();
   const columns = Object.keys(values).filter((field) => PRODUCT_FIELDS.includes(field) || field === 'updated_at');
   await env.DB.prepare(`
