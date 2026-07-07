@@ -71,14 +71,16 @@ export default function AdminCategories() {
 
       const existing = storedCategories.find((item) => item.slug === payload.slug);
       if (existing) {
-        return appApi.entities.StoreCategory.update(existing.id, payload);
+        return appApi.entities.StoreCategory.update(existing.record_id || existing.id, payload);
       }
 
       return appApi.entities.StoreCategory.create(payload);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['store-categories'] });
-      queryClient.invalidateQueries({ queryKey: ['store-categories-admin'] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ['store-categories'] }),
+        queryClient.refetchQueries({ queryKey: ['store-categories-admin'] }),
+      ]);
       setOpen(false);
       setEditItem(null);
       setFormError('');

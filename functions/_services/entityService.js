@@ -291,14 +291,28 @@ async function updateGeneric(env, entityName, id, payload = {}) {
   values.updated_at = nowIso();
   const columns = Object.keys(values);
   if (!columns.length) return getGenericById(env, entityName, id);
+  let targetId = id;
+
+  if (entityName === 'StoreCategory') {
+    const row = await env.DB.prepare(`SELECT id FROM ${config.table} WHERE id = ? OR slug = ? OR base44_id = ? LIMIT 1`)
+      .bind(id, id, id)
+      .first();
+    targetId = row?.id || id;
+  }
 
   await env.DB.prepare(`
     UPDATE ${config.table}
     SET ${columns.map((column) => `${column} = ?`).join(', ')}
     WHERE id = ?
-  `).bind(...Object.values(values), id).run();
+  `).bind(...Object.values(values), targetId).run();
 
-  return getGenericById(env, entityName, id);
+  const item = await getGenericById(env, entityName, targetId);
+  if (!item) {
+    const error = new Error(`${entityName} not found`);
+    error.status = 404;
+    throw error;
+  }
+  return item;
 }
 
 async function deleteGeneric(env, entityName, id) {
@@ -310,7 +324,9 @@ async function deleteGeneric(env, entityName, id) {
 
 async function getGenericById(env, entityName, id) {
   const config = ENTITY_CONFIGS[entityName];
-  const row = await env.DB.prepare(`SELECT * FROM ${config.table} WHERE id = ? LIMIT 1`).bind(id).first();
+  const row = entityName === 'StoreCategory'
+    ? await env.DB.prepare(`SELECT * FROM ${config.table} WHERE id = ? OR slug = ? OR base44_id = ? LIMIT 1`).bind(id, id, id).first()
+    : await env.DB.prepare(`SELECT * FROM ${config.table} WHERE id = ? LIMIT 1`).bind(id).first();
   return row ? toEntity(row) : null;
 }
 
