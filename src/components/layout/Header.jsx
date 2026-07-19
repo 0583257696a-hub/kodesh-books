@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, User, ShoppingCart, Menu, X, Phone, MessageCircle } from 'lucide-react';
+import { Search, User, ShoppingCart, Menu, X, Phone, MessageCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/context/CartContext';
@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { buildWhatsappUrl, buildPhoneUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { STORE_LOGO_URL } from '@/lib/branding';
+import MegaMenu from '@/components/layout/MegaMenu';
+import MobileCategoryMenuItem from '@/components/layout/MobileCategoryMenuItem';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -19,16 +21,67 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchToggleRef = useRef(null);
+  const [openCategorySlug, setOpenCategorySlug] = useState(null);
+  const openTimerRef = useRef(null);
+  const closeTimerRef = useRef(null);
+  const triggerRefs = useRef({});
+  const navRef = useRef(null);
+
+  const categoryNavItems = categories.filter((category) => category.show_in_nav);
 
   const navItems = [
     { label: 'ראשי', path: '/' },
     { label: 'כל הספרים', path: '/catalog' },
-    ...categories
-      .filter((category) => category.show_in_nav)
-      .map((category) => ({ label: category.name, path: `/catalog?category=${category.slug}` })),
+    ...categoryNavItems.map((category) => ({ label: category.name, path: `/catalog?category=${category.slug}` })),
     { label: 'מבצעים', path: '/catalog?sale=true' },
     { label: 'צור קשר', path: '/contact' },
   ];
+
+  const openCategory = (slug) => {
+    clearTimeout(closeTimerRef.current);
+    openTimerRef.current = setTimeout(() => setOpenCategorySlug(slug), 180);
+  };
+
+  const scheduleCloseCategory = () => {
+    clearTimeout(openTimerRef.current);
+    closeTimerRef.current = setTimeout(() => setOpenCategorySlug(null), 250);
+  };
+
+  const cancelCloseCategory = () => clearTimeout(closeTimerRef.current);
+
+  const closeCategoryImmediate = (returnFocusSlug) => {
+    clearTimeout(openTimerRef.current);
+    clearTimeout(closeTimerRef.current);
+    setOpenCategorySlug(null);
+    if (returnFocusSlug) triggerRefs.current[returnFocusSlug]?.focus();
+  };
+
+  useEffect(() => () => {
+    clearTimeout(openTimerRef.current);
+    clearTimeout(closeTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!openCategorySlug) return undefined;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') closeCategoryImmediate(openCategorySlug);
+    };
+    const handleClickOutside = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) setOpenCategorySlug(null);
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openCategorySlug]);
+
+  const activeMegaCategory = categoryNavItems.find(
+    (category) => category.slug === openCategorySlug && category.mega_menu_enabled
+  );
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -137,21 +190,44 @@ export default function Header() {
                     <img src={STORE_LOGO_URL} alt="לוגו אוצר הקדושה" className="h-12 w-auto object-contain" />
                   </div>
                   <nav className="flex flex-col overflow-y-auto" aria-label="תפריט ניווט לנייד">
-                    {navItems.map((item) => {
-                      const active = isActiveNavItem(item);
-                      return (
-                        <button
-                          key={item.path + item.label}
-                          type="button"
-                          onClick={() => handleMobileNavigation(item.path)}
-                          className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${active ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
-                          aria-current={active ? 'page' : undefined}
-                        >
-                          {active && <span className="w-1 h-4 rounded-full bg-gold flex-shrink-0" aria-hidden="true" />}
-                          {item.label}
-                        </button>
-                      );
-                    })}
+                    <button
+                      type="button"
+                      onClick={() => handleMobileNavigation('/')}
+                      className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${isActiveNavItem({ path: '/' }) ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
+                    >
+                      ראשי
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMobileNavigation('/catalog')}
+                      className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${isActiveNavItem({ path: '/catalog' }) ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
+                    >
+                      כל הספרים
+                    </button>
+
+                    {categoryNavItems.map((category) => (
+                      <MobileCategoryMenuItem
+                        key={category.slug}
+                        category={category}
+                        active={location.search.includes(`category=${category.slug}`)}
+                        onNavigate={handleMobileNavigation}
+                      />
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => handleMobileNavigation('/catalog?sale=true')}
+                      className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${isActiveNavItem({ path: '/catalog?sale=true' }) ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
+                    >
+                      מבצעים
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMobileNavigation('/contact')}
+                      className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${isActiveNavItem({ path: '/contact' }) ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
+                    >
+                      צור קשר
+                    </button>
                   </nav>
                   <div className="p-4 mt-2 space-y-2">
                     {settings.phone && (
@@ -226,21 +302,37 @@ export default function Header() {
       </div>
 
       {/* Desktop navigation */}
-      <nav className="hidden lg:block bg-[#FCFAF5] border-b border-[#E7D8B8]/80" aria-label="ניווט ראשי" dir="rtl">
+      <nav ref={navRef} className="relative hidden lg:block bg-[#FCFAF5] border-b border-[#E7D8B8]/80" aria-label="ניווט ראשי" dir="rtl">
         <div className="max-w-7xl mx-auto px-4">
           <ul className="flex flex-wrap items-center justify-center gap-x-1 py-2">
             {navItems.map((item) => {
               const active = isActiveNavItem(item);
+              const category = categoryNavItems.find((c) => item.path === `/catalog?category=${c.slug}`);
+              const isMegaTrigger = category && category.mega_menu_enabled;
+
               return (
                 <li key={item.path + item.label}>
                   <Link
+                    ref={isMegaTrigger ? (el) => { triggerRefs.current[category.slug] = el; } : undefined}
                     to={item.path}
-                    className={`font-body text-sm px-4 py-2 rounded-md transition-all duration-200 relative group ${
+                    onMouseEnter={isMegaTrigger ? () => openCategory(category.slug) : undefined}
+                    onMouseLeave={isMegaTrigger ? scheduleCloseCategory : undefined}
+                    onFocus={isMegaTrigger ? () => openCategory(category.slug) : undefined}
+                    onBlur={isMegaTrigger ? scheduleCloseCategory : undefined}
+                    aria-expanded={isMegaTrigger ? openCategorySlug === category.slug : undefined}
+                    aria-controls={isMegaTrigger ? `mega-menu-${category.slug}` : undefined}
+                    className={`font-body text-sm px-4 py-2 rounded-md transition-all duration-200 relative group inline-flex items-center gap-1 ${
                       active ? 'text-[#1F160F] font-semibold bg-gold/10' : 'text-[#3A2415] hover:text-gold hover:bg-gold/6'
                     }`}
                     aria-current={active ? 'page' : undefined}
                   >
                     {item.label}
+                    {isMegaTrigger && (
+                      <ChevronDown
+                        className={`h-3 w-3 transition-transform duration-200 ${openCategorySlug === category.slug ? 'rotate-180 text-gold' : 'opacity-50'}`}
+                        aria-hidden="true"
+                      />
+                    )}
                     <span className={`absolute bottom-0 left-3 right-3 h-0.5 bg-gold rounded-full transition-opacity ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`} aria-hidden="true" />
                   </Link>
                 </li>
@@ -248,6 +340,18 @@ export default function Header() {
             })}
           </ul>
         </div>
+
+        {activeMegaCategory && (
+          <MegaMenu
+            category={activeMegaCategory}
+            allCategories={categoryNavItems}
+            panelId={`mega-menu-${activeMegaCategory.slug}`}
+            isOpen
+            onMouseEnter={cancelCloseCategory}
+            onMouseLeave={scheduleCloseCategory}
+            onNavigate={() => closeCategoryImmediate()}
+          />
+        )}
       </nav>
 
       {/* Search overlay */}

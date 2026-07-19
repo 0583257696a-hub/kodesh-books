@@ -25,9 +25,13 @@ const ENTITY_CONFIGS = {
   },
   StoreCategory: {
     table: 'categories',
-    fields: ['base44_id', 'name', 'slug', 'description', 'image_url', 'r2_key', 'icon', 'display_order', 'show_in_home', 'show_in_nav', 'active'],
-    booleans: ['show_in_home', 'show_in_nav', 'active'],
-    numbers: ['display_order'],
+    fields: [
+      'base44_id', 'name', 'slug', 'description', 'image_url', 'r2_key', 'icon', 'display_order', 'show_in_home', 'show_in_nav', 'active',
+      'mega_menu_enabled', 'mega_menu_show_products', 'mega_menu_desktop_count', 'mega_menu_mobile_count',
+      'mega_menu_rotation_seconds', 'mega_menu_in_stock_only', 'mega_menu_show_add_to_cart', 'mega_menu_show_view_all',
+    ],
+    booleans: ['show_in_home', 'show_in_nav', 'active', 'mega_menu_enabled', 'mega_menu_show_products', 'mega_menu_in_stock_only', 'mega_menu_show_add_to_cart', 'mega_menu_show_view_all'],
+    numbers: ['display_order', 'mega_menu_desktop_count', 'mega_menu_mobile_count', 'mega_menu_rotation_seconds'],
     order: 'display_order ASC, name ASC',
   },
   AnalyticsEvent: {
@@ -161,7 +165,7 @@ function toEntity(row = {}) {
       next[key.slice(0, -5)] = parseJson(value, []);
     }
   }
-  for (const key of ['is_active', 'active', 'show_in_home', 'show_in_nav', 'is_public', 'found_results', 'is_new', 'is_on_sale', 'is_featured', 'in_stock', 'free_shipping']) {
+  for (const key of ['is_active', 'active', 'show_in_home', 'show_in_nav', 'is_public', 'found_results', 'is_new', 'is_on_sale', 'is_featured', 'in_stock', 'free_shipping', 'mega_menu_enabled', 'mega_menu_show_products', 'mega_menu_in_stock_only', 'mega_menu_show_add_to_cart', 'mega_menu_show_view_all']) {
     if (key in next) next[key] = boolFromDb(next[key]);
   }
   if (next.name && !next.full_name) next.full_name = next.name;

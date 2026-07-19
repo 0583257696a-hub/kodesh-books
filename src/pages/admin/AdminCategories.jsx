@@ -22,6 +22,14 @@ const EMPTY_CATEGORY = {
   show_in_home: true,
   show_in_nav: true,
   active: true,
+  mega_menu_enabled: true,
+  mega_menu_show_products: true,
+  mega_menu_desktop_count: 2,
+  mega_menu_mobile_count: 1,
+  mega_menu_rotation_seconds: 120,
+  mega_menu_in_stock_only: false,
+  mega_menu_show_add_to_cart: true,
+  mega_menu_show_view_all: true,
 };
 
 const slugifyHebrew = (value) => String(value || '')
@@ -63,6 +71,14 @@ export default function AdminCategories() {
         show_in_home: category.show_in_home !== false,
         show_in_nav: category.show_in_nav !== false,
         active: category.active !== false,
+        mega_menu_enabled: category.mega_menu_enabled !== false,
+        mega_menu_show_products: category.mega_menu_show_products !== false,
+        mega_menu_desktop_count: Math.min(2, Math.max(0, Number(category.mega_menu_desktop_count ?? 2))),
+        mega_menu_mobile_count: Math.min(1, Math.max(0, Number(category.mega_menu_mobile_count ?? 1))),
+        mega_menu_rotation_seconds: Math.max(20, Number(category.mega_menu_rotation_seconds ?? 120)),
+        mega_menu_in_stock_only: category.mega_menu_in_stock_only === true,
+        mega_menu_show_add_to_cart: category.mega_menu_show_add_to_cart !== false,
+        mega_menu_show_view_all: category.mega_menu_show_view_all !== false,
       };
 
       const updateId = category.original_record_id || category.record_id;
@@ -347,6 +363,55 @@ export default function AdminCategories() {
                     <Switch checked={editItem[key] !== false} onCheckedChange={(value) => setEditItem((current) => ({ ...current, [key]: value }))} />
                   </div>
                 ))}
+              </div>
+
+              <div className="space-y-3 rounded-lg border border-slate-200 p-4">
+                <p className="text-sm font-bold text-slate-950">הגדרות Mega Menu</p>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {[
+                    ['mega_menu_enabled', 'הצגת Mega Menu לקטגוריה זו'],
+                    ['mega_menu_show_products', 'הצגת מוצרים בתפריט'],
+                    ['mega_menu_show_add_to_cart', 'הצגת כפתור הוספה לסל'],
+                    ['mega_menu_show_view_all', 'הצגת קישור "לכל הקטגוריה"'],
+                    ['mega_menu_in_stock_only', 'הצגת מוצרים במלאי בלבד'],
+                  ].map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                      <Label>{label}</Label>
+                      <Switch checked={editItem[key] !== false} onCheckedChange={(value) => setEditItem((current) => ({ ...current, [key]: value }))} />
+                    </div>
+                  ))}
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-1.5">
+                    <Label>מוצרים בדסקטופ (0-2)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={2}
+                      value={editItem.mega_menu_desktop_count}
+                      onChange={(event) => setEditItem((current) => ({ ...current, mega_menu_desktop_count: Math.min(2, Math.max(0, Number(event.target.value))) }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>מוצרים במובייל (0-1)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={1}
+                      value={editItem.mega_menu_mobile_count}
+                      onChange={(event) => setEditItem((current) => ({ ...current, mega_menu_mobile_count: Math.min(1, Math.max(0, Number(event.target.value))) }))}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>תדירות החלפה (שניות)</Label>
+                    <Input
+                      type="number"
+                      min={20}
+                      value={editItem.mega_menu_rotation_seconds}
+                      onChange={(event) => setEditItem((current) => ({ ...current, mega_menu_rotation_seconds: Math.max(20, Number(event.target.value)) }))}
+                    />
+                  </div>
+                </div>
               </div>
 
               <Button

@@ -31,6 +31,14 @@ const normalizeCategory = (category, index = 0) => {
   active: category.active !== false && category.active !== 0,
   system: DEFAULT_CATEGORY_IDS.has(slug),
   record_id: category.record_id || (category.id && category.slug && category.id !== slug ? category.id : ''),
+  mega_menu_enabled: category.mega_menu_enabled !== false && category.mega_menu_enabled !== 0,
+  mega_menu_show_products: category.mega_menu_show_products !== false && category.mega_menu_show_products !== 0,
+  mega_menu_desktop_count: Math.min(2, Math.max(0, Number(category.mega_menu_desktop_count ?? 2))),
+  mega_menu_mobile_count: Math.min(1, Math.max(0, Number(category.mega_menu_mobile_count ?? 1))),
+  mega_menu_rotation_seconds: Math.max(20, Number(category.mega_menu_rotation_seconds ?? 120)),
+  mega_menu_in_stock_only: category.mega_menu_in_stock_only === true || category.mega_menu_in_stock_only === 1,
+  mega_menu_show_add_to_cart: category.mega_menu_show_add_to_cart !== false && category.mega_menu_show_add_to_cart !== 0,
+  mega_menu_show_view_all: category.mega_menu_show_view_all !== false && category.mega_menu_show_view_all !== 0,
 });
 };
 
