@@ -87,7 +87,7 @@ function normalizeCategoryRow(row) {
     active: row.active !== 0,
     mega_menu_enabled: row.mega_menu_enabled !== 0,
     mega_menu_show_products: row.mega_menu_show_products !== 0,
-    mega_menu_desktop_count: numberValue(row.mega_menu_desktop_count, 2),
+    mega_menu_desktop_count: numberValue(row.mega_menu_desktop_count, 4),
     mega_menu_mobile_count: numberValue(row.mega_menu_mobile_count, 1),
     mega_menu_rotation_seconds: numberValue(row.mega_menu_rotation_seconds, 120),
     mega_menu_in_stock_only: row.mega_menu_in_stock_only === 1,

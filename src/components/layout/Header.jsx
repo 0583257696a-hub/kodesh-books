@@ -344,7 +344,6 @@ export default function Header() {
         {activeMegaCategory && (
           <MegaMenu
             category={activeMegaCategory}
-            allCategories={categoryNavItems}
             panelId={`mega-menu-${activeMegaCategory.slug}`}
             isOpen
             onMouseEnter={cancelCloseCategory}

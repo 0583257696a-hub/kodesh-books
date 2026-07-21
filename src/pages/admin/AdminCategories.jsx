@@ -24,7 +24,7 @@ const EMPTY_CATEGORY = {
   active: true,
   mega_menu_enabled: true,
   mega_menu_show_products: true,
-  mega_menu_desktop_count: 2,
+  mega_menu_desktop_count: 4,
   mega_menu_mobile_count: 1,
   mega_menu_rotation_seconds: 120,
   mega_menu_in_stock_only: false,
@@ -73,7 +73,7 @@ export default function AdminCategories() {
         active: category.active !== false,
         mega_menu_enabled: category.mega_menu_enabled !== false,
         mega_menu_show_products: category.mega_menu_show_products !== false,
-        mega_menu_desktop_count: Math.min(2, Math.max(0, Number(category.mega_menu_desktop_count ?? 2))),
+        mega_menu_desktop_count: Math.min(4, Math.max(0, Number(category.mega_menu_desktop_count ?? 4))),
         mega_menu_mobile_count: Math.min(1, Math.max(0, Number(category.mega_menu_mobile_count ?? 1))),
         mega_menu_rotation_seconds: Math.max(20, Number(category.mega_menu_rotation_seconds ?? 120)),
         mega_menu_in_stock_only: category.mega_menu_in_stock_only === true,
@@ -383,13 +383,13 @@ export default function AdminCategories() {
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-1.5">
-                    <Label>מוצרים בדסקטופ (0-2)</Label>
+                    <Label>מוצרים בדסקטופ (0-4)</Label>
                     <Input
                       type="number"
                       min={0}
-                      max={2}
+                      max={4}
                       value={editItem.mega_menu_desktop_count}
-                      onChange={(event) => setEditItem((current) => ({ ...current, mega_menu_desktop_count: Math.min(2, Math.max(0, Number(event.target.value))) }))}
+                      onChange={(event) => setEditItem((current) => ({ ...current, mega_menu_desktop_count: Math.min(4, Math.max(0, Number(event.target.value))) }))}
                     />
                   </div>
                   <div className="space-y-1.5">
