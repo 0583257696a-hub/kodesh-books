@@ -152,7 +152,7 @@ export default function ProductDetail() {
                     className={`aspect-square overflow-hidden rounded-lg border bg-white transition ${imageUrl === mainImage ? 'border-gold ring-2 ring-gold/30' : 'border-gold/15 hover:border-gold/60'}`}
                     aria-label={`הצג תמונה ${index + 1} של ${product.name}`}
                   >
-                    <img src={imageUrl} alt={`${product.name} תמונה ${index + 1}`} className="h-full w-full object-cover" />
+                    <img src={imageUrl} alt={`${product.name} תמונה ${index + 1}`} loading="lazy" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -162,7 +162,7 @@ export default function ProductDetail() {
           {/* Info */}
           <div className="space-y-6">
             {product.category && (
-              <span className="text-gold font-body text-sm">{categoryMap[product.category] || product.category}</span>
+              <span className="text-gold-deep font-body text-sm">{categoryMap[product.category] || product.category}</span>
             )}
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-foreground">{product.name}</h1>
             {product.author && (
@@ -173,11 +173,11 @@ export default function ProductDetail() {
             <div className="flex items-center gap-4">
               {product.is_on_sale && product.sale_price ? (
                 <>
-                  <span className="font-heading text-4xl font-bold text-gold">₪{product.sale_price}</span>
-                  <span className="font-body text-xl text-muted-foreground line-through">₪{product.price}</span>
+                  <span className="font-heading text-4xl font-bold text-gold-deep">₪{Number(product.sale_price).toLocaleString('he-IL')}</span>
+                  <span className="font-body text-xl text-muted-foreground line-through">₪{Number(product.price).toLocaleString('he-IL')}</span>
                 </>
               ) : (
-                <span className="font-heading text-4xl font-bold text-foreground">₪{product.price}</span>
+                <span className="font-heading text-4xl font-bold text-foreground">₪{Number(product.price).toLocaleString('he-IL')}</span>
               )}
             </div>
 
@@ -204,7 +204,7 @@ export default function ProductDetail() {
             </div>
 
             {/* WhatsApp */}
-            <Button asChild variant="outline" className="w-full border-gold/30 text-gold hover:bg-gold/10 font-body py-5 mt-2">
+            <Button asChild variant="outline" className="w-full border-gold/30 text-gold-deep hover:bg-gold/10 font-body py-5 mt-2">
               <a href={buildWhatsappUrl(settings.whatsapp, `שלום, אני מעוניין ב: ${product.name}`)} target="_blank" rel="noopener noreferrer">
                 שאל אותנו בוואצאפ
               </a>
@@ -214,7 +214,7 @@ export default function ProductDetail() {
       </div>
 
       {/* Also Bought */}
-      <AlsoBought currentProductId={product.id} category={product.category} />
+      <AlsoBought currentProductId={product.id} category={product.category} currentPrice={product.sale_price || product.price} />
 
       {/* Back */}
       <div className="max-w-5xl mx-auto px-4 py-8">

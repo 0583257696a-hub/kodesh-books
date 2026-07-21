@@ -8,17 +8,30 @@ import { listProducts } from '@/services/catalogService';
 const VISIBLE = 4; // items visible on desktop
 const INTERVAL = 3500; // 3.5 seconds
 
-export default function AlsoBought({ currentProductId, category }) {
+export default function AlsoBought({ currentProductId, category, currentPrice }) {
   const { addItem } = useCart();
   const [current, setCurrent] = useState(0);
   const timerRef = useRef(null);
   const scrollerRef = useRef(null);
 
   const { data: products = [] } = useQuery({
-    queryKey: ['also-bought', category],
+    queryKey: ['also-bought', category, currentProductId],
     queryFn: async () => {
       const all = await listProducts({ inStock: true, limit: 100 });
-      return all.filter((p) => p.id !== currentProductId).slice(0, 12);
+      const candidates = all.filter((p) => p.id !== currentProductId);
+      const price = Number(currentPrice) || 0;
+
+      candidates.sort((a, b) => {
+        const aSameCategory = a.category === category ? 0 : 1;
+        const bSameCategory = b.category === category ? 0 : 1;
+        if (aSameCategory !== bSameCategory) return aSameCategory - bSameCategory;
+
+        const aPrice = Number(a.sale_price || a.price) || 0;
+        const bPrice = Number(b.sale_price || b.price) || 0;
+        return Math.abs(aPrice - price) - Math.abs(bPrice - price);
+      });
+
+      return candidates.slice(0, 12);
     },
     enabled: !!currentProductId,
   });
@@ -109,6 +122,7 @@ export default function AlsoBought({ currentProductId, category }) {
                       <img
                         src={product.image_url}
                         alt={product.name}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -130,18 +144,18 @@ export default function AlsoBought({ currentProductId, category }) {
                       <div className="flex items-center gap-1.5 mb-3">
                         {product.is_on_sale && product.sale_price ? (
                           <>
-                            <span className="font-heading text-base font-bold text-gold">₪{product.sale_price}</span>
-                            <span className="font-body text-xs text-muted-foreground line-through">₪{product.price}</span>
+                            <span className="font-heading text-base font-bold text-gold-deep">₪{Number(product.sale_price).toLocaleString('he-IL')}</span>
+                            <span className="font-body text-xs text-muted-foreground line-through">₪{Number(product.price).toLocaleString('he-IL')}</span>
                           </>
                         ) : (
-                          <span className="font-heading text-base font-bold text-foreground">₪{product.price}</span>
+                          <span className="font-heading text-base font-bold text-foreground">₪{Number(product.price).toLocaleString('he-IL')}</span>
                         )}
                       </div>
                     </Link>
                     <button
                       type="button"
                       onClick={() => addItem(product)}
-                      className="w-full flex items-center justify-center gap-1.5 bg-gold/10 hover:bg-gold text-gold hover:text-walnut font-body text-xs font-semibold py-2 rounded-lg transition-colors duration-200"
+                      className="w-full flex items-center justify-center gap-1.5 bg-gold/10 hover:bg-gold text-gold-deep hover:text-walnut font-body text-xs font-semibold py-2 rounded-lg transition-colors duration-200"
                       aria-label={`הוסף את ${product.name} לעגלה`}
                     >
                       <ShoppingCart className="h-3.5 w-3.5" aria-hidden="true" />

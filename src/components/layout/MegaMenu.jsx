@@ -61,7 +61,7 @@ function MegaMenuProductCard({ product, showAddToCart }) {
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         <p className="line-clamp-2 min-h-[2.2em] font-body text-xs font-semibold leading-snug text-[#1F160F]">{product.name}</p>
-        <p className="font-heading text-sm font-bold text-gold">₪{price}</p>
+        <p className="font-heading text-sm font-bold text-gold-deep">₪{Number(price).toLocaleString('he-IL')}</p>
         {showAddToCart ? (
           <button
             type="button"

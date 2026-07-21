@@ -31,6 +31,7 @@ export default function ProductCard({ product }) {
               <img
                 src={product.image_url}
                 alt={product.name}
+                loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-600 group-hover:scale-105"
               />
             ) : (
@@ -81,7 +82,7 @@ export default function ProductCard({ product }) {
         <Link to={productPath}>
           <div className="p-4">
             {product.category && (
-              <span className="text-gold text-xs font-body font-medium tracking-wide">{categoryMap[product.category] || product.category}</span>
+              <span className="text-gold-deep text-xs font-body font-medium tracking-wide">{categoryMap[product.category] || product.category}</span>
             )}
             <h3 className="font-heading text-sm md:text-base font-bold mt-1 text-[#1F160F] line-clamp-2 leading-snug">{product.name}</h3>
             {product.author && (
@@ -90,14 +91,14 @@ export default function ProductCard({ product }) {
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#E7D8B8]">
               {product.is_on_sale && product.sale_price ? (
                 <>
-                  <span className="font-heading text-lg font-bold text-gold">₪{product.sale_price}</span>
-                  <span className="font-body text-sm text-[#6B5A45] line-through">₪{product.price}</span>
+                  <span className="font-heading text-lg font-bold text-gold-deep">₪{Number(product.sale_price).toLocaleString('he-IL')}</span>
+                  <span className="font-body text-sm text-[#6B5A45] line-through">₪{Number(product.price).toLocaleString('he-IL')}</span>
                   <span className="text-red-500 text-xs font-body font-semibold mr-auto">
                     {Math.round(((product.price - product.sale_price) / product.price) * 100)}% הנחה
                   </span>
                 </>
               ) : (
-                <span className="font-heading text-lg font-bold text-[#1F160F]">₪{product.price}</span>
+                <span className="font-heading text-lg font-bold text-[#1F160F]">₪{Number(product.price).toLocaleString('he-IL')}</span>
               )}
             </div>
           </div>

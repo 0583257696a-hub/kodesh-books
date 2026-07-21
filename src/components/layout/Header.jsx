@@ -33,7 +33,7 @@ export default function Header() {
     { label: 'ראשי', path: '/' },
     { label: 'כל הספרים', path: '/catalog' },
     ...categoryNavItems.map((category) => ({ label: category.name, path: `/catalog?category=${category.slug}` })),
-    { label: 'מבצעים', path: '/catalog?sale=true' },
+    { label: 'כל המבצעים', path: '/catalog?sale=true' },
     { label: 'צור קשר', path: '/contact' },
   ];
 
@@ -219,7 +219,7 @@ export default function Header() {
                       onClick={() => handleMobileNavigation('/catalog?sale=true')}
                       className={`flex items-center gap-3 px-5 py-3.5 text-right font-body text-sm border-b border-[#E7D8B8]/60 transition-colors ${isActiveNavItem({ path: '/catalog?sale=true' }) ? 'bg-gold/10 text-[#1F160F] font-semibold' : 'text-[#3A2415] hover:bg-gold/5 hover:text-gold'}`}
                     >
-                      מבצעים
+                      כל המבצעים
                     </button>
                     <button
                       type="button"
@@ -304,14 +304,14 @@ export default function Header() {
       {/* Desktop navigation */}
       <nav ref={navRef} className="relative hidden lg:block bg-[#FCFAF5] border-b border-[#E7D8B8]/80" aria-label="ניווט ראשי" dir="rtl">
         <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex flex-wrap items-center justify-center gap-x-1 py-2">
+          <ul className="flex flex-nowrap items-center justify-center gap-x-1 py-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const active = isActiveNavItem(item);
               const category = categoryNavItems.find((c) => item.path === `/catalog?category=${c.slug}`);
               const isMegaTrigger = category && category.mega_menu_enabled;
 
               return (
-                <li key={item.path + item.label}>
+                <li key={item.path + item.label} className="flex-shrink-0">
                   <Link
                     ref={isMegaTrigger ? (el) => { triggerRefs.current[category.slug] = el; } : undefined}
                     to={item.path}

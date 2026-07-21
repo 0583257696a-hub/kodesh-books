@@ -32,9 +32,11 @@ export default function Catalog() {
     [rawCategory, categories, categoryNameToId]
   );
 
+  const PAGE_SIZE = 24;
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('newest');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     setSelectedCategory(initialCategory);
@@ -79,6 +81,13 @@ export default function Catalog() {
     }
     return result;
   }, [allProducts, selectedCategory, searchQuery, sortBy, isSale, categoryMap]);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [selectedCategory, searchQuery, sortBy, isSale]);
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const hasMoreProducts = visibleCount < filteredProducts.length;
 
   useEffect(() => {
     if (!searchQuery.trim() || isLoading) return;
@@ -319,7 +328,7 @@ export default function Catalog() {
               <>
                 <p className="text-xs text-[#6B5A45] font-body mb-4 md:hidden">{filteredProducts.length} מוצרים</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
-                  {filteredProducts.map((product, i) => (
+                  {visibleProducts.map((product, i) => (
                     <motion.div
                       key={product.id}
                       initial={{ opacity: 0, y: 16 }}
@@ -330,6 +339,17 @@ export default function Catalog() {
                     </motion.div>
                   ))}
                 </div>
+                {hasMoreProducts && (
+                  <div className="text-center mt-10">
+                    <Button
+                      variant="outline"
+                      className="border-gold/40 text-[#3A2415] hover:border-gold hover:text-gold-deep font-body px-10 py-3 rounded-lg"
+                      onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                    >
+                      טען עוד מוצרים
+                    </Button>
+                  </div>
+                )}
               </>
             )}
           </div>

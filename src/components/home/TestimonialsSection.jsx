@@ -24,7 +24,7 @@ export default function TestimonialsSection() {
         >
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="h-px w-16 bg-gradient-to-l from-gold/60 to-transparent" />
-            <span className="text-gold font-body text-xs tracking-[0.2em]">מה אומרים עלינו</span>
+            <span className="text-gold-deep font-body text-xs tracking-[0.2em]">מה אומרים עלינו</span>
             <div className="h-px w-16 bg-gradient-to-r from-gold/60 to-transparent" />
           </div>
           <h2 className="font-heading text-4xl md:text-5xl font-bold text-[#1F160F]">הלקוחות ממליצים</h2>
@@ -68,7 +68,7 @@ export default function TestimonialsSection() {
 
               <div className="border-t border-[#E7D8B8] pt-4 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold/20 to-gold/10 flex items-center justify-center flex-shrink-0 border border-gold/20">
-                  <span className="font-heading font-bold text-gold text-sm">{t.name?.[0] || '?'}</span>
+                  <span className="font-heading font-bold text-gold-deep text-sm">{t.name?.[0] || '?'}</span>
                 </div>
                 <p className="font-heading font-bold text-[#1F160F] text-sm">{t.name}</p>
               </div>

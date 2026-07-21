@@ -27,7 +27,7 @@ export default function FeaturedProducts() {
           <div>
             <div className="flex items-center gap-3 mb-3">
               <div className="h-px w-12 bg-gold/50" />
-              <span className="text-gold font-body text-xs tracking-[0.2em]">הנבחרים שלנו</span>
+              <span className="text-gold-deep font-body text-xs tracking-[0.2em]">הנבחרים שלנו</span>
             </div>
             <h2 className="font-heading text-4xl md:text-5xl font-bold text-[#1F160F]">מוצרים מובילים</h2>
             <div className="flex items-center gap-2 mt-4">

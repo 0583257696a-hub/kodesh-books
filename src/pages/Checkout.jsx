@@ -362,16 +362,16 @@ export default function Checkout() {
               {items.map(item => (
                 <div key={item.product_id} className="flex justify-between gap-3">
                   <span className="text-[#6B5A45] leading-snug">{item.product_name} ×{item.quantity}</span>
-                  <span className="text-[#1F160F] font-medium flex-shrink-0">₪{(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="text-[#1F160F] font-medium flex-shrink-0">₪{(item.price * item.quantity).toLocaleString('he-IL')}</span>
                 </div>
               ))}
               <div className="flex justify-between pt-3 border-t border-[#E7D8B8]">
                 <span className="text-[#6B5A45]">משלוח</span>
-                <span className="text-gold font-semibold">{shipping === 0 ? 'חינם' : `₪${shipping}`}</span>
+                <span className="text-gold-deep font-semibold">{shipping === 0 ? 'חינם' : `₪${Number(shipping).toLocaleString('he-IL')}`}</span>
               </div>
               <div className="flex justify-between pt-3 border-t border-[#E7D8B8]">
                 <span className="font-heading font-bold text-lg text-[#1F160F]">סה"כ</span>
-                <span className="font-heading font-bold text-xl text-gold">₪{total.toFixed(2)}</span>
+                <span className="font-heading font-bold text-xl text-gold-deep">₪{total.toLocaleString('he-IL')}</span>
               </div>
             </div>
           </div>

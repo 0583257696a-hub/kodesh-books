@@ -31,7 +31,7 @@ export default function CookieConsent() {
           <h2 className="font-heading text-lg font-bold text-walnut">שימוש בעוגיות</h2>
           <p className="font-body text-sm leading-6 text-slate-700">
             האתר משתמש בקבצי Cookies לצורך תפעול תקין, אבטחה, סטטיסטיקות ושיפור חוויית המשתמש.
-            ניתן לקרוא עוד ב<Link to="/privacy" className="mx-1 font-semibold text-gold underline">מדיניות הפרטיות</Link>.
+            ניתן לקרוא עוד ב<Link to="/privacy" className="mx-1 font-semibold text-gold-deep underline">מדיניות הפרטיות</Link>.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">

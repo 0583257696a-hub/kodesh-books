@@ -44,7 +44,7 @@ export default function MobileCategoryMenuItem({ category, active, onNavigate })
             <button
               type="button"
               onClick={() => onNavigate(`/catalog?category=${category.slug}`)}
-              className="font-body text-xs font-semibold text-gold"
+              className="font-body text-xs font-semibold text-gold-deep"
             >
               לכל הקטגוריה ←
             </button>
@@ -68,7 +68,7 @@ export default function MobileCategoryMenuItem({ category, active, onNavigate })
                   className="min-w-0 flex-1 text-right"
                 >
                   <p className="line-clamp-1 font-body text-xs font-semibold text-[#1F160F]">{product.name}</p>
-                  <p className="font-heading text-sm font-bold text-gold">₪{product.is_on_sale && product.sale_price ? product.sale_price : product.price}</p>
+                  <p className="font-heading text-sm font-bold text-gold-deep">₪{Number(product.is_on_sale && product.sale_price ? product.sale_price : product.price).toLocaleString('he-IL')}</p>
                 </button>
                 {category.mega_menu_show_add_to_cart && (
                   <button

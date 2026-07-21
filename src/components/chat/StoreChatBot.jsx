@@ -485,7 +485,7 @@ export default function StoreChatBot() {
                               aria-label={`פתח את ${product.name}`}
                             >
                               {product.image_url ? (
-                                <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                                <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
                               ) : (
                                 <span className="flex h-full w-full items-center justify-center">
                                   <BookOpen className="h-5 w-5 text-gold" aria-hidden="true" />
@@ -501,7 +501,7 @@ export default function StoreChatBot() {
                                 {product.name}
                               </Link>
                               <p className="text-xs text-walnut/60">{product.author || product.publisher || categoryMap[product.category]}</p>
-                              <p className="mt-1 font-bold text-gold">₪{product.sale_price || product.price}</p>
+                              <p className="mt-1 font-bold text-gold-deep">₪{Number(product.sale_price || product.price).toLocaleString('he-IL')}</p>
                             </div>
                           </div>
                           <div className="mt-2 grid grid-cols-2 gap-2">

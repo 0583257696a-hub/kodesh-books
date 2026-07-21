@@ -59,7 +59,7 @@ export default function Cart() {
                   {/* Image */}
                   <div className="w-20 h-24 rounded-lg overflow-hidden bg-[#F8F3E8] flex-shrink-0 border border-[#E7D8B8]">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.product_name} className="w-full h-full object-cover" />
+                      <img src={item.image_url} alt={item.product_name} loading="lazy" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <BookOpen className="h-8 w-8 text-gold/20" aria-hidden="true" />
@@ -71,7 +71,7 @@ export default function Cart() {
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <h3 className="font-heading font-bold text-[#1F160F] leading-snug">{item.product_name}</h3>
-                      <p className="text-gold font-body text-sm mt-0.5">₪{item.price}</p>
+                      <p className="text-gold-deep font-body text-sm mt-0.5">₪{Number(item.price).toLocaleString('he-IL')}</p>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -86,7 +86,7 @@ export default function Cart() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <span className="font-heading font-bold text-[#1F160F]">₪{(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="font-heading font-bold text-[#1F160F]">₪{(item.price * item.quantity).toLocaleString('he-IL')}</span>
                         <button type="button" onClick={() => removeItem(item.product_id)} className="text-red-400 hover:text-red-600 transition-colors" aria-label={`הסר את ${item.product_name} מהעגלה`}>
                           <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>
@@ -109,11 +109,11 @@ export default function Cart() {
               </div>
               <div className="flex justify-between">
                 <span className="text-[#6B5A45]">משלוח</span>
-                <span className="text-gold font-semibold">{shipping === 0 ? 'חינם' : `₪${shipping.toFixed(2)}`}</span>
+                <span className="text-gold-deep font-semibold">{shipping === 0 ? 'חינם' : `₪${shipping.toLocaleString('he-IL')}`}</span>
               </div>
               <div className="border-t border-[#E7D8B8] pt-3 flex justify-between">
                 <span className="font-heading font-bold text-lg text-[#1F160F]">סה"כ</span>
-                <span className="font-heading font-bold text-xl text-gold">₪{orderTotal.toFixed(2)}</span>
+                <span className="font-heading font-bold text-xl text-gold-deep">₪{orderTotal.toLocaleString('he-IL')}</span>
               </div>
             </div>
 

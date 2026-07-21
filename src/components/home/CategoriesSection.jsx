@@ -30,7 +30,7 @@ export default function CategoriesSection() {
         >
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="h-px w-16 bg-gradient-to-l from-gold/60 to-transparent" />
-            <span className="text-gold font-body text-xs tracking-[0.2em]">גלה את האוצרות שלנו</span>
+            <span className="text-gold-deep font-body text-xs tracking-[0.2em]">גלה את האוצרות שלנו</span>
             <div className="h-px w-16 bg-gradient-to-r from-gold/60 to-transparent" />
           </div>
           <h2 className="font-heading text-4xl md:text-5xl font-bold text-[#1F160F]">הקטגוריות</h2>
@@ -60,6 +60,7 @@ export default function CategoriesSection() {
                       <img
                         src={cat.image_url}
                         alt={cat.name}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
                         style={{ transform: 'scale(1)', transition: 'transform 700ms ease' }}
                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.07)'}
@@ -110,6 +111,7 @@ export default function CategoriesSection() {
                       <img
                         src={cat.image_url}
                         alt={cat.name}
+                        loading="lazy"
                         className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
                         style={{ transform: 'scale(1)', transition: 'transform 700ms ease' }}
                         onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.07)'}

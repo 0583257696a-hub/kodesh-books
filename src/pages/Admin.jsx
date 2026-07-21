@@ -158,8 +158,8 @@ export default function Admin() {
                       <div className="space-y-2">
                         <Label className="font-body">תמונה</Label>
                         <Input type="file" accept="image/*" onChange={handleImageUpload} className="font-body" />
-                        {uploading && <p className="text-sm text-gold font-body">מעלה...</p>}
-                        {editProduct.image_url && <img src={editProduct.image_url} alt="" className="w-20 h-20 object-cover rounded-lg mt-2" />}
+                        {uploading && <p className="text-sm text-gold-deep font-body">מעלה...</p>}
+                        {editProduct.image_url && <img src={editProduct.image_url} alt="" loading="lazy" className="w-20 h-20 object-cover rounded-lg mt-2" />}
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         {[
@@ -199,19 +199,19 @@ export default function Admin() {
                     <TableRow key={p.id}>
                       <TableCell className="font-body">
                         <div className="flex items-center gap-3">
-                          {p.image_url && <img src={p.image_url} alt="" className="w-10 h-10 rounded object-cover" />}
+                          {p.image_url && <img src={p.image_url} alt="" loading="lazy" className="w-10 h-10 rounded object-cover" />}
                           <span className="font-semibold">{p.name}</span>
                         </div>
                       </TableCell>
                       <TableCell className="font-body">{CATEGORY_MAP[p.category]}</TableCell>
                       <TableCell className="font-body">
                         {p.is_on_sale && p.sale_price ? (
-                          <span className="text-gold">₪{p.sale_price} <span className="line-through text-muted-foreground text-xs">₪{p.price}</span></span>
-                        ) : `₪${p.price}`}
+                          <span className="text-gold-deep">₪{Number(p.sale_price).toLocaleString('he-IL')} <span className="line-through text-muted-foreground text-xs">₪{Number(p.price).toLocaleString('he-IL')}</span></span>
+                        ) : `₪${Number(p.price).toLocaleString('he-IL')}`}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          {p.is_new && <Badge className="bg-gold/10 text-gold text-xs font-body">חדש</Badge>}
+                          {p.is_new && <Badge className="bg-gold/10 text-gold-deep text-xs font-body">חדש</Badge>}
                           {p.is_on_sale && <Badge className="bg-red-100 text-red-600 text-xs font-body">מבצע</Badge>}
                           {p.is_featured && <Badge className="bg-blue-100 text-blue-600 text-xs font-body">מוביל</Badge>}
                         </div>
@@ -259,7 +259,7 @@ export default function Admin() {
                       <TableCell className="font-body text-sm">
                         {o.items?.map((item, i) => <div key={i}>{item.product_name} ×{item.quantity}</div>)}
                       </TableCell>
-                      <TableCell className="font-body font-bold text-gold">₪{o.total}</TableCell>
+                      <TableCell className="font-body font-bold text-gold-deep">₪{Number(o.total).toLocaleString('he-IL')}</TableCell>
                       <TableCell>
                         <Select value={o.status || 'pending'} onValueChange={v => updateOrderMutation.mutate({ id: o.id, data: { status: v } })}>
                           <SelectTrigger className="w-28 font-body text-xs"><SelectValue /></SelectTrigger>

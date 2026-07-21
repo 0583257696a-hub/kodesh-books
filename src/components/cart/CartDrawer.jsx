@@ -59,7 +59,7 @@ export default function CartDrawer() {
                      aria-label={`פתח את ${item.product_name}`}
                    >
                      {item.image_url ? (
-                       <img src={item.image_url} alt={item.product_name} className="h-full w-full object-cover" />
+                       <img src={item.image_url} alt={item.product_name} loading="lazy" className="h-full w-full object-cover" />
                      ) : (
                        <span className="flex h-full w-full items-center justify-center">
                          <BookOpen className="h-6 w-6 text-gold/25" aria-hidden="true" />
@@ -75,7 +75,7 @@ export default function CartDrawer() {
                      >
                        {item.product_name}
                      </Link>
-                     <p className="mt-1 font-body text-sm font-semibold text-gold">₪{Number(item.price || 0).toFixed(2)}</p>
+                     <p className="mt-1 font-body text-sm font-semibold text-gold-deep">₪{Number(item.price || 0).toLocaleString('he-IL')}</p>
 
                      <div className="mt-2.5 flex items-center justify-between gap-2">
                        <div className="flex items-center overflow-hidden rounded-lg border border-[#E7D8B8]">
@@ -101,15 +101,15 @@ export default function CartDrawer() {
              <div className="space-y-2 font-body text-sm">
                <div className="flex justify-between text-[#3A2415]">
                  <span className="text-[#6B5A45]">סכום ביניים</span>
-                 <span>₪{totalPrice.toFixed(2)}</span>
+                 <span>₪{totalPrice.toLocaleString('he-IL')}</span>
                </div>
                <div className="flex justify-between">
                  <span className="text-[#6B5A45]">משלוח</span>
-                 <span className="text-gold font-semibold">{shipping === 0 ? 'חינם' : `₪${shipping.toFixed(2)}`}</span>
+                 <span className="text-gold-deep font-semibold">{shipping === 0 ? 'חינם' : `₪${shipping.toLocaleString('he-IL')}`}</span>
                </div>
                <div className="flex justify-between border-t border-[#E7D8B8] pt-3 font-heading text-lg font-bold">
                  <span className="text-[#1F160F]">סה"כ</span>
-                 <span className="text-gold">₪{orderTotal.toFixed(2)}</span>
+                 <span className="text-gold-deep">₪{orderTotal.toLocaleString('he-IL')}</span>
                </div>
              </div>
 

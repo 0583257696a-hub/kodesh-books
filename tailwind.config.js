@@ -17,6 +17,7 @@ module.exports = {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
         gold: '#D4AF37',
+        'gold-deep': '#8A6D1E',
         walnut: '#1F1008',
         cream: '#FCFAF5',
         parchment: '#F8F3E8',
