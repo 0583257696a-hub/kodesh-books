@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import CookieConsent from './CookieConsent';
+import InstallPrompt from './InstallPrompt';
 import StoreChatBot from '@/components/chat/StoreChatBot';
 import CartDrawer from '@/components/cart/CartDrawer';
 import { normalizeBooleanValue, useSiteSettings } from '@/hooks/useSiteSettings';
@@ -138,6 +139,7 @@ export default function AppLayout() {
       </main>
       <Footer />
       <CookieConsent />
+      <InstallPrompt />
       <CartDrawer />
       <StoreChatBot />
     </div>
