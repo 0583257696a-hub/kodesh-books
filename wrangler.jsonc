@@ -8,8 +8,22 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/sitemap.xml", "/sitemap.xml/*"]
+    "not_found_handling": "none",
+    "run_worker_first": [
+      "/*",
+      "!/assets/*",
+      "!/icons/*",
+      "!/images/*",
+      "!/downloads/*",
+      "!/templates/*",
+      "!/manifest.json",
+      "!/sw.js",
+      "!/registerSW.js",
+      "!/workbox-*.js",
+      "!/robots.txt",
+      "!/_headers",
+      "!/google*.html"
+    ]
   },
   "vars": {
     "EMAIL_PROVIDER": "cloudflare",
