@@ -2,6 +2,16 @@
 <html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Capture the install-eligibility event as early as possible, before React
+      // mounts and attaches its own listener -- the event never re-fires once missed.
+      window.__pwaInstallEvent = null;
+      window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        window.__pwaInstallEvent = event;
+        window.dispatchEvent(new Event('pwa-install-ready'));
+      });
+    </script>
     <link rel="icon" type="image/png" href="/images/otzar-logo-transparent.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />

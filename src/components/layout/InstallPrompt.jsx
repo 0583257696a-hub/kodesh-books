@@ -8,21 +8,31 @@ export default function InstallPrompt() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const handleBeforeInstallPrompt = (event) => {
-      event.preventDefault();
-      if (window.sessionStorage.getItem(DISMISS_KEY)) return;
+    const applyInstallEvent = (event) => {
+      if (!event || window.sessionStorage.getItem(DISMISS_KEY)) return;
       setDeferredPrompt(event);
       setVisible(true);
     };
 
+    // The event may have already fired (and been captured by the inline
+    // script in index.html) before this component ever mounted.
+    if (window.__pwaInstallEvent) applyInstallEvent(window.__pwaInstallEvent);
+
+    const handleReady = () => applyInstallEvent(window.__pwaInstallEvent);
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault();
+      applyInstallEvent(event);
+    };
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
       setVisible(false);
     };
 
+    window.addEventListener('pwa-install-ready', handleReady);
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
     return () => {
+      window.removeEventListener('pwa-install-ready', handleReady);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
