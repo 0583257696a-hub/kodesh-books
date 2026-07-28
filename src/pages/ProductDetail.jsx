@@ -11,6 +11,10 @@ import { buildWhatsappUrl, useSiteSettings } from '@/hooks/useSiteSettings';
 import AlsoBought from '@/components/product/AlsoBought';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { getProduct } from '@/services/catalogService';
+import { setJsonLd, setLink, setMeta, toPlainSummary } from '@/lib/pageMeta';
+
+const SITE_URL = 'https://otzar-hakodesh.shop';
+const PRODUCT_JSON_LD_ID = 'product-json-ld';
 
 export default function ProductDetail() {
   const { id: productId } = useParams();
@@ -36,6 +40,49 @@ export default function ProductDetail() {
       product_name: product.name,
       value: product.sale_price || product.price || 0,
     });
+  }, [product]);
+
+  useEffect(() => {
+    if (!product) return undefined;
+
+    const title = `${product.name} | אוצר הקדושה`;
+    const description = toPlainSummary(
+      product.description || `${product.name}${product.author ? ` מאת ${product.author}` : ''} - לרכישה באוצר הקדושה, חנות ספרי הקודש ותשמישי הקדושה לבית היהודי.`,
+      160
+    );
+    const canonicalUrl = `${SITE_URL}/product/${product.slug || product.id}`;
+
+    document.title = title;
+    setMeta('meta[name="description"]', { name: 'description', content: description });
+    setMeta('meta[property="og:title"]', { property: 'og:title', content: title });
+    setMeta('meta[property="og:description"]', { property: 'og:description', content: description });
+    setMeta('meta[property="og:type"]', { property: 'og:type', content: 'product' });
+    setMeta('meta[property="og:url"]', { property: 'og:url', content: canonicalUrl });
+    if (product.image_url) {
+      setMeta('meta[property="og:image"]', { property: 'og:image', content: product.image_url });
+    }
+    setLink('link[rel="canonical"]', { rel: 'canonical', href: canonicalUrl });
+
+    setJsonLd(PRODUCT_JSON_LD_ID, {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description,
+      image: product.image_url || undefined,
+      sku: product.sku || product.id,
+      brand: product.publisher ? { '@type': 'Brand', name: product.publisher } : undefined,
+      offers: {
+        '@type': 'Offer',
+        url: canonicalUrl,
+        priceCurrency: 'ILS',
+        price: product.sale_price || product.price,
+        availability: product.in_stock === false
+          ? 'https://schema.org/OutOfStock'
+          : 'https://schema.org/InStock',
+      },
+    });
+
+    return () => setJsonLd(PRODUCT_JSON_LD_ID, null);
   }, [product]);
 
   const productImages = useMemo(() => {

@@ -7,31 +7,10 @@ import InstallPrompt from './InstallPrompt';
 import StoreChatBot from '@/components/chat/StoreChatBot';
 import CartDrawer from '@/components/cart/CartDrawer';
 import { normalizeBooleanValue, useSiteSettings } from '@/hooks/useSiteSettings';
+import { setLink, setMeta } from '@/lib/pageMeta';
 
 const SITE_URL = 'https://otzar-hakodesh.shop';
 const OG_IMAGE = `${SITE_URL}/images/otzar-logo-transparent.png`;
-
-function setMeta(selector, attributes) {
-  let element = document.head.querySelector(selector);
-  if (!element) {
-    element = document.createElement('meta');
-    document.head.appendChild(element);
-  }
-  Object.entries(attributes).forEach(([key, value]) => {
-    element.setAttribute(key, value);
-  });
-}
-
-function setLink(selector, attributes) {
-  let element = document.head.querySelector(selector);
-  if (!element) {
-    element = document.createElement('link');
-    document.head.appendChild(element);
-  }
-  Object.entries(attributes).forEach(([key, value]) => {
-    element.setAttribute(key, value);
-  });
-}
 
 function syncGoogleAnalytics(measurementId) {
   const cleanId = String(measurementId || '').trim();

@@ -11,6 +11,9 @@ import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { productMatchesCategory, resolveCategorySlug, useStoreCategories } from '@/hooks/useStoreCategories';
 import { listProducts } from '@/services/catalogService';
 import { motion } from 'framer-motion';
+import { setLink, setMeta } from '@/lib/pageMeta';
+
+const SITE_URL = 'https://otzar-hakodesh.shop';
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'חדש ביותר' },
@@ -88,6 +91,34 @@ export default function Catalog() {
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMoreProducts = visibleCount < filteredProducts.length;
+
+  useEffect(() => {
+    const category = categories.find((cat) => cat.slug === selectedCategory);
+    const canonicalUrl = isSale
+      ? `${SITE_URL}/catalog?sale=true`
+      : category
+        ? `${SITE_URL}/catalog?category=${category.slug}`
+        : `${SITE_URL}/catalog`;
+
+    const title = isSale
+      ? 'מבצעים חמים | אוצר הקדושה'
+      : category
+        ? `${category.name} | אוצר הקדושה`
+        : 'קטלוג ספרי קודש | אוצר הקדושה';
+
+    const description = isSale
+      ? 'כל המבצעים והמחירים המיוחדים על ספרי קודש, סידורים, מחזורים ותשמישי קדושה באוצר הקדושה.'
+      : category
+        ? (category.description || `מבחר ${category.name} באוצר הקדושה - עשרות ספרים וכלי קודש איכותיים, במחירים הוגנים ומשלוח מהיר.`)
+        : 'הקטלוג המלא של אוצר הקדושה - ספרי קודש, גמרות ומשניות, הלכה, חסידות וקבלה, סידורים, מחזורים ותשמישי קדושה.';
+
+    document.title = title;
+    setMeta('meta[name="description"]', { name: 'description', content: description });
+    setMeta('meta[property="og:title"]', { property: 'og:title', content: title });
+    setMeta('meta[property="og:description"]', { property: 'og:description', content: description });
+    setMeta('meta[property="og:url"]', { property: 'og:url', content: canonicalUrl });
+    setLink('link[rel="canonical"]', { rel: 'canonical', href: canonicalUrl });
+  }, [categories, selectedCategory, isSale]);
 
   useEffect(() => {
     if (!searchQuery.trim() || isLoading) return;
