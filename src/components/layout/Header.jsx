@@ -304,7 +304,7 @@ export default function Header() {
       {/* Desktop navigation */}
       <nav ref={navRef} className="relative hidden lg:block bg-[#FCFAF5] border-b border-[#E7D8B8]/80" aria-label="ניווט ראשי" dir="rtl">
         <div className="max-w-7xl mx-auto px-4">
-          <ul className="flex flex-nowrap items-center justify-center gap-x-1 py-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="flex flex-nowrap items-center justify-start gap-x-1 py-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const active = isActiveNavItem(item);
               const category = categoryNavItems.find((c) => item.path === `/catalog?category=${c.slug}`);
