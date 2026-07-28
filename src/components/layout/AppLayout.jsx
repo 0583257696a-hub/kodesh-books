@@ -7,7 +7,7 @@ import InstallPrompt from './InstallPrompt';
 import StoreChatBot from '@/components/chat/StoreChatBot';
 import CartDrawer from '@/components/cart/CartDrawer';
 import { normalizeBooleanValue, useSiteSettings } from '@/hooks/useSiteSettings';
-import { setLink, setMeta } from '@/lib/pageMeta';
+import { setJsonLd, setLink, setMeta } from '@/lib/pageMeta';
 
 const SITE_URL = 'https://otzar-hakodesh.shop';
 const OG_IMAGE = `${SITE_URL}/images/otzar-logo-transparent.png`;
@@ -98,6 +98,33 @@ export default function AppLayout() {
     setMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: OG_IMAGE });
     setLink('link[rel="canonical"]', { rel: 'canonical', href: canonicalUrl });
   }, [location.pathname, settings.seo_description, settings.seo_title, settings.store_name]);
+
+  useEffect(() => {
+    const storeName = settings.store_name || 'אוצר הקדושה';
+    const sameAs = [settings.facebook, settings.instagram].filter(Boolean);
+
+    setJsonLd('organization-json-ld', {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: storeName,
+      url: SITE_URL,
+      logo: OG_IMAGE,
+      ...(settings.phone ? { telephone: settings.phone } : {}),
+      ...(sameAs.length ? { sameAs } : {}),
+    });
+
+    setJsonLd('website-json-ld', {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: storeName,
+      url: SITE_URL,
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${SITE_URL}/catalog?search={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    });
+  }, [settings.facebook, settings.instagram, settings.phone, settings.store_name]);
 
   useEffect(() => {
     syncGoogleAnalytics(settings.google_analytics_id);

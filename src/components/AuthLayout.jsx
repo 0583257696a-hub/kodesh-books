@@ -1,6 +1,9 @@
 import React from "react";
+import { useNoIndex } from "@/hooks/useNoIndex";
 
 export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
+  useNoIndex();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">

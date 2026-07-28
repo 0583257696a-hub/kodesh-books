@@ -11,7 +11,7 @@ import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { productMatchesCategory, resolveCategorySlug, useStoreCategories } from '@/hooks/useStoreCategories';
 import { listProducts } from '@/services/catalogService';
 import { motion } from 'framer-motion';
-import { setLink, setMeta } from '@/lib/pageMeta';
+import { setJsonLd, setLink, setMeta } from '@/lib/pageMeta';
 
 const SITE_URL = 'https://otzar-hakodesh.shop';
 
@@ -118,6 +118,18 @@ export default function Catalog() {
     setMeta('meta[property="og:description"]', { property: 'og:description', content: description });
     setMeta('meta[property="og:url"]', { property: 'og:url', content: canonicalUrl });
     setLink('link[rel="canonical"]', { rel: 'canonical', href: canonicalUrl });
+
+    const breadcrumbLastName = isSale ? 'מבצעים' : category ? category.name : 'קטלוג ספרים';
+    setJsonLd('breadcrumb-json-ld', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'ראשי', item: SITE_URL },
+        { '@type': 'ListItem', position: 2, name: breadcrumbLastName, item: canonicalUrl },
+      ],
+    });
+
+    return () => setJsonLd('breadcrumb-json-ld', null);
   }, [categories, selectedCategory, isSale]);
 
   useEffect(() => {

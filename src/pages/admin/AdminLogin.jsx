@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAdminAuth } from '@/lib/AdminAuthContext';
+import { useNoIndex } from '@/hooks/useNoIndex';
 
 export default function AdminLogin() {
+  useNoIndex();
   const navigate = useNavigate();
   const { login, isAdminAuthenticated, isLoadingAdminAuth } = useAdminAuth();
   const [email, setEmail] = useState('');

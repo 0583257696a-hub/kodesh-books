@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Trash2, Minus, Plus, ShoppingCart, ArrowRight, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buildWhatsappUrl, getShippingCost, useSiteSettings } from '@/hooks/useSiteSettings';
+import { useNoIndex } from '@/hooks/useNoIndex';
 
 export default function Cart() {
+  useNoIndex();
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
   const shipping = getShippingCost(settings, totalPrice, items);

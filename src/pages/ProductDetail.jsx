@@ -15,6 +15,7 @@ import { setJsonLd, setLink, setMeta, toPlainSummary } from '@/lib/pageMeta';
 
 const SITE_URL = 'https://otzar-hakodesh.shop';
 const PRODUCT_JSON_LD_ID = 'product-json-ld';
+const BREADCRUMB_JSON_LD_ID = 'breadcrumb-json-ld';
 
 export default function ProductDetail() {
   const { id: productId } = useParams();
@@ -82,7 +83,20 @@ export default function ProductDetail() {
       },
     });
 
-    return () => setJsonLd(PRODUCT_JSON_LD_ID, null);
+    setJsonLd(BREADCRUMB_JSON_LD_ID, {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'ראשי', item: SITE_URL },
+        { '@type': 'ListItem', position: 2, name: 'קטלוג', item: `${SITE_URL}/catalog` },
+        { '@type': 'ListItem', position: 3, name: product.name, item: canonicalUrl },
+      ],
+    });
+
+    return () => {
+      setJsonLd(PRODUCT_JSON_LD_ID, null);
+      setJsonLd(BREADCRUMB_JSON_LD_ID, null);
+    };
   }, [product]);
 
   const productImages = useMemo(() => {

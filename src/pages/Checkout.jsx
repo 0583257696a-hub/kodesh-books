@@ -10,8 +10,10 @@ import { trackEcommerceEvent } from '@/lib/ecommerceTracking';
 import { getShippingCost, normalizeBooleanValue, useSiteSettings } from '@/hooks/useSiteSettings';
 import { markCheckoutStarted } from '@/services/cartService';
 import { createOrder, createTranzilaJ5Session } from '@/services/orderService';
+import { useNoIndex } from '@/hooks/useNoIndex';
 
 export default function Checkout() {
+  useNoIndex();
   const { items, totalPrice, clearCart } = useCart();
   const { settings } = useSiteSettings();
   const [form, setForm] = useState({ customer_name: '', customer_phone: '', customer_email: '', city: '', shipping_address: '', notes: '' });

@@ -1,9 +1,11 @@
 import { useLocation } from 'react-router-dom';
 import { appApi } from '@/api/internalClient';
 import { useQuery } from '@tanstack/react-query';
+import { useNoIndex } from '@/hooks/useNoIndex';
 
 
 export default function PageNotFound({}) {
+    useNoIndex();
     const location = useLocation();
     const pageName = location.pathname.substring(1);
 

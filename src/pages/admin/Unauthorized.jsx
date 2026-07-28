@@ -1,8 +1,11 @@
 import React from 'react';
 import { ShieldX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNoIndex } from '@/hooks/useNoIndex';
 
 export default function Unauthorized() {
+  useNoIndex();
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-white p-4" dir="rtl">
       <div className="text-center">

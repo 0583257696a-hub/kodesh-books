@@ -4,8 +4,10 @@ import AdminSidebar from './AdminSidebar';
 import AdminGuard from './AdminGuard';
 import AdminErrorBoundary from './AdminErrorBoundary';
 import { cn } from '@/lib/utils';
+import { useNoIndex } from '@/hooks/useNoIndex';
 
 export default function AdminLayout() {
+  useNoIndex();
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
