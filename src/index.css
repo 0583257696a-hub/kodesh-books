@@ -157,5 +157,35 @@
       scroll-behavior: auto !important;
       transition-duration: 0.01ms !important;
     }
+    .parallax-section {
+      background-attachment: scroll;
+    }
+  }
+
+  /* Fixed-background section: content scrolls over a stationary image.
+     background-attachment:fixed resolves against the document viewport --
+     do not wrap this class in an ancestor with transform/filter/will-change,
+     it silently breaks the effect with no error. */
+  .parallax-section {
+    position: relative;
+    min-height: 130vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #1F1008;
+    background-image:
+      linear-gradient(rgba(31, 16, 8, 0.6), rgba(31, 16, 8, 0.35)),
+      url('/assets/static/home-hero.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  @media (max-width: 780px) and (pointer: coarse) {
+    .parallax-section {
+      background-attachment: scroll;
+      min-height: 100svh;
+    }
   }
 }

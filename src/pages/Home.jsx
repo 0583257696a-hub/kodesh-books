@@ -4,6 +4,7 @@ import CategoriesSection from '@/components/home/CategoriesSection';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import PromoBanner from '@/components/home/PromoBanner';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
+import LibraryQuoteSection from '@/components/home/LibraryQuoteSection';
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <CategoriesSection />
       <PromoBanner placement="home_after_categories" />
       <FeaturedProducts />
+      <LibraryQuoteSection />
       <PromoBanner />
       <TestimonialsSection />
       <PromoBanner placement="home_after_testimonials" />
