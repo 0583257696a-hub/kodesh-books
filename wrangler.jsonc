@@ -3,7 +3,7 @@
   "name": "kodesh-books",
   "compatibility_date": "2026-06-25",
   "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": true,
+  "workers_dev": false,
   "main": ".wrangler/worker-build/index.js",
   "assets": {
     "directory": "./dist",
