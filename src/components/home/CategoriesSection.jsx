@@ -19,8 +19,11 @@ export default function CategoriesSection() {
   const hasHiddenCategories = homeCategories.length > initialVisibleCount;
 
   return (
-    <section className="py-20 px-4" style={{ background: 'linear-gradient(180deg, #FCFAF5 0%, #F8F3E8 100%)' }}>
-      <div className="max-w-7xl mx-auto">
+    <section
+      className="parallax-section py-20 px-4"
+      style={{ backgroundImage: "linear-gradient(rgba(31,16,8,.6),rgba(31,16,8,.35)), url('/assets/static/home-hero.png')" }}
+    >
+      <div className="max-w-7xl mx-auto w-full">
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -30,10 +33,10 @@ export default function CategoriesSection() {
         >
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="h-px w-16 bg-gradient-to-l from-gold/60 to-transparent" />
-            <span className="text-gold-deep font-body text-xs tracking-[0.2em]">גלה את האוצרות שלנו</span>
+            <span className="text-gold font-body text-xs tracking-[0.2em]">גלה את האוצרות שלנו</span>
             <div className="h-px w-16 bg-gradient-to-r from-gold/60 to-transparent" />
           </div>
-          <h2 className="font-heading text-4xl md:text-5xl font-bold text-[#1F160F]">הקטגוריות</h2>
+          <h2 className="font-heading text-4xl md:text-5xl font-bold text-cream">הקטגוריות</h2>
           <div className="flex items-center justify-center gap-2 mt-4">
             <div className="h-px w-8 bg-gold/40" />
             <div className="w-2 h-2 rounded-full bg-gold" />
@@ -153,7 +156,7 @@ export default function CategoriesSection() {
               type="button"
               variant="outline"
               onClick={() => setShowAll((current) => !current)}
-              className="border-gold/50 text-[#6B5A45] hover:bg-gold/8 hover:border-gold hover:text-[#1F160F] font-body px-10 py-3 rounded-lg transition-all duration-300"
+              className="border-gold/50 bg-black/20 text-cream/80 hover:bg-gold/15 hover:border-gold hover:text-cream font-body px-10 py-3 rounded-lg transition-all duration-300"
               aria-expanded={showAll}
             >
               {showAll ? 'הצג פחות קטגוריות' : 'לכל הקטגוריות'}

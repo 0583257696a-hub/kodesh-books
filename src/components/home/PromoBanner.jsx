@@ -77,40 +77,45 @@ function BannerImageLink({ banner }) {
   );
 }
 
-function PromoBannerCard({ banner, index = 0, showDefaultDiscount = false }) {
+function PromoBannerCard({ banner, showDefaultDiscount = false }) {
   if (banner.image_url && !banner.isDefault) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: Math.min(index * 0.08, 0.2) }}
-        className="relative overflow-hidden rounded-2xl border border-gold/20 bg-[#1a0e05] shadow-xl"
+      <section
+        className="parallax-section py-12 px-4"
+        dir="rtl"
+        style={{ backgroundImage: "linear-gradient(rgba(31,16,8,.5),rgba(31,16,8,.5)), url('/assets/static/home-hero.png')" }}
       >
-        <BannerImageLink banner={banner} />
-      </motion.div>
+        <div className="max-w-7xl mx-auto w-full">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="relative mx-auto max-w-md overflow-hidden rounded-2xl border border-gold/20 bg-[#1a0e05] shadow-2xl"
+          >
+            <BannerImageLink banner={banner} />
+          </motion.div>
+        </div>
+      </section>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, delay: Math.min(index * 0.08, 0.2) }}
-      className="relative rounded-2xl overflow-hidden min-h-[320px] md:min-h-[340px] flex items-center border border-gold/20 shadow-xl"
+    <section
+      className="parallax-section"
+      dir="rtl"
+      style={{ backgroundImage: `linear-gradient(to left, rgba(26,14,5,.97), rgba(42,22,11,.86) 55%, rgba(26,14,5,.55)), url('${banner.image_url || PROMO_IMAGE}')` }}
     >
-      <img
-        src={banner.image_url || PROMO_IMAGE}
-        alt={banner.title || 'מבצעי החודש על ספרי קודש'}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      <div className="absolute inset-0 bg-[#1a0e05]/[0.62] md:bg-transparent" aria-hidden="true" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1a0e05]/[0.97] via-[#2A160B]/[0.86] to-[#1a0e05]/[0.40]" aria-hidden="true" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" aria-hidden="true" />
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" aria-hidden="true" />
 
-      <div className="relative z-10 w-full p-6 sm:p-8 md:p-14">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 w-full max-w-7xl mx-auto p-6 sm:p-8 md:p-14"
+      >
         <div className="max-w-lg mx-auto md:mr-auto md:ml-0 text-center md:text-right">
           {banner.badge_text && (
             <div className="inline-flex items-center gap-2 bg-gold/20 backdrop-blur-sm border border-gold/30 px-4 py-2 rounded-full mb-5 md:mb-6">
@@ -143,8 +148,8 @@ function PromoBannerCard({ banner, index = 0, showDefaultDiscount = false }) {
 
           <BannerButton banner={banner} />
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </section>
   );
 }
 
@@ -174,17 +179,14 @@ export default function PromoBanner({ placement = DEFAULT_BANNER_PLACEMENT }) {
     }];
 
   return (
-    <section className="py-12 px-4 bg-[#F8F3E8]" dir="rtl">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {visibleBanners.map((banner, index) => (
-          <PromoBannerCard
-            key={banner.id}
-            banner={banner}
-            index={index}
-            showDefaultDiscount={banner.isDefault}
-          />
-        ))}
-      </div>
-    </section>
+    <>
+      {visibleBanners.map((banner) => (
+        <PromoBannerCard
+          key={banner.id}
+          banner={banner}
+          showDefaultDiscount={banner.isDefault}
+        />
+      ))}
+    </>
   );
 }

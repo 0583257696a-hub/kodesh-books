@@ -165,7 +165,10 @@
   /* Fixed-background section: content scrolls over a stationary image.
      background-attachment:fixed resolves against the document viewport --
      do not wrap this class in an ancestor with transform/filter/will-change,
-     it silently breaks the effect with no error. */
+     it silently breaks the effect with no error.
+     background-image is intentionally NOT set here -- each usage supplies
+     its own overlay+image via inline style, this class only owns the
+     fixed-attachment mechanics so it's reusable across different sections. */
   .parallax-section {
     position: relative;
     min-height: 130vh;
@@ -173,9 +176,6 @@
     align-items: center;
     justify-content: center;
     background-color: #1F1008;
-    background-image:
-      linear-gradient(rgba(31, 16, 8, 0.6), rgba(31, 16, 8, 0.35)),
-      url('/assets/static/home-hero.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -184,8 +184,14 @@
 
   @media (max-width: 780px) and (pointer: coarse) {
     .parallax-section {
+      /* No parallax scroll distance to fill on touch devices (the effect
+         itself is off here) -- let each section size to its own content
+         instead of forcing a 130vh (desktop) or 100svh floor that would
+         either overflow or leave a half-empty section depending on how
+         much content that particular section holds. */
       background-attachment: scroll;
-      min-height: 100svh;
+      min-height: 0;
+      background-position: center 30%;
     }
   }
 }
