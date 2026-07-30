@@ -12,6 +12,11 @@ function isDocumentRequest(request) {
   return accept.includes('text/html');
 }
 
+async function hashHex(input) {
+  const digest = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 export async function onRequest(context) {
   const { request, env, next, waitUntil } = context;
 
@@ -32,6 +37,19 @@ export async function onRequest(context) {
   if (!shellResponse.ok) return shellResponse;
 
   const { status, meta } = await resolvePageMeta(env, url, waitUntil);
+
+  // ETag folds in the underlying asset's own (deploy-versioned) ETag plus a
+  // hash of this page's resolved meta, so it changes on every deploy AND
+  // whenever this specific page's title/price/description actually changes --
+  // lets Google (and browsers) revalidate with a cheap 304 instead of
+  // re-downloading the page on every recrawl.
+  const shellEtag = (shellResponse.headers.get('etag') || '').replace(/"/g, '');
+  const metaFingerprint = (await hashHex(`${status}|${JSON.stringify(meta)}`)).slice(0, 16);
+  const etag = `"${shellEtag}-${metaFingerprint}"`;
+
+  if (request.headers.get('if-none-match') === etag) {
+    return new Response(null, { status: 304, headers: { etag, 'cache-control': 'public, max-age=0, must-revalidate' } });
+  }
 
   const rewriter = new HTMLRewriter()
     .on('meta[name="robots"]', { element: (el) => el.setAttribute('content', meta.robots) });
@@ -59,10 +77,12 @@ export async function onRequest(context) {
   }
 
   const rewritten = rewriter.transform(shellResponse);
+  const headers = new Headers(rewritten.headers);
+  headers.set('etag', etag);
 
   return new Response(rewritten.body, {
     status,
     statusText: status === 404 ? 'Not Found' : 'OK',
-    headers: rewritten.headers,
+    headers,
   });
 }

@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+# JSON API -- nothing here is a page worth indexing
+Disallow: /api/
+# same catalog content under every search-query permutation; canonical
+# already points these back to the clean /catalog or /catalog?category=
+# URL, this just keeps Google from crawling the permutations at all
+Disallow: /*?search=
+Disallow: /*&search=
 
 Sitemap: https://otzar-hakodesh.shop/sitemap.xml
