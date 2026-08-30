@@ -38,13 +38,19 @@ function absoluteUrl(baseUrl, path) {
   return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-function sitemapEntry({ loc, lastmod, changefreq, priority }) {
+function sitemapEntry({ loc, lastmod, changefreq, priority, image, imageTitle }) {
   return [
     '  <url>',
     `    <loc>${escapeXml(loc)}</loc>`,
     lastmod ? `    <lastmod>${escapeXml(formatLastmod(lastmod))}</lastmod>` : '',
     changefreq ? `    <changefreq>${escapeXml(changefreq)}</changefreq>` : '',
     priority ? `    <priority>${escapeXml(priority)}</priority>` : '',
+    image ? [
+      '    <image:image>',
+      `      <image:loc>${escapeXml(image)}</image:loc>`,
+      imageTitle ? `      <image:title>${escapeXml(imageTitle)}</image:title>` : '',
+      '    </image:image>',
+    ].filter(Boolean).join('\n') : '',
     '  </url>',
   ].filter(Boolean).join('\n');
 }
@@ -74,6 +80,8 @@ async function dynamicRoutes(env, baseUrl) {
         lastmod: product.updated_at || product.created_at,
         changefreq: product.in_stock ? 'weekly' : 'monthly',
         priority: product.in_stock ? '0.8' : '0.5',
+        image: product.image_url || undefined,
+        imageTitle: product.name || undefined,
       }));
 
     return [...categoryRoutes, ...productRoutes];
@@ -94,7 +102,7 @@ export async function buildSitemapXml(env = {}) {
 
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
     ...routes.map(sitemapEntry),
     '</urlset>',
     '',

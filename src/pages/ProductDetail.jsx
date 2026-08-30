@@ -71,12 +71,15 @@ export default function ProductDetail() {
       description,
       image: product.image_url || undefined,
       sku: product.sku || product.id,
+      gtin13: product.barcode || undefined,
       brand: product.publisher ? { '@type': 'Brand', name: product.publisher } : undefined,
       offers: {
         '@type': 'Offer',
         url: canonicalUrl,
         priceCurrency: 'ILS',
         price: product.sale_price || product.price,
+        priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        itemCondition: 'https://schema.org/NewCondition',
         availability: product.in_stock === false
           ? 'https://schema.org/OutOfStock'
           : 'https://schema.org/InStock',

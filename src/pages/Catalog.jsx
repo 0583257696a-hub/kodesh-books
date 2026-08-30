@@ -175,10 +175,10 @@ export default function Catalog() {
     <div className="space-y-7">
       {/* Categories */}
       <div>
-        <h3 className="font-heading text-base font-bold mb-4 text-[#1F160F] flex items-center gap-2">
+        <h2 className="font-heading text-base font-bold mb-4 text-[#1F160F] flex items-center gap-2">
           <BookOpen className="h-4 w-4 text-gold" aria-hidden="true" />
           קטגוריות
-        </h3>
+        </h2>
         <div className="space-y-1">
           <button
             type="button"
@@ -208,10 +208,10 @@ export default function Catalog() {
 
       {/* Sort */}
       <div>
-        <h3 className="font-heading text-base font-bold mb-4 text-[#1F160F] flex items-center gap-2">
+        <h2 className="font-heading text-base font-bold mb-4 text-[#1F160F] flex items-center gap-2">
           <ArrowUpDown className="h-4 w-4 text-gold" aria-hidden="true" />
           מיון
-        </h3>
+        </h2>
         <div className="space-y-1">
           {SORT_OPTIONS.map(opt => (
             <button
