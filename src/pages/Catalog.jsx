@@ -144,6 +144,7 @@ export default function Catalog() {
   }, [filteredProducts.length, isLoading, searchQuery]);
 
   const pageTitle = isSale ? 'מבצעים חמים' : selectedCategory ? (categoryMap[selectedCategory] || selectedCategory) : 'קטלוג ספרים';
+  const activeCategory = categories.find((cat) => cat.slug === selectedCategory);
 
   const updateCategoryFilter = (categoryId) => {
     const nextParams = new URLSearchParams(location.search);
@@ -282,6 +283,11 @@ export default function Catalog() {
               )}
             </ol>
           </nav>
+          {activeCategory?.description && (
+            <p className="mt-5 max-w-2xl mx-auto font-body text-sm text-cream/70 leading-relaxed">
+              {activeCategory.description}
+            </p>
+          )}
         </div>
       </div>
 
