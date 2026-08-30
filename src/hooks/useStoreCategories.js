@@ -4,13 +4,13 @@ import { CATEGORIES, CATEGORY_MAP, CATEGORY_NAME_TO_ID } from '@/lib/categories'
 import { listCategories } from '@/services/catalogService';
 
 export const CATEGORY_IMAGES = {
-  chumashim: '/assets/static/category-chumashim.png',
-  gemarot: '/assets/static/category-gemarot.png',
-  halacha: '/assets/static/category-halacha.png',
-  chassidut: '/assets/static/category-chassidut.png',
-  kids: '/assets/static/category-kids.png',
-  siddurim: '/assets/static/category-siddurim.png',
-  gifts: '/assets/static/category-gifts.png',
+  chumashim: '/assets/static/category-chumashim.webp',
+  gemarot: '/assets/static/category-gemarot.webp',
+  halacha: '/assets/static/category-halacha.webp',
+  chassidut: '/assets/static/category-chassidut.webp',
+  kids: '/assets/static/category-kids.webp',
+  siddurim: '/assets/static/category-siddurim.webp',
+  gifts: '/assets/static/category-gifts.webp',
 };
 
 const DEFAULT_CATEGORY_IDS = new Set(CATEGORIES.map((category) => category.id));

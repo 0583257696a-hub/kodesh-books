@@ -6,7 +6,7 @@ import { Tag, Sparkles } from 'lucide-react';
 import { DEFAULT_BANNER_PLACEMENT } from '@/lib/bannerPlacements';
 import { normalizeBooleanValue, useSiteSettings } from '@/hooks/useSiteSettings';
 
-const PROMO_IMAGE = '/assets/static/home-promo.png';
+const PROMO_IMAGE = '/assets/static/home-promo.webp';
 
 function parseBannerEntry([key, value]) {
   try {
@@ -83,7 +83,7 @@ function PromoBannerCard({ banner, showDefaultDiscount = false }) {
       <section
         className="parallax-section py-12 px-4"
         dir="rtl"
-        style={{ backgroundImage: "linear-gradient(rgba(31,16,8,.5),rgba(31,16,8,.5)), url('/assets/static/home-hero.png')" }}
+        style={{ backgroundImage: "linear-gradient(rgba(31,16,8,.5),rgba(31,16,8,.5)), url('/assets/static/home-hero.webp')" }}
       >
         <div className="max-w-7xl mx-auto w-full">
           <motion.div

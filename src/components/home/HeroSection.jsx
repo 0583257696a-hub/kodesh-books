@@ -7,7 +7,7 @@ import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 import { STORE_LOGO_URL } from '@/lib/branding';
 
-const HERO_IMAGE = '/assets/static/home-hero.png';
+const HERO_IMAGE = '/assets/static/home-hero.webp';
 
 const TRUST_BADGE_ICONS = [Truck, BookOpen, ShieldCheck, Users, Tag];
 

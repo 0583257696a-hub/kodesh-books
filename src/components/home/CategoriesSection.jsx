@@ -13,7 +13,7 @@ export default function CategoriesSection() {
   return (
     <section
       className="parallax-section py-20 px-4"
-      style={{ backgroundImage: "linear-gradient(rgba(31,16,8,.6),rgba(31,16,8,.35)), url('/assets/static/home-hero.png')" }}
+      style={{ backgroundImage: "linear-gradient(rgba(31,16,8,.6),rgba(31,16,8,.35)), url('/assets/static/home-hero.webp')" }}
     >
       <div className="max-w-7xl mx-auto w-full">
         {/* Section header */}
