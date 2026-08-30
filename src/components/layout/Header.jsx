@@ -187,7 +187,7 @@ export default function Header() {
                     <SheetTitle className="sr-only">תפריט ניווט</SheetTitle>
                   </SheetHeader>
                   <div className="flex items-center justify-between p-4 border-b border-[#E7D8B8]">
-                    <img src={STORE_LOGO_URL} alt="לוגו אוצר הקדושה" className="h-12 w-auto object-contain" />
+                    <img src={STORE_LOGO_URL} alt="לוגו אוצר הקדושה" width={500} height={500} className="h-12 w-auto object-contain" />
                   </div>
                   <nav className="flex flex-col overflow-y-auto" aria-label="תפריט ניווט לנייד">
                     <button
@@ -271,6 +271,8 @@ export default function Header() {
               <img
                 src={STORE_LOGO_URL}
                 alt={settings.store_name || 'אוצר הקדושה'}
+                width={500}
+                height={500}
                 className="h-12 md:h-20 w-auto object-contain transition-all duration-300"
               />
             </Link>

@@ -52,7 +52,7 @@ export default function Footer() {
               </div>
             )}
             {/* Security */}
-            <div className="flex items-center gap-2 text-cream/40 text-xs font-body pt-1">
+            <div className="flex items-center gap-2 text-[#B8AA9C] text-xs font-body pt-1">
               <ShieldCheck className="h-3.5 w-3.5 text-gold/50" aria-hidden="true" />
               <span>אתר מאובטח SSL</span>
             </div>
@@ -151,11 +151,11 @@ export default function Footer() {
       {/* Payment icons */}
       <div className="border-t border-gold/10 py-5">
         <div className="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-cream/30 text-xs font-body">
+          <div className="flex items-center gap-2 text-[#B8AA9C] text-xs font-body">
             <CreditCard className="h-4 w-4 text-gold/30" aria-hidden="true" />
             <span>אמצעי תשלום: ויזה, מסטרקארד, PayPal, ביט</span>
           </div>
-          <div className="flex items-center gap-2 text-cream/30 text-xs font-body">
+          <div className="flex items-center gap-2 text-[#B8AA9C] text-xs font-body">
             <ShieldCheck className="h-3.5 w-3.5 text-gold/30" aria-hidden="true" />
             <span>תשלום מאובטח ומוצפן</span>
           </div>
@@ -165,7 +165,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-gold/10 py-5">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="text-center font-body text-xs text-cream/35 md:text-right">
+          <div className="text-center font-body text-xs text-[#B8AA9C] md:text-right">
             <p>© {new Date().getFullYear()} {settings.store_name || 'אוצר הקדושה'}. כל הזכויות שמורות.</p>
             <a
               href="https://abd-digital.website/"
@@ -178,7 +178,7 @@ export default function Footer() {
               עוצב ונבנה על ידי ABD Digital
             </a>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-cream/35 font-body">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-[#B8AA9C] font-body">
             <Link to="/terms" className="hover:text-gold/60 transition-colors">תקנון ותנאי שימוש</Link>
             <span className="text-gold/20">|</span>
             <Link to="/privacy" className="hover:text-gold/60 transition-colors">מדיניות פרטיות</Link>

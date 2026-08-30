@@ -57,14 +57,14 @@ export default function MobileCategoryMenuItem({ category, active, onNavigate })
               <div className="flex items-center gap-3 rounded-lg border border-[#E7D8B8] bg-white p-2.5">
                 <button
                   type="button"
-                  onClick={() => onNavigate(`/product/${product.id}`)}
+                  onClick={() => onNavigate(`/product/${product.slug || product.id}`)}
                   className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-md bg-[#F8F3E8]"
                 >
                   <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => onNavigate(`/product/${product.id}`)}
+                  onClick={() => onNavigate(`/product/${product.slug || product.id}`)}
                   className="min-w-0 flex-1 text-right"
                 >
                   <p className="line-clamp-1 font-body text-xs font-semibold text-[#1F160F]">{product.name}</p>

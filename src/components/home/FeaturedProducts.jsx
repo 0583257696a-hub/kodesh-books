@@ -39,7 +39,7 @@ export default function FeaturedProducts() {
           <Link to="/catalog" className="hidden md:block">
             <Button variant="ghost" className="text-[#6B5A45] hover:text-gold font-body gap-1 group transition-colors">
               לכל המוצרים
-              <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
             </Button>
           </Link>
         </motion.div>
@@ -80,7 +80,7 @@ export default function FeaturedProducts() {
               style={{ background: 'linear-gradient(135deg, #D4AF37, #C99722)', color: '#1F1008' }}
             >
               לכל המוצרים
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
             </Button>
           </Link>
         </div>

@@ -477,13 +477,13 @@ export default function StoreChatBot() {
                     <div className="mt-3 space-y-2">
                       {message.products.map((product) => (
                         <div key={product.id} className="rounded-xl border border-gold/20 bg-cream/80 p-2">
-                          <div className="flex gap-2">
-                            <Link
-                              to={`/product/${product.id}`}
-                              onClick={() => handleProductOpen(product)}
-                              className="block h-16 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-white"
-                              aria-label={`פתח את ${product.name}`}
-                            >
+                          <Link
+                            to={`/product/${product.slug || product.id}`}
+                            onClick={() => handleProductOpen(product)}
+                            className="flex gap-2"
+                            aria-label={`פתח את ${product.name}`}
+                          >
+                            <div className="block h-16 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-white">
                               {product.image_url ? (
                                 <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
                               ) : (
@@ -491,22 +491,16 @@ export default function StoreChatBot() {
                                   <BookOpen className="h-5 w-5 text-gold" aria-hidden="true" />
                                 </span>
                               )}
-                            </Link>
+                            </div>
                             <div className="min-w-0 flex-1">
-                              <Link
-                                to={`/product/${product.id}`}
-                                onClick={() => handleProductOpen(product)}
-                                className="line-clamp-2 text-sm font-bold transition hover:text-gold"
-                              >
-                                {product.name}
-                              </Link>
+                              <p className="line-clamp-2 text-sm font-bold">{product.name}</p>
                               <p className="text-xs text-walnut/60">{product.author || product.publisher || categoryMap[product.category]}</p>
                               <p className="mt-1 font-bold text-gold-deep">₪{Number(product.sale_price || product.price).toLocaleString('he-IL')}</p>
                             </div>
-                          </div>
+                          </Link>
                           <div className="mt-2 grid grid-cols-2 gap-2">
                             <Button asChild variant="outline" className="h-8 border-gold/30 bg-white text-xs text-walnut">
-                              <Link to={`/product/${product.id}`} onClick={() => handleProductOpen(product)}>צפה במוצר</Link>
+                              <Link to={`/product/${product.slug || product.id}`} onClick={() => handleProductOpen(product)}>צפה במוצר</Link>
                             </Button>
                             <Button onClick={() => { addItem(product); trackProductAction('added_to_cart_product_id', product); }} className="h-8 bg-gold text-xs text-walnut hover:bg-gold/90">
                               <ShoppingCart className="ml-1 h-3.5 w-3.5" aria-hidden="true" /> הוסף

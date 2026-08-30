@@ -66,6 +66,8 @@ export default function HeroSection() {
                 <img
                   src={STORE_LOGO_URL}
                   alt={`לוגו ${settings.store_name || 'אוצר הקדושה'}`}
+                  width={500}
+                  height={500}
                   className="pointer-events-none relative z-10 h-32 sm:h-40 md:h-[260px] lg:h-[290px] xl:h-[310px] w-auto object-contain drop-shadow-2xl"
                 />
               </motion.div>
@@ -111,7 +113,7 @@ export default function HeroSection() {
                     onMouseEnter={e => e.currentTarget.style.backgroundPosition = 'right center'}
                     onMouseLeave={e => e.currentTarget.style.backgroundPosition = 'left center'}
                   >
-                    <BookOpen className="h-5 w-5 ml-2" />
+                    <BookOpen className="h-5 w-5 ml-2" aria-hidden="true" />
                     {settings.hero_primary_cta}
                   </Button>
                 </Link>
@@ -120,7 +122,7 @@ export default function HeroSection() {
                     variant="outline"
                     className="border-gold/60 text-gold hover:bg-gold/10 hover:border-gold font-body text-base px-8 py-6 rounded-lg transition-all duration-300"
                   >
-                    <Tag className="h-5 w-5 ml-2" />
+                    <Tag className="h-5 w-5 ml-2" aria-hidden="true" />
                     {settings.hero_secondary_cta}
                   </Button>
                 </Link>

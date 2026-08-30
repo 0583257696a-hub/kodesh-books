@@ -115,9 +115,9 @@ export default function AlsoBought({ currentProductId, category, currentPrice })
                 dir="rtl"
                 className="w-56 flex-shrink-0 snap-start sm:w-60 lg:w-[calc(25%-12px)]"
               >
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gold/10 group">
+                <Link to={`/product/${product.slug || product.id}`} className="block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gold/10 group">
                   {/* Image */}
-                  <Link to={`/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden bg-secondary">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
                     {product.image_url ? (
                       <img
                         src={product.image_url}
@@ -130,31 +130,29 @@ export default function AlsoBought({ currentProductId, category, currentPrice })
                         <BookOpen className="h-12 w-12 text-gold/30" />
                       </div>
                     )}
-                  </Link>
+                  </div>
 
                   {/* Info */}
                   <div className="p-3">
-                    <Link to={`/product/${product.id}`}>
-                      <h3 className="font-heading text-sm font-bold text-foreground line-clamp-2 leading-snug mb-1 hover:text-gold transition-colors">
-                        {product.name}
-                      </h3>
-                      {product.author && (
-                        <p className="text-muted-foreground text-xs font-body line-clamp-1 mb-2">{product.author}</p>
+                    <h3 className="font-heading text-sm font-bold text-foreground line-clamp-2 leading-snug mb-1 group-hover:text-gold transition-colors">
+                      {product.name}
+                    </h3>
+                    {product.author && (
+                      <p className="text-muted-foreground text-xs font-body line-clamp-1 mb-2">{product.author}</p>
+                    )}
+                    <div className="flex items-center gap-1.5 mb-3">
+                      {product.is_on_sale && product.sale_price ? (
+                        <>
+                          <span className="font-heading text-base font-bold text-gold-deep">₪{Number(product.sale_price).toLocaleString('he-IL')}</span>
+                          <span className="font-body text-xs text-muted-foreground line-through">₪{Number(product.price).toLocaleString('he-IL')}</span>
+                        </>
+                      ) : (
+                        <span className="font-heading text-base font-bold text-foreground">₪{Number(product.price).toLocaleString('he-IL')}</span>
                       )}
-                      <div className="flex items-center gap-1.5 mb-3">
-                        {product.is_on_sale && product.sale_price ? (
-                          <>
-                            <span className="font-heading text-base font-bold text-gold-deep">₪{Number(product.sale_price).toLocaleString('he-IL')}</span>
-                            <span className="font-body text-xs text-muted-foreground line-through">₪{Number(product.price).toLocaleString('he-IL')}</span>
-                          </>
-                        ) : (
-                          <span className="font-heading text-base font-bold text-foreground">₪{Number(product.price).toLocaleString('he-IL')}</span>
-                        )}
-                      </div>
-                    </Link>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => addItem(product)}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); addItem(product); }}
                       className="w-full flex items-center justify-center gap-1.5 bg-gold/10 hover:bg-gold text-gold-deep hover:text-walnut font-body text-xs font-semibold py-2 rounded-lg transition-colors duration-200"
                       aria-label={`הוסף את ${product.name} לעגלה`}
                     >
@@ -162,7 +160,7 @@ export default function AlsoBought({ currentProductId, category, currentPrice })
                       הוסף לעגלה
                     </button>
                   </div>
-                </div>
+                </Link>
               </div>
             ))}
           </div>

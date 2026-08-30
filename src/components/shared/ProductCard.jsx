@@ -11,7 +11,7 @@ export default function ProductCard({ product }) {
   const { addItem } = useCart();
   const navigate = useNavigate();
   const { categoryMap } = useStoreCategories();
-  const productPath = `/product/${product.id}`;
+  const productPath = `/product/${product.slug || product.id}`;
 
   const isOutOfStock = product.in_stock === false;
 
@@ -22,11 +22,10 @@ export default function ProductCard({ product }) {
       viewport={{ once: true }}
       className="group"
     >
-      <div className="bg-white rounded-xl overflow-hidden transition-all duration-400 border border-[#E7D8B8] hover:border-gold/40 hover:shadow-lg" style={{ boxShadow: '0 2px 12px rgba(42,22,11,0.06)' }}>
-        
+      <Link to={productPath} className="block bg-white rounded-xl overflow-hidden transition-all duration-400 border border-[#E7D8B8] hover:border-gold/40 hover:shadow-lg" style={{ boxShadow: '0 2px 12px rgba(42,22,11,0.06)' }} aria-label={`פתח את ${product.name}`}>
+
         {/* Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-[#F8F3E8]">
-          <Link to={productPath} className="block h-full w-full cursor-pointer" aria-label={`פתח את ${product.name}`}>
             {product.image_url ? (
               <img
                 src={product.image_url}
@@ -39,7 +38,6 @@ export default function ProductCard({ product }) {
                 <BookOpen className="h-16 w-16 text-gold/25" aria-hidden="true" />
               </div>
             )}
-          </Link>
 
           {/* Tags */}
           <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
@@ -79,31 +77,29 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* Info */}
-        <Link to={productPath}>
-          <div className="p-4">
-            {product.category && (
-              <span className="text-gold-deep text-xs font-body font-medium tracking-wide">{categoryMap[product.category] || product.category}</span>
+        <div className="p-4">
+          {product.category && (
+            <span className="text-gold-deep text-xs font-body font-medium tracking-wide">{categoryMap[product.category] || product.category}</span>
+          )}
+          <h3 className="font-heading text-sm md:text-base font-bold mt-1 text-[#1F160F] line-clamp-2 leading-snug">{product.name}</h3>
+          {product.author && (
+            <p className="text-[#6B5A45] text-xs font-body mt-1 line-clamp-1">{product.author}</p>
+          )}
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#E7D8B8]">
+            {product.is_on_sale && product.sale_price ? (
+              <>
+                <span className="font-heading text-lg font-bold text-gold-deep">₪{Number(product.sale_price).toLocaleString('he-IL')}</span>
+                <span className="font-body text-sm text-[#6B5A45] line-through">₪{Number(product.price).toLocaleString('he-IL')}</span>
+                <span className="text-xs font-body font-semibold mr-auto" style={{ color: '#C42B21' }}>
+                  {Math.round(((product.price - product.sale_price) / product.price) * 100)}% הנחה
+                </span>
+              </>
+            ) : (
+              <span className="font-heading text-lg font-bold text-[#1F160F]">₪{Number(product.price).toLocaleString('he-IL')}</span>
             )}
-            <h3 className="font-heading text-sm md:text-base font-bold mt-1 text-[#1F160F] line-clamp-2 leading-snug">{product.name}</h3>
-            {product.author && (
-              <p className="text-[#6B5A45] text-xs font-body mt-1 line-clamp-1">{product.author}</p>
-            )}
-            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#E7D8B8]">
-              {product.is_on_sale && product.sale_price ? (
-                <>
-                  <span className="font-heading text-lg font-bold text-gold-deep">₪{Number(product.sale_price).toLocaleString('he-IL')}</span>
-                  <span className="font-body text-sm text-[#6B5A45] line-through">₪{Number(product.price).toLocaleString('he-IL')}</span>
-                  <span className="text-red-500 text-xs font-body font-semibold mr-auto">
-                    {Math.round(((product.price - product.sale_price) / product.price) * 100)}% הנחה
-                  </span>
-                </>
-              ) : (
-                <span className="font-heading text-lg font-bold text-[#1F160F]">₪{Number(product.price).toLocaleString('he-IL')}</span>
-              )}
-            </div>
           </div>
-        </Link>
-      </div>
+        </div>
+      </Link>
     </motion.div>
   );
 }

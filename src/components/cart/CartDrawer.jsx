@@ -55,43 +55,41 @@ export default function CartDrawer() {
                    <Link
                      to={`/product/${item.product_id}`}
                      onClick={closeCart}
-                     className="h-20 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-[#F8F3E8] border border-[#E7D8B8]"
+                     className="flex min-w-0 flex-1 gap-3"
                      aria-label={`פתח את ${item.product_name}`}
                    >
-                     {item.image_url ? (
-                       <img src={item.image_url} alt={item.product_name} loading="lazy" className="h-full w-full object-cover" />
-                     ) : (
-                       <span className="flex h-full w-full items-center justify-center">
-                         <BookOpen className="h-6 w-6 text-gold/25" aria-hidden="true" />
-                       </span>
-                     )}
-                   </Link>
-
-                   <div className="min-w-0 flex-1">
-                     <Link
-                       to={`/product/${item.product_id}`}
-                       onClick={closeCart}
-                       className="line-clamp-2 font-heading text-sm font-bold text-[#1F160F] hover:text-gold transition-colors leading-snug"
-                     >
-                       {item.product_name}
-                     </Link>
-                     <p className="mt-1 font-body text-sm font-semibold text-gold-deep">₪{Number(item.price || 0).toLocaleString('he-IL')}</p>
-
-                     <div className="mt-2.5 flex items-center justify-between gap-2">
-                       <div className="flex items-center overflow-hidden rounded-lg border border-[#E7D8B8]">
-                         <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="p-1.5 hover:bg-[#F8F3E8] transition-colors" aria-label={`הפחת כמות עבור ${item.product_name}`}>
-                           <Minus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
-                         </button>
-                         <span className="min-w-7 px-1.5 text-center font-body text-sm font-bold text-[#1F160F]">{item.quantity}</span>
-                         <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="p-1.5 hover:bg-[#F8F3E8] transition-colors" aria-label={`הוסף כמות עבור ${item.product_name}`}>
-                           <Plus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
-                         </button>
-                       </div>
-                       <button type="button" onClick={() => removeItem(item.product_id)} className="rounded-md p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors" aria-label={`הסר את ${item.product_name} מהעגלה`}>
-                         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                       </button>
+                     <div className="h-20 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-[#F8F3E8] border border-[#E7D8B8]">
+                       {item.image_url ? (
+                         <img src={item.image_url} alt={item.product_name} loading="lazy" className="h-full w-full object-cover" />
+                       ) : (
+                         <span className="flex h-full w-full items-center justify-center">
+                           <BookOpen className="h-6 w-6 text-gold/25" aria-hidden="true" />
+                         </span>
+                       )}
                      </div>
+
+                     <div className="min-w-0 flex-1">
+                       <p className="line-clamp-2 font-heading text-sm font-bold text-[#1F160F] leading-snug">
+                         {item.product_name}
+                       </p>
+                       <p className="mt-1 font-body text-sm font-semibold text-gold-deep">₪{Number(item.price || 0).toLocaleString('he-IL')}</p>
+                     </div>
+                   </Link>
+                 </div>
+
+                 <div className="mt-2.5 flex items-center justify-between gap-2">
+                   <div className="flex items-center overflow-hidden rounded-lg border border-[#E7D8B8]">
+                     <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity - 1)} className="p-1.5 hover:bg-[#F8F3E8] transition-colors" aria-label={`הפחת כמות עבור ${item.product_name}`}>
+                       <Minus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
+                     </button>
+                     <span className="min-w-7 px-1.5 text-center font-body text-sm font-bold text-[#1F160F]">{item.quantity}</span>
+                     <button type="button" onClick={() => updateQuantity(item.product_id, item.quantity + 1)} className="p-1.5 hover:bg-[#F8F3E8] transition-colors" aria-label={`הוסף כמות עבור ${item.product_name}`}>
+                       <Plus className="h-3 w-3 text-[#3A2415]" aria-hidden="true" />
+                     </button>
                    </div>
+                   <button type="button" onClick={() => removeItem(item.product_id)} className="rounded-md p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors" aria-label={`הסר את ${item.product_name} מהעגלה`}>
+                     <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                   </button>
                  </div>
                </article>
              ))}

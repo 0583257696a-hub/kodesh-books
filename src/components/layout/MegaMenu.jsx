@@ -48,7 +48,7 @@ function MegaMenuProductCard({ product, showAddToCart }) {
 
   return (
     <Link
-      to={`/product/${product.id}`}
+      to={`/product/${product.slug || product.id}`}
       className="group flex flex-col overflow-hidden rounded-lg border border-[#E7D8B8]/70 bg-white transition-colors hover:border-gold/50 hover:shadow-md"
     >
       <div className="aspect-square w-full overflow-hidden bg-[#F8F3E8]">
