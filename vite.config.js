@@ -63,8 +63,13 @@ export default defineConfig({
             },
           },
           {
+            // StaleWhileRevalidate, not CacheFirst: serves the cached copy
+            // instantly but always re-fetches in the background and updates
+            // the cache for next time. CacheFirst would lock in a corrupt/
+            // truncated response (from a transient network blip, say) for
+            // the full 30-day expiration with no way to self-heal.
             urlPattern: ({ request, url }) => request.destination === 'image' || url.pathname.startsWith('/assets/static/'),
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'image-cache',
               expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 30 },

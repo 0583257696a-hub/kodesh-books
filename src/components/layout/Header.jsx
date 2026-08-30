@@ -303,7 +303,14 @@ export default function Header() {
 
       {/* Desktop navigation */}
       <nav ref={navRef} className="relative hidden lg:block bg-[#FCFAF5] border-b border-[#E7D8B8]/80" aria-label="ניווט ראשי" dir="rtl">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="relative max-w-7xl mx-auto px-4">
+          {/* Fade hints: the row can overflow (many categories, narrower
+              desktop widths) with no scrollbar shown -- without these, an
+              overflowing item is just silently invisible with zero cue that
+              more exists. Purely decorative (no JS overflow-detection),
+              harmless when the row happens to fit fully. */}
+          <div className="pointer-events-none absolute inset-y-0 right-4 w-10 bg-gradient-to-l from-[#FCFAF5] to-transparent z-10" aria-hidden="true" />
+          <div className="pointer-events-none absolute inset-y-0 left-4 w-10 bg-gradient-to-r from-[#FCFAF5] to-transparent z-10" aria-hidden="true" />
           <ul className="flex flex-nowrap items-center justify-start gap-x-1 py-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {navItems.map((item) => {
               const active = isActiveNavItem(item);
