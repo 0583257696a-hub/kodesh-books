@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Baby, BookHeart, BookOpen, Boxes, Check, FolderOpen, Gift, Library, Scale, ShoppingCart, Sparkles } from 'lucide-react';
+import { Baby, BookHeart, BookMarked, BookOpen, Boxes, Calendar, Check, Feather, Flame, FolderOpen, Gift, Library, Scale, ShoppingCart, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useCategoryProducts } from '@/hooks/useCategoryProducts';
 
-const ICON_MAP = { Baby, BookHeart, BookOpen, Boxes, FolderOpen, Gift, Library, Scale, Sparkles };
+const ICON_MAP = { Baby, BookHeart, BookMarked, BookOpen, Boxes, Calendar, Feather, Flame, FolderOpen, Gift, Library, Scale, Sparkles };
 
 function useRotatingProducts(products, count, rotationSeconds, active) {
   const [start, setStart] = useState(0);

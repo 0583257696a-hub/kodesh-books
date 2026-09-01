@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Baby, BookHeart, BookOpen, Boxes, Flame, FolderOpen, Gift, Library, Scale, Sparkles } from 'lucide-react';
+import { Baby, BookHeart, BookMarked, BookOpen, Boxes, Calendar, Feather, Flame, FolderOpen, Gift, Library, Scale, Sparkles } from 'lucide-react';
 import { useStoreCategories } from '@/hooks/useStoreCategories';
 
-const ICON_MAP = { Baby, BookHeart, BookOpen, Boxes, Flame, FolderOpen, Gift, Library, Scale, Sparkles };
+const ICON_MAP = { Baby, BookHeart, BookMarked, BookOpen, Boxes, Calendar, Feather, Flame, FolderOpen, Gift, Library, Scale, Sparkles };
 
 export default function CategoriesSection() {
   const { categories } = useStoreCategories();
